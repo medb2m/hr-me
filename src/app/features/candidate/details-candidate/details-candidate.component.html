@@ -1,0 +1,15 @@
+<p>details-candidate works!</p>
+<div *ngIf="candidate">
+    <h2>{{ candidate.name }}</h2>
+    <p><strong>Email:</strong> {{ candidate.email }}</p>
+    <p><strong>Phone:</strong> {{ candidate.phone }}</p>
+    <p><strong>Position:</strong> {{ candidate.position }}</p>
+    <p><strong>Status:</strong> {{ candidate.status }}</p>
+    <p><strong>Experience:</strong> {{ candidate.experience }} years</p>
+    <p><strong>Skills:</strong> {{ candidate.skills.join(', ') }}</p>
+    
+    <!-- Display the image if it exists -->
+    <div *ngIf="candidate.image">
+        <img [src]="candidate.image" alt="Candidate Image" width="200" height="200">
+    </div>
+</div>

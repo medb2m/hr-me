@@ -1,16 +1,17 @@
 import express from 'express';
 
 import { createCandidate, getAllCandidates, getCandidateById } from '../controllers/candidate.controller.js';
+import { uploadImage } from '../middleware/multer-config.js';
 
 const router = express.Router();
 
 // Create a new candidate
-router.post('/candidates', createCandidate);
+router.post('/', uploadImage.single('image'), createCandidate);
 
 // Get all candidates
-router.get('/candidates', getAllCandidates);
+router.get('/', getAllCandidates);
 
 // Get a specific candidate
-router.get('/candidates/:id', getCandidateById);
+router.get('/:id', getCandidateById);
 
 export default router;

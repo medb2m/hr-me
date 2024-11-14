@@ -1,3 +1,23 @@
-<h1>{{ 'welcome' | translate }}</h1>
-<button (click)="switchLanguage('en')">English</button>
-<button (click)="switchLanguage('fr')">Français</button>
+<!-- Navbar with Links and Language Switcher -->
+<nav>
+  <ul>
+    <li>
+      <a routerLink="/add-candidate">Add Candidate</a>
+    </li>
+    <li>
+      <a routerLink="/list-candidates">List Candidates</a>
+    </li>
+  </ul>
+    
+    <div>
+      <button (click)="switchLanguage('en')">English</button>
+      <button (click)="switchLanguage('fr')">Français</button>
+    </div>
+</nav>
+  
+  <!-- Welcome Message -->
+  <h1>{{ 'welcome' | translate }}</h1>
+  
+  <!-- Router Outlet for Displaying Routed Components -->
+  <router-outlet></router-outlet>
+  

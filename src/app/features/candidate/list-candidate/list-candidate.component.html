@@ -1,0 +1,5 @@
+<p>list-candidate works!</p>
+<!-- list-candidate.component.html -->
+<div *ngFor="let candidate of candidates">
+    <a [routerLink]="['/candidate', candidate._id]">{{ candidate.name }}</a>
+</div>
