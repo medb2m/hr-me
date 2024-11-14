@@ -1,0 +1,8 @@
+<p>list-offer works!</p>
+<h2>Offers List</h2>
+<div *ngFor="let offer of offers">
+  <h3>{{ offer.name }}</h3>
+  <p><strong>Partner:</strong> {{ offer.partner }}</p>
+  <p><strong>Description:</strong> {{ offer.description }}</p>
+  <button [routerLink]="['/offer', offer._id]">View Details</button>
+</div>

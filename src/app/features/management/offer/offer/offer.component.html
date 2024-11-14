@@ -1,0 +1,16 @@
+<p>offer works!</p>
+<div *ngIf="offer">
+    <h2>{{ offer.name }}</h2>
+    <p><strong>Partner:</strong> {{ offer.partner }}</p>
+    <p><strong>Description:</strong> {{ offer.description }}</p>
+    
+    <h3>Positions</h3>
+    <ul>
+      <li *ngFor="let pos of offer.positions">
+        <strong>Position:</strong> {{ pos.positionId.name }} - Needed: {{ pos.candidatesNeeded }}, Achieved: {{ pos.candidatesAchieved }}
+      </li>
+    </ul>
+  
+    <p *ngIf="offer.isAchieved">All candidate positions are filled for this offer.</p>
+    <p *ngIf="!offer.isAchieved">There are still open positions for this offer.</p>
+  </div>

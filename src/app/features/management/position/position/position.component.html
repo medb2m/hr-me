@@ -1,0 +1,14 @@
+<p>position works!</p>
+<!-- Display the fetched positions -->
+<div *ngIf="positions.length > 0">
+    <h3>Existing Positions</h3>
+    <ul>
+      <li *ngFor="let position of positions">{{ position.name }}</li>
+    </ul>
+</div>
+<h3>Add Positon</h3>
+<form [formGroup]="positionForm" (ngSubmit)="onSubmit()">
+      <input type="text" formControlName="name" placeholder="Position Name" required />
+    <button type="submit">Submit</button>
+</form>
+  

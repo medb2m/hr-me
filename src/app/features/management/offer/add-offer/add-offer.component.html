@@ -1,0 +1,32 @@
+<p>add-offer works!</p>
+<h2>Add New Offer</h2>
+<form [formGroup]="offerForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="name">Offer Name</label>
+    <input id="name" formControlName="name" required />
+  </div>
+
+  <div>
+    <label for="partner">Partner</label>
+    <input id="partner" formControlName="partner" required />
+  </div>
+
+  <div>
+    <label for="description">Description</label>
+    <textarea id="description" formControlName="description"></textarea>
+  </div>
+
+  <div formArrayName="positions">
+    <h3>Positions</h3>
+    <button type="button" (click)="addPosition()">Add Position</button>
+    <div *ngFor="let position of positionControls; let i = index" [formGroupName]="i">
+      <select formControlName="positionId" required>
+        <option *ngFor="let pos of positions" [value]="pos._id">{{ pos.name }}</option>
+      </select>
+      <input type="number" formControlName="candidatesNeeded" placeholder="Candidates Needed" required />
+      <button type="button" (click)="removePosition(i)">Remove</button>
+    </div>
+  </div>
+
+  <button type="submit" [disabled]="offerForm.invalid">Submit</button>
+</form>

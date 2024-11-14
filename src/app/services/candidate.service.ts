@@ -8,19 +8,19 @@ import { Candidate } from '../models/candidate';
   providedIn: 'root'
 })
 export class CandidateService {
-  private apiUrl = environment.apiUrl;
+  private apiUrl = environment.apiUrl+'/candidates';
 
   constructor(private http: HttpClient) { }
 
   getCandidates() {
-    return this.http.get(`${this.apiUrl}/candidates`);
+    return this.http.get(`${this.apiUrl}`);
   }
 
   addCandidate(candidateData : FormData): Observable<Candidate> {
-    return this.http.post<Candidate>(`${this.apiUrl}/candidates`, candidateData);
+    return this.http.post<Candidate>(`${this.apiUrl}`, candidateData);
   }
 
   getCandidateById(id : string) : Observable<Candidate>{
-    return this.http.get<Candidate>(`${this.apiUrl}/candidates/${id}`)
+    return this.http.get<Candidate>(`${this.apiUrl}/${id}`)
   }
 }
