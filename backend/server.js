@@ -9,8 +9,10 @@ import dotenv from 'dotenv';
 // middleware imports
 import errorHandler from './middleware/error-handler.js'
 
-// Routes
+// Routes  
 import candidateRoutes from './routes/candidate.routes.js';
+import offerRoutes from './routes/offer.routes.js';
+import positionRoutes from './routes/position.routes.js';
 
 // path 
 import path from 'path';
@@ -44,7 +46,12 @@ app.get('/', (req, res) => {
 // Images Routes
 app.use('/img', express.static(path.join(__dirname, 'public', 'images')))
 
+// Candidates Routes
 app.use('/api/candidates', candidateRoutes);
+// Offer Routes
+app.use('/api/offer', offerRoutes);
+// Position Routes
+app.use('/api/position', positionRoutes);
 
 // global error handler
 app.use(errorHandler);
