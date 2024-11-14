@@ -6,6 +6,9 @@ import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
 import dotenv from 'dotenv';
 
+// middleware imports
+import errorHandler from './middleware/error-handler.js'
+
 // Routes
 import candidateRoutes from './routes/candidate.routes.js';
 
