@@ -3,9 +3,9 @@ import Candidate from "../models/candidate.js";
 // create New Candidate
 export const createCandidate = async (req, res) => {
     try {
-        const { name, email, phone, offer, position, status, experience, skills } = req.body
+        const { name, email, phone, cin, passportNumber, offer, position, status, experience, skills } = req.body
         const candidateData = {
-          name, email, phone, offer, position, status, experience, skills
+          name, email, phone, cin, passportNumber, offer, position, status, experience, skills
         }
         if (req.file) {
           candidateData.image = `${req.protocol}://${req.get("host")}/img/${req.file.filename}`
@@ -31,7 +31,7 @@ export const getAllCandidates = async (req, res) => {
 // Get a specific candidate
 export const getCandidateById = async (req, res) => {
     try {
-      const candidate = await Candidate.findById(req.params.id);
+      const candidate = await Candidate.findById(req.params.id).populate('position');
       if (!candidate) {
         return res.status(404).json({ error: 'Candidate not found' });
       }

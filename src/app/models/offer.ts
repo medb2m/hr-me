@@ -1,3 +1,4 @@
+import { Application } from "./application";
 import { Position } from "./position";
 
 export interface Offer {
@@ -10,5 +11,6 @@ export interface Offer {
         candidatesNeeded: number;
         candidatesAchieved: number;
     }[];
+    applications?: Application[];
     isAchieved?: boolean;
 }

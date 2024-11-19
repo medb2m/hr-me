@@ -23,10 +23,30 @@
         Enter a valid phone number.
       </div>
     </div>
+
+    <div>
+      <label for="passportNumber">Passport Number</label>
+      <input id="passportNumber" formControlName="passportNumber" />
+      <div *ngIf="candidateForm.get('passportNumber')?.invalid && candidateForm.get('passportNumber')?.touched">
+        Passport Number is required.
+      </div>
+    </div>
+
+    <div>
+      <label for="cin">CIN</label>
+      <input id="cin" formControlName="cin" />
+      <div *ngIf="candidateForm.get('cin')?.invalid && candidateForm.get('cin')?.touched">
+        Passport Number is required.
+      </div>
+    </div>
   
     <div>
       <label for="position">Position</label>
-      <input id="position" formControlName="position" />
+      <select id="position" formControlName="position">
+        <option *ngFor="let position of positions" [value]="position._id">
+          {{ position.name }} 
+        </option>
+      </select>
     </div>
   
     <div>

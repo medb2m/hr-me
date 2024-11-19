@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Candidate } from '../../../models/candidate';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CandidateService } from '../../../services/candidate.service';
 import { CommonModule } from '@angular/common';
+import { PositionService } from '../../../services/position.service';
+import { Position } from '../../../models/position';
 
 @Component({
   selector: 'app-add-candidate',
   standalone: true,
-  imports: [ReactiveFormsModule,CommonModule],
+  imports: [ReactiveFormsModule,CommonModule, FormsModule],
   templateUrl: './add-candidate.component.html',
   styleUrl: './add-candidate.component.css'
 })
@@ -16,20 +17,34 @@ export class AddCandidateComponent {
 
   selectedFile: File | null = null;
 
+  selectedPositionId : string = '';
+
+  positions : Position[] = []
+
   constructor(
     private fb: FormBuilder,
-    private candidateService: CandidateService
+    private candidateService: CandidateService,
+    private positionService: PositionService
   ) {
     this.candidateForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
+      passportNumber: ['', Validators.required],
+      cin: ['', Validators.required],
       position: [''],
       status: ['waiting'],
       experience: [0],
       //skills: this.fb.array([]),
       skills: new FormControl([]),
     });
+  }
+
+  ngOnInit(){
+    this.positionService.getPositions().subscribe((data) => {
+      this.positions = data 
+      console.log(this.positions)
+    })
   }
 
   // Handle file selection

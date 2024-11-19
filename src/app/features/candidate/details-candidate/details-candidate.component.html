@@ -3,7 +3,9 @@
     <h2>{{ candidate.name }}</h2>
     <p><strong>Email:</strong> {{ candidate.email }}</p>
     <p><strong>Phone:</strong> {{ candidate.phone }}</p>
-    <p><strong>Position:</strong> {{ candidate.position }}</p>
+    <p><strong>Passport Number:</strong> {{ candidate.passportNumber }}</p>
+    <p><strong>CIN:</strong> {{ candidate.cin }}</p>
+    <p><strong>Position:</strong> {{ candidate.position.name }}</p>
     <p><strong>Status:</strong> {{ candidate.status }}</p>
     <p><strong>Experience:</strong> {{ candidate.experience }} years</p>
     <p><strong>Skills:</strong> {{ candidate.skills.join(', ') }}</p>

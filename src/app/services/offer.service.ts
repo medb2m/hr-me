@@ -32,5 +32,12 @@ export class OfferService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  addCandidateToOffer(offerId: string, candidateId: string, positionId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/offers/${offerId}/add-candidate`, {
+      candidateId,
+      positionId,
+    });
+  }
+
 
 }

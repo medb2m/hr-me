@@ -13,6 +13,7 @@ import errorHandler from './middleware/error-handler.js'
 import candidateRoutes from './routes/candidate.routes.js';
 import offerRoutes from './routes/offer.routes.js';
 import positionRoutes from './routes/position.routes.js';
+import applicationRoutes from './routes/application.routes.js';
 
 // path 
 import path from 'path';
@@ -52,6 +53,8 @@ app.use('/api/candidates', candidateRoutes);
 app.use('/api/offer', offerRoutes);
 // Position Routes
 app.use('/api/position', positionRoutes);
+// Position Routes
+app.use('/api/application', applicationRoutes);
 
 // global error handler
 app.use(errorHandler);

@@ -13,7 +13,7 @@ export const createOffer = async (req, res) => {
 
 export const getOffers = async (req, res) => {
     try {
-        const offers = await Offer.find().populate('positions.positionId');
+        const offers = await Offer.find().populate('positions.positionId').populate('applications');
         res.status(200).json(offers);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -22,7 +22,7 @@ export const getOffers = async (req, res) => {
 
 export const getOfferById = async (req, res) => {
     try {
-        const offer = await Offer.findById(req.params.id).populate('positions.positionId');
+        const offer = await Offer.findById(req.params.id).populate('positions.positionId').populate('applications');
         if (!offer) return res.status(404).json({ error: 'Offer not found' });
         res.status(200).json(offer);
     } catch (error) {
@@ -47,3 +47,4 @@ export const deleteOffer = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
+

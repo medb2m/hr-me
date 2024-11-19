@@ -12,8 +12,8 @@ export class CandidateService {
 
   constructor(private http: HttpClient) { }
 
-  getCandidates() {
-    return this.http.get(`${this.apiUrl}`);
+  getCandidates() : Observable<Candidate[]> {
+    return this.http.get<Candidate[]>(`${this.apiUrl}`);
   }
 
   addCandidate(candidateData : FormData): Observable<Candidate> {
@@ -22,5 +22,9 @@ export class CandidateService {
 
   getCandidateById(id : string) : Observable<Candidate>{
     return this.http.get<Candidate>(`${this.apiUrl}/${id}`)
+  }
+
+  getCandidatesByIds(ids: string[]): Observable<Candidate[]> {
+    return this.http.post<Candidate[]>(`${this.apiUrl}/candidates/by-ids`, { ids });
   }
 }

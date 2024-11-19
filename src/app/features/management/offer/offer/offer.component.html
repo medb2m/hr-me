@@ -1,4 +1,25 @@
 <p>offer works!</p>
+
+<div>
+  <h3>Assign Candidates</h3>
+  <input
+  type="text"
+  [(ngModel)]="searchQuery"
+  (input)="filterCandidates()"
+  placeholder="Search candidates by name, email, or passport number"
+/>
+  <ul>
+    <li *ngFor="let candidate of filteredCandidates">
+      {{ candidate.name }} ({{ candidate.email }} / {{ candidate.passportNumber }})
+      <select [(ngModel)]="candidate.selectedPositionId">
+        <option *ngFor="let position of offer?.positions" [value]="position.positionId._id">
+          {{ position.positionId.name }} (Needed: {{ position.candidatesNeeded }}, Assigned: {{ position.candidatesAchieved }})
+        </option>
+      </select>
+      <button (click)="assignCandidate(candidate)">Add</button>
+    </li>
+  </ul>
+</div>
 <div *ngIf="offer">
     <h2>{{ offer.name }}</h2>
     <p><strong>Partner:</strong> {{ offer.partner }}</p>
@@ -14,3 +35,11 @@
     <p *ngIf="offer.isAchieved">All candidate positions are filled for this offer.</p>
     <p *ngIf="!offer.isAchieved">There are still open positions for this offer.</p>
   </div>
+
+  <h3>Assigned Candidates</h3>
+  <ul>
+    <li *ngFor="let candidate of offerCandidates">
+      {{ candidate.name }} ({{ candidate.email }}) - Applied for: 
+      {{ candidate.position?.name || 'N/A' }}
+    </li>
+  </ul>
