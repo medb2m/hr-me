@@ -61,8 +61,9 @@ export class UpdateCandidateComponent {
         phone: candidate.phone?.toString() || '', // Ensure phone is a string
         passportNumber: candidate.passportNumber || '',
         cin: candidate.cin || '',
-        position: candidate.position || null, // Position object
-        offer: candidate.offer || null, // Offer object
+        position: candidate.position?._id || null, // Position object
+        offer: candidate.offer || null, 
+        //offer: candidate.offer?._id || null,
         status: candidate.status || 'waiting',
         experience: candidate.experience || 0,
         skills: candidate.skills || [],
@@ -80,6 +81,18 @@ export class UpdateCandidateComponent {
     if (fileInput.files){
       this.selectedFile = fileInput.files[0]
     }
+  }
+  private debugFormErrors() {
+    Object.keys(this.candidateForm.controls).forEach((key) => {
+      const control = this.candidateForm.get(key);
+      if (control && control.invalid) {
+        console.error(`Field "${key}" is invalid. Errors:`, control.errors);
+      }
+    });
+  
+    // Log the overall form status
+    console.log('Form status:', this.candidateForm.status);
+    console.log('Form controls:', this.candidateForm.controls);
   }
 
   // Submit updated Data 
@@ -115,6 +128,7 @@ export class UpdateCandidateComponent {
       )
     } else {
       console.log('Form is invalid')
+      this.debugFormErrors();
     }
   }
 }

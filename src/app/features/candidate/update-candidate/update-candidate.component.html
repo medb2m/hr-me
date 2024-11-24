@@ -27,11 +27,17 @@
   <div>
     <label for="passportNumber">Passport Number</label>
     <input id="passportNumber" formControlName="passportNumber" />
+    <div *ngIf="candidateForm.get('passportNumber')?.invalid && candidateForm.get('passportNumber')?.touched">
+        Enter a valid Passport Number.
+    </div>
   </div>
 
   <div>
     <label for="cin">CIN</label>
     <input id="cin" formControlName="cin" />
+    <div *ngIf="candidateForm.get('cin')?.invalid && candidateForm.get('cin')?.touched">
+        Enter a valid CIN.
+    </div>
   </div>
 
   <div>
@@ -41,6 +47,11 @@
         {{ position.name }}
       </option>
     </select>
+  </div>
+
+  <div>
+    <label for="offer">Offer</label>
+    <input id="offer" formControlName="offer" placeholder="Offer ID" />
   </div>
 
   <div>
