@@ -8,7 +8,7 @@ export class Candidate {
     phone!: string;
     passportNumber!: string;
     cin!: string;
-    offer!: Offer;
+    offer!: Offer[];
     position?: Position;
     status?: 'waiting' | 'interviewing' | 'hired' | 'assigned'; // Expand this as needed
     experience?: number;

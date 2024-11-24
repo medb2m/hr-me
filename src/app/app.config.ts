@@ -1,12 +1,13 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter, RouterModule } from '@angular/router';
-import { HttpClientModule, HttpClient, provideHttpClient, withFetch } from '@angular/common/http';
+import { HttpClientModule, HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { interceptorInterceptor } from './core/interceptors/interceptor.interceptor';
 
 // AoT-compatible factory function
 export function HttpLoaderFactory(http: HttpClient) {
@@ -17,7 +18,11 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes), 
     provideClientHydration(),
-    provideHttpClient(withFetch()),
+    //  register Http client with Interceptor
+    provideHttpClient(
+      withFetch(), // Use fetch API for SSR compatibility
+      withInterceptors([interceptorInterceptor])
+    ),
     importProvidersFrom(
       HttpClientModule,
       ReactiveFormsModule, 
