@@ -4,6 +4,7 @@ const offerSchema = new mongoose.Schema({
     name: { type: String, required: true },
     partner: { type: String, required: true },
     description: { type: String },
+    price: { type: Number, required: true },
     positions: [{
         positionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Position', required: true },
         candidatesNeeded: { type: Number, required: true },

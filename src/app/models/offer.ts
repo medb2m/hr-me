@@ -2,11 +2,12 @@ import { Application } from "./application";
 import { Position } from "./position";
 
 export interface Offer {
-    _id?: string;
+    _id: string;
     name: string;
     partner: string;
     description?: string;
-    positions?: {
+    price: number;
+    positions: {
         positionId: Position;
         candidatesNeeded: number;
         candidatesAchieved: number;

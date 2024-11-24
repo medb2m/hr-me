@@ -7,6 +7,7 @@ import { ListOfferComponent } from './features/management/offer/list-offer/list-
 import { OfferComponent } from './features/management/offer/offer/offer.component';
 import { PositionComponent } from './features/management/position/position/position.component';
 import { UpdateCandidateComponent } from './features/candidate/update-candidate/update-candidate.component';
+import { UpdateOfferComponent } from './features/management/offer/update-offer/update-offer.component';
 
 export const routes: Routes = [
     // Candidate Routes
@@ -19,6 +20,7 @@ export const routes: Routes = [
     { path: 'add-offer', component: AddOfferComponent },
     { path: 'list-offers', component: ListOfferComponent },
     { path: 'offer/:id', component: OfferComponent },
+    { path: 'update-offer/:id', component: UpdateOfferComponent },
 
     // Management => Offer
     { path: 'position', component: PositionComponent },

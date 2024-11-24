@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Offer } from '../../../../models/offer';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OfferService } from '../../../../services/offer.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,13 +14,15 @@ import { Application } from '../../../../models/application';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
   templateUrl: './offer.component.html',
   styleUrl: './offer.component.css'
 })
 export class OfferComponent {
   offer?: Offer;
+  offerId!: string;
 
   candidates : Candidate[] = []
   offerCandidates : Candidate[] = []
@@ -37,10 +39,10 @@ export class OfferComponent {
   ) {}
 
   ngOnInit(): void {
-    const offerId = this.route.snapshot.paramMap.get('id');
-    if (offerId) {
-      this.loadOfferData(offerId);
-      this.loadAssignedCandidates(offerId);
+    this.offerId = this.route.snapshot.paramMap.get('id')!;
+    if (this.offerId) {
+      this.loadOfferData(this.offerId);
+      this.loadAssignedCandidates(this.offerId);
     }
 
     this.candidateService.getCandidates().subscribe((candidates) => {

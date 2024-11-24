@@ -1,5 +1,5 @@
 <p>offer works!</p>
-
+<button [routerLink]="['/update-offer', offerId]">update offer</button>
 <div>
   <h3>Assign Candidates</h3>
   <input
@@ -24,6 +24,7 @@
     <h2>{{ offer.name }}</h2>
     <p><strong>Partner:</strong> {{ offer.partner }}</p>
     <p><strong>Description:</strong> {{ offer.description }}</p>
+    <p><strong>Price:</strong> {{ offer.price }} TND</p>
     
     <h3>Positions</h3>
     <ul>
