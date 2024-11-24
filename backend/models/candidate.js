@@ -12,6 +12,8 @@ const candidateSchema = new mongoose.Schema({
   experience: Number,
   skills: [String],
   image : String
-});
+},
+{timestamps: true}
+);
 
 export default mongoose.model('Candidate', candidateSchema);

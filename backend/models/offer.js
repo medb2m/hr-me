@@ -12,10 +12,12 @@ const offerSchema = new mongoose.Schema({
     applications: [
       {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Application', // Reference to the Application model
+          ref: 'Application', 
       },
   ],
-});
+},
+{timestamps: true}
+);
 
 // Virtual to check if the required number of candidates has been achieved for each position
 offerSchema.virtual('isAchieved').get(function () {

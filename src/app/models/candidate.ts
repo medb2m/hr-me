@@ -15,4 +15,6 @@ export class Candidate {
     skills?: string[];
     image?: string;
     selectedPositionId ?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
   }

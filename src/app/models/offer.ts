@@ -13,4 +13,6 @@ export interface Offer {
     }[];
     applications?: Application[];
     isAchieved?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

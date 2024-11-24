@@ -8,6 +8,7 @@ export class Application {
   offer!: Offer;
   position!: Position;
   status!: 'applied' | 'interviewing' | 'rejected' | 'hired';
-  appliedAt?: Date;
   notes?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
