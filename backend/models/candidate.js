@@ -6,7 +6,7 @@ const candidateSchema = new mongoose.Schema({
   phone: { type: Number, required: true },
   passportNumber: { type: String, unique: true },
   cin: { type: String, unique: true },
-  offer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer' },
+  offers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Offer' }],
   position: { type: mongoose.Schema.Types.ObjectId, ref: 'Position' },
   status: { type: String, default: 'waiting' },
   experience: Number,

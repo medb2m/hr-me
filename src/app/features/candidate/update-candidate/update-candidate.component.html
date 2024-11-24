@@ -1,0 +1,71 @@
+<p>update-candidate works!</p>
+<form [formGroup]="candidateForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="name">Name</label>
+    <input id="name" formControlName="name" />
+    <div *ngIf="candidateForm.get('name')?.invalid && candidateForm.get('name')?.touched">
+      Name is required.
+    </div>
+  </div>
+
+  <div>
+    <label for="email">Email</label>
+    <input id="email" formControlName="email" type="email" />
+    <div *ngIf="candidateForm.get('email')?.invalid && candidateForm.get('email')?.touched">
+      Enter a valid email.
+    </div>
+  </div>
+
+  <div>
+    <label for="phone">Phone</label>
+    <input id="phone" formControlName="phone" type="number" />
+    <div *ngIf="candidateForm.get('phone')?.invalid && candidateForm.get('phone')?.touched">
+      Enter a valid phone number.
+    </div>
+  </div>
+
+  <div>
+    <label for="passportNumber">Passport Number</label>
+    <input id="passportNumber" formControlName="passportNumber" />
+  </div>
+
+  <div>
+    <label for="cin">CIN</label>
+    <input id="cin" formControlName="cin" />
+  </div>
+
+  <div>
+    <label for="position">Position</label>
+    <select id="position" formControlName="position">
+      <option *ngFor="let position of positions" [value]="position._id">
+        {{ position.name }}
+      </option>
+    </select>
+  </div>
+
+  <div>
+    <label for="status">Status</label>
+    <select id="status" formControlName="status">
+      <option value="waiting">Waiting</option>
+      <option value="interviewing">Interviewing</option>
+      <option value="hired">Hired</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="experience">Experience (years)</label>
+    <input id="experience" formControlName="experience" type="number" />
+  </div>
+
+  <div>
+    <label for="skills">Skills</label>
+    <input id="skills" formControlName="skills" placeholder="e.g. JavaScript, Python" />
+  </div>
+
+  <div>
+    <label for="image">Update Image</label>
+    <input type="file" id="image" (change)="onFileSelect($event)" />
+  </div>
+
+  <button type="submit">Update Candidate</button>
+</form>

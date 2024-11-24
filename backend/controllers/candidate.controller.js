@@ -40,3 +40,24 @@ export const getCandidateById = async (req, res) => {
       res.status(404).json({ error: 'Candidate not found' });
     }
 }
+
+// Update Candidate
+export const updateCandidate = async (req, res) => {
+  try {
+    const  { id } = req.params;
+    const candidateData = req.body;
+
+    if (req.file){
+      candidateData.image = `${req.protocol}://${req.get('host')}/img/{req.file.filename}`;
+    }
+
+    const updatedCandidate = await Candidate.findByIdAndUpdate(id, candidateData, {new: true});
+    if (!updatedCandidate){
+      return res.status(404).json({message: 'Candidate not found'})
+    }
+
+    res.status(200).json(updatedCandidate)
+  } catch (error) {
+    res.status(400).json({error: error.message})
+  }
+}

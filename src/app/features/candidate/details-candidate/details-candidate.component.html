@@ -1,4 +1,5 @@
 <p>details-candidate works!</p>
+<a [routerLink]="['/update-candidate', candidate._id]"> update infos of {{ candidate.name }}</a>
 <div *ngIf="candidate">
     <h2>{{ candidate.name }}</h2>
     <p><strong>Email:</strong> {{ candidate.email }}</p>

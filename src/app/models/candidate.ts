@@ -10,7 +10,7 @@ export class Candidate {
     cin!: string;
     offer!: Offer;
     position?: Position;
-    status?: 'waiting' | 'interviewing' | 'hired'; // Expand this as needed
+    status?: 'waiting' | 'interviewing' | 'hired' | 'assigned'; // Expand this as needed
     experience?: number;
     skills?: string[];
     image?: string;

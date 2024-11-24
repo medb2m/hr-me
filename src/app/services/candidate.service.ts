@@ -27,4 +27,8 @@ export class CandidateService {
   getCandidatesByIds(ids: string[]): Observable<Candidate[]> {
     return this.http.post<Candidate[]>(`${this.apiUrl}/candidates/by-ids`, { ids });
   }
+  
+  updateCandidate(id: string, candidateData: FormData): Observable<Candidate> {
+    return this.http.put<Candidate>(`${this.apiUrl}/${id}`, candidateData);
+  }
 }
