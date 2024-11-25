@@ -5,7 +5,7 @@ export const createCandidate = async (req, res) => {
     try {
         const { name, email, phone, cin, passportNumber, offer, position, status, experience, skills } = req.body
         const candidateData = {
-          name, email, phone, cin, passportNumber, offer, position, status, experience, skills
+          name, email, phone, cin, passportNumber, offer, position, status, experience, skills :JSON.parse(skills)
         }
         if (req.file) {
           candidateData.image = `${req.protocol}://${req.get("host")}/img/${req.file.filename}`
@@ -21,7 +21,7 @@ export const createCandidate = async (req, res) => {
 // Get all candidates
 export const getAllCandidates = async (req, res) => {
     try {
-      const candidates = await Candidate.find();
+      const candidates = await Candidate.find().populate('position offers');
       res.json(candidates);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -31,7 +31,7 @@ export const getAllCandidates = async (req, res) => {
 // Get a specific candidate
 export const getCandidateById = async (req, res) => {
     try {
-      const candidate = await Candidate.findById(req.params.id).populate('position offers');
+      const candidate = await Candidate.findById(req.params.id).populate('position offers').populate('skills.skill');
       if (!candidate) {
         return res.status(404).json({ error: 'Candidate not found' });
       }
@@ -48,7 +48,7 @@ export const updateCandidate = async (req, res) => {
     const candidateData = req.body;
 
     if (req.file){
-      candidateData.image = `${req.protocol}://${req.get('host')}/img/{req.file.filename}`;
+      candidateData.image = `${req.protocol}://${req.get('host')}/img/${req.file.filename}`;
     }
 
     const updatedCandidate = await Candidate.findByIdAndUpdate(id, candidateData, {new: true});
