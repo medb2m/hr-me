@@ -62,7 +62,7 @@ export class UpdateCandidateComponent {
         passportNumber: candidate.passportNumber || '',
         cin: candidate.cin || '',
         position: candidate.position?._id || null, // Position object
-        offer: candidate.offer || null, 
+        offers: candidate.offers || null, 
         //offer: candidate.offer?._id || null,
         status: candidate.status || 'waiting',
         experience: candidate.experience || 0,

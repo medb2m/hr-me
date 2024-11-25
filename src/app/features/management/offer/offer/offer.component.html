@@ -40,7 +40,7 @@
   <h3>Assigned Candidates</h3>
   <ul>
     <li *ngFor="let candidate of offerCandidates">
-      {{ candidate.name }} ({{ candidate.email }}) - Applied for: 
-      {{ candidate.position?.name || 'N/A' }}
+      {{ candidate.candidate.name }} ({{ candidate.candidate.cin }}) - Applied for: 
+      {{ candidate.position || 'N/A' }} <!-- Display candidate position In the offer -->
     </li>
   </ul>

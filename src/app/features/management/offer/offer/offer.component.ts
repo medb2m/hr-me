@@ -25,8 +25,9 @@ export class OfferComponent {
   offerId!: string;
 
   candidates : Candidate[] = []
-  offerCandidates : Candidate[] = []
+  offerCandidates : any
   filteredCandidates: Candidate[] = [];
+  UnassignedCandidates: Candidate[] = [];
 
   searchQuery: string = '';
 
@@ -49,7 +50,7 @@ export class OfferComponent {
       this.candidates = candidates.map((candidate) => ({
         ...candidate,
       }));
-      this.filteredCandidates = [...this.candidates]; // Initialize filtered candidates
+      this.UnassignedCandidates = [...this.candidates]; // Initialize filtered candidates
       this.filterUnassignedCandidates(); // Ensure only unassigned candidates are shown
     });
   }
@@ -65,8 +66,9 @@ export class OfferComponent {
   loadAssignedCandidates(offerId: string): void {
     this.applicationService.getAssignedCandidates(offerId).subscribe(
       (candidates) => {
+        console.log(candidates)
         this.offerCandidates = candidates; // Assigned candidates
-        this.filterUnassignedCandidates(); // Filter out already assigned candidates
+        //this.filterUnassignedCandidates(); // Filter out already assigned candidates
       },
       (error) => {
         console.error('Error fetching assigned candidates:', error);
@@ -75,23 +77,27 @@ export class OfferComponent {
   }
 
   filterUnassignedCandidates(): void {
-    this.filteredCandidates = this.candidates.filter(
+    const candidates = this.offerCandidates.map((item : any) => item.candidate)
+    this.UnassignedCandidates = this.candidates.filter(
       (candidate) =>
-        !this.offerCandidates.some(
-          (assignedCandidate) => assignedCandidate._id === candidate._id
+        !candidates.some(
+          (assignedCandidate : any) => assignedCandidate._id === candidate._id
         )
     );
+    console.log('filtered assigned')
+    console.log(this.UnassignedCandidates)
   }
     
   filterCandidates() {
+    console.log('hello')
     const query = this.searchQuery.toLowerCase();
-    this.filteredCandidates = this.candidates.filter((candidate) =>
+    console.log(this.UnassignedCandidates)
+    this.filteredCandidates = this.UnassignedCandidates.filter((candidate) =>
       [candidate.name, candidate.email, candidate.passportNumber, candidate.cin]
         .join(' ')
         .toLowerCase()
         .includes(query)
     );
-    this.filterUnassignedCandidates();
   }
 
 
@@ -120,7 +126,7 @@ export class OfferComponent {
       });
       // Refresh the assigned candidates and filtered candidates
       this.loadAssignedCandidates(offerId); // Update the assigned candidates list
-      this.filterUnassignedCandidates(); // Refresh the suggestions
+      this.filteredCandidates = [] // empty the suggestions
     },
     (error) => {
       alert('Error assigning candidate: ' + error.message);

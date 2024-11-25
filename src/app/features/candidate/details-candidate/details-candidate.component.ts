@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CandidateService } from '../../../services/candidate.service';
+import { Offer } from '../../../models/offer';
 
 @Component({
   selector: 'app-details-candidate',
@@ -12,6 +13,8 @@ import { CandidateService } from '../../../services/candidate.service';
 })
 export class DetailsCandidateComponent {
   candidate: any;
+  offers: Offer[] = [];
+  candidateId!: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -19,13 +22,14 @@ export class DetailsCandidateComponent {
   ) {}
 
   ngOnInit() {
-    const candidateId = this.route.snapshot.paramMap.get('id');
-    console.log('the id ' + candidateId)
+    this.candidateId = this.route.snapshot.paramMap.get('id')!;
+    console.log('the id ' + this.candidateId)
     
-    if (candidateId) {
-      this.candidateService.getCandidateById(candidateId).subscribe(data => {
+    if (this.candidateId) {
+      this.candidateService.getCandidateById(this.candidateId).subscribe(data => {
         this.candidate = data;
-        console.log('the candidate ' + this.candidate)
+        this.offers = data.offers
+        console.log(data)
       });
     }
   }

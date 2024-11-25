@@ -31,7 +31,7 @@ export const getAllCandidates = async (req, res) => {
 // Get a specific candidate
 export const getCandidateById = async (req, res) => {
     try {
-      const candidate = await Candidate.findById(req.params.id).populate('position');
+      const candidate = await Candidate.findById(req.params.id).populate('position offers');
       if (!candidate) {
         return res.status(404).json({ error: 'Candidate not found' });
       }

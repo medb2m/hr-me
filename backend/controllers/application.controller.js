@@ -1,5 +1,7 @@
 import {Offer} from '../models/offer.js'
 import { Application } from '../models/application.js';
+import Candidate from '../models/candidate.js'
+import candidate from '../models/candidate.js';
 
 
 export const createApplication = async (req, res) => {
@@ -31,6 +33,11 @@ export const createApplication = async (req, res) => {
       // Add the application to the offer's applications list
       offer.applications.push(application._id);
       await offer.save();
+
+      // Add the offer to candidate's offer 
+      const candidate = await Candidate.findById(candidateId);
+      candidate.offers.push(offerId);
+      await candidate.save();
   
       res.status(201).json(application);
     } catch (error) {
@@ -76,13 +83,16 @@ export const getAssignedCandidatesByOfferId = async (req, res) => {
         console.log(offerId)
 
         // Find applications for the given offer and populate the candidate details
-        const applications = await Application.find({ offer: offerId }).populate('candidate');
+        const applications = await Application.find({ offer: offerId }).populate('candidate').populate('position');
 
         if (!applications || applications.length === 0) {
             return res.status(404).json({ message: 'No assigned candidates found for this offer.' });
           }
         // Extract only the candidate details from the populated applications
-        const assignedCandidates = applications.map((app) => app.candidate);
+        const assignedCandidates = applications.map((app) => ({
+          candidate: app.candidate,
+          position: app.position.name
+        }));
         res.status(200).json(assignedCandidates);
     } catch (error) {
         console.error(error);
