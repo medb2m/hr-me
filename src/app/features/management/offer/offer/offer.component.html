@@ -1,46 +1,97 @@
-<p>offer works!</p>
-<button [routerLink]="['/update-offer', offerId]">update offer</button>
-<div>
-  <h3>Assign Candidates</h3>
-  <input
-  type="text"
-  [(ngModel)]="searchQuery"
-  (input)="filterCandidates()"
-  placeholder="Search candidates by name, email, or passport number"
-/>
-  <ul>
-    <li *ngFor="let candidate of filteredCandidates">
-      {{ candidate.name }} ({{ candidate.email }} / {{ candidate.passportNumber }})
-      <select [(ngModel)]="candidate.selectedPositionId">
-        <option *ngFor="let position of offer?.positions" [value]="position.positionId._id">
-          {{ position.positionId.name }} (Needed: {{ position.candidatesNeeded }}, Assigned: {{ position.candidatesAchieved }})
-        </option>
-      </select>
-      <button (click)="assignCandidate(candidate)">Add</button>
-    </li>
-  </ul>
-</div>
-<div *ngIf="offer">
-    <h2>{{ offer.name }}</h2>
-    <p><strong>Partner:</strong> {{ offer.partner }}</p>
-    <p><strong>Description:</strong> {{ offer.description }}</p>
-    <p><strong>Price:</strong> {{ offer.price }} TND</p>
-    
-    <h3>Positions</h3>
-    <ul>
-      <li *ngFor="let pos of offer.positions">
-        <strong>Position:</strong> {{ pos.positionId.name }} - Needed: {{ pos.candidatesNeeded }}, Achieved: {{ pos.candidatesAchieved }}
-      </li>
-    </ul>
-  
-    <p *ngIf="offer.isAchieved">All candidate positions are filled for this offer.</p>
-    <p *ngIf="!offer.isAchieved">There are still open positions for this offer.</p>
+<div class="container mt-4">
+  <!-- Offer Header -->
+  <div class="card">
+    <div class="card-body">
+      <h2>{{ offer?.name }}</h2>
+      <p><strong>Partner:</strong> {{ offer?.partner }}</p>
+      <p><strong>Description:</strong> {{ offer?.description }}</p>
+      <p><strong>Price:</strong> {{ offer?.price }} TND</p>
+      <p *ngIf="offer?.isAchieved" class="text-success">
+        <strong>All candidate positions are filled for this offer.</strong>
+      </p>
+      <p *ngIf="!offer?.isAchieved" class="text-warning">
+        <strong>There are still open positions for this offer.</strong>
+      </p>
+      <button class="btn btn-primary" [routerLink]="['/update-offer', offerId]">Update Offer</button>
+    </div>
   </div>
 
-  <h3>Assigned Candidates</h3>
-  <ul>
-    <li *ngFor="let candidate of offerCandidates">
-      {{ candidate.candidate.name }} ({{ candidate.candidate.cin }}) - Applied for: 
-      {{ candidate.position || 'N/A' }} <!-- Display candidate position In the offer -->
-    </li>
-  </ul>
+  <!-- Offer Positions -->
+<div class="mt-4">
+  <h3>Positions</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Position</th>
+        <th>Needed</th>
+        <th>Achieved</th>
+        <th>Progress</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let pos of offer?.positions">
+        <td>{{ pos.positionId.name }}</td>
+        <td>{{ pos.candidatesNeeded }}</td>
+        <td>{{ pos.candidatesAchieved }}</td>
+        <td>
+          <div class="progress" style="height: 20px;">
+            <div
+              class="progress-bar"
+              role="progressbar"
+              [style.width.%]="getProgressPercentage(pos)"
+              [ngClass]="{
+                'bg-success': getProgressPercentage(pos) === 100,
+                'bg-warning': getProgressPercentage(pos) < 100 && getProgressPercentage(pos) > 50,
+                'bg-danger': getProgressPercentage(pos) <= 50
+              }"
+            >
+              {{ getProgressPercentage(pos) }}%
+            </div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+  <!-- Assigned Candidates -->
+  <div class="mt-4">
+    <h3>Assigned Candidates</h3>
+    <button class="btn btn-success mb-3" (click)="exportCandidates()">Export to Excel</button>
+    <ul class="list-group">
+      <li class="list-group-item" *ngFor="let candidate of offerCandidates">
+        {{ candidate.candidate.name }} ({{ candidate.candidate.cin }}) -
+        Applied for: {{ candidate.position || 'N/A' }}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Assign New Candidates -->
+  <div class="mt-4">
+    <h3>Assign Candidates</h3>
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (input)="filterCandidates()"
+      class="form-control mb-3"
+      placeholder="Search candidates by name, email, or passport number"
+    />
+    <ul class="list-group">
+      <li class="list-group-item" *ngFor="let candidate of filteredCandidates">
+        {{ candidate.name }} ({{ candidate.email }} / {{ candidate.passportNumber }})
+        <select
+          [(ngModel)]="candidate.selectedPositionId"
+          class="form-select d-inline-block w-50 ms-3"
+        >
+          <option *ngFor="let position of offer?.positions" [value]="position.positionId._id">
+            {{ position.positionId.name }} (Needed: {{ position.candidatesNeeded }}, Assigned: {{ position.candidatesAchieved }})
+          </option>
+        </select>
+        <button class="btn btn-sm btn-primary ms-2" (click)="assignCandidate(candidate)">
+          Add
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>

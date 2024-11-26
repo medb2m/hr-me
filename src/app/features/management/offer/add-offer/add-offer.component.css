@@ -1,0 +1,25 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+  
+  .card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+  
+  button {
+    font-weight: bold;
+  }
+  
+  small.text-danger {
+    display: block;
+    margin-top: 5px;
+  }
+  

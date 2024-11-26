@@ -1,0 +1,60 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .card {
+    border-radius: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-header {
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .card-body {
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .card-body p {
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-body .text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .card-footer {
+    background-color: #f9f9f9;
+    padding: 0.75rem;
+  }
+  
+  .btn {
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  

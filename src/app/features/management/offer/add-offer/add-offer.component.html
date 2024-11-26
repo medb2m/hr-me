@@ -1,37 +1,123 @@
-<p>add-offer works!</p>
-<h2>Add New Offer</h2>
-<form [formGroup]="offerForm" (ngSubmit)="onSubmit()">
-  <div>
-    <label for="name">Offer Name</label>
-    <input id="name" formControlName="name" required />
-  </div>
-
-  <div>
-    <label for="partner">Partner</label>
-    <input id="partner" formControlName="partner" required />
-  </div>
-
-  <div>
-    <label for="description">Description</label>
-    <textarea id="description" formControlName="description"></textarea>
-  </div>
-
-  <div>
-    <label for="price">Price</label>
-    <input id="price" formControlName="price" type="number" required />
-  </div>
-
-  <div formArrayName="positions">
-    <h3>Positions</h3>
-    <button type="button" (click)="addPosition()">Add Position</button>
-    <div *ngFor="let position of positionControls; let i = index" [formGroupName]="i">
-      <select formControlName="positionId" required>
-        <option *ngFor="let pos of positions" [value]="pos._id">{{ pos.name }}</option>
-      </select>
-      <input type="number" formControlName="candidatesNeeded" placeholder="Candidates Needed" required />
-      <button type="button" (click)="removePosition(i)">Remove</button>
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Add New Offer</h2>
+  
+  <form [formGroup]="offerForm" (ngSubmit)="onSubmit()">
+    <!-- Offer Name -->
+    <div class="form-group">
+      <label for="name">Offer Name</label>
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        class="form-control"
+        placeholder="Enter offer name"
+        required
+      />
+      <small class="text-danger" *ngIf="offerForm.get('name')?.invalid && offerForm.get('name')?.touched">
+        Offer name is required.
+      </small>
     </div>
-  </div>
 
-  <button type="submit" [disabled]="offerForm.invalid">Submit</button>
-</form>
+    <!-- Partner -->
+    <div class="form-group mt-3">
+      <label for="partner">Partner</label>
+      <input
+        id="partner"
+        type="text"
+        formControlName="partner"
+        class="form-control"
+        placeholder="Enter partner name"
+        required
+      />
+      <small class="text-danger" *ngIf="offerForm.get('partner')?.invalid && offerForm.get('partner')?.touched">
+        Partner name is required.
+      </small>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group mt-3">
+      <label for="description">Description</label>
+      <textarea
+        id="description"
+        formControlName="description"
+        class="form-control"
+        rows="4"
+        placeholder="Provide a description of the offer"
+      ></textarea>
+    </div>
+
+    <!-- Price -->
+    <div class="form-group mt-3">
+      <label for="price">Price (TND)</label>
+      <input
+        id="price"
+        type="number"
+        formControlName="price"
+        class="form-control"
+        placeholder="Enter the price in TND"
+        required
+      />
+      <small class="text-danger" *ngIf="offerForm.get('price')?.invalid && offerForm.get('price')?.touched">
+        Price is required.
+      </small>
+    </div>
+
+    <!-- Positions -->
+    <div formArrayName="positions" class="mt-4">
+      <h4>Positions</h4>
+      <button
+        type="button"
+        class="btn btn-outline-primary btn-sm mb-3"
+        (click)="addPosition()"
+      >
+        Add Position
+      </button>
+      <div
+        *ngFor="let position of positionControls; let i = index"
+        [formGroupName]="i"
+        class="card mb-3 p-3 shadow-sm"
+      >
+        <div class="form-group">
+          <label for="positionId-{{ i }}">Position</label>
+          <select
+            id="positionId-{{ i }}"
+            formControlName="positionId"
+            class="form-control"
+            required
+          >
+            <option *ngFor="let pos of positions" [value]="pos._id">
+              {{ pos.name }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group mt-3">
+          <label for="candidatesNeeded-{{ i }}">Candidates Needed</label>
+          <input
+            id="candidatesNeeded-{{ i }}"
+            type="number"
+            formControlName="candidatesNeeded"
+            class="form-control"
+            placeholder="Number of candidates needed"
+            required
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn-danger btn-sm mt-3"
+          (click)="removePosition(i)"
+        >
+          Remove Position
+        </button>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      class="btn btn-primary mt-4 w-100"
+      [disabled]="offerForm.invalid"
+    >
+      Submit Offer
+    </button>
+  </form>
+</div>

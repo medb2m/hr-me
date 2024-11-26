@@ -1,8 +1,40 @@
-<p>list-offer works!</p>
-<h2>Offers List</h2>
-<div *ngFor="let offer of offers">
-  <h3>{{ offer.name }}</h3>
-  <p><strong>Partner:</strong> {{ offer.partner }}</p>
-  <p><strong>Description:</strong> {{ offer.description }}</p>
-  <button [routerLink]="['/offer', offer._id]">View Details</button>
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Offers List</h2>
+
+  <div class="row">
+    <div
+      class="col-md-6 col-lg-4 mb-4"
+      *ngFor="let offer of offers"
+    >
+      <div class="card shadow-sm h-100">
+        <!-- Offer Name -->
+        <div class="card-header text-center bg-primary text-white">
+          <h4 class="card-title mb-0">{{ offer.name }}</h4>
+        </div>
+
+        <!-- Offer Details -->
+        <div class="card-body">
+          <p class="mb-2">
+            <strong>Partner:</strong> {{ offer.partner }}
+          </p>
+          <p class="text-truncate" title="{{ offer.description }}">
+            <strong>Description:</strong> {{ offer.description }}
+          </p>
+          <p>
+            <strong>Price:</strong> {{ offer.price }} TND
+          </p>
+        </div>
+
+        <!-- View Details Button -->
+        <div class="card-footer text-center">
+          <button
+            class="btn btn-primary btn-sm"
+            [routerLink]="['/offer', offer._id]"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

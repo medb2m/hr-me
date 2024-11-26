@@ -8,6 +8,7 @@ import { ApplicationService } from '../../../../services/application.service';
 import { CandidateService } from '../../../../services/candidate.service';
 import { Candidate } from '../../../../models/candidate';
 import { Application } from '../../../../models/application';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-offer',
@@ -63,10 +64,13 @@ export class OfferComponent {
 
 
   applications : Application[] = []
+  offerCandidatesList: Candidate[] = []
   loadAssignedCandidates(offerId: string): void {
     this.applicationService.getAssignedCandidates(offerId).subscribe(
       (candidates) => {
+        console.log('before candiate load assign')
         console.log(candidates)
+        this.offerCandidatesList = candidates.map(item => item.candidate)
         this.offerCandidates = candidates; // Assigned candidates
         //this.filterUnassignedCandidates(); // Filter out already assigned candidates
       },
@@ -77,10 +81,10 @@ export class OfferComponent {
   }
 
   filterUnassignedCandidates(): void {
-    const candidates = this.offerCandidates.map((item : any) => item.candidate)
+    //const candidates = this.offerCandidates.map((item) => item.candidate)
     this.UnassignedCandidates = this.candidates.filter(
       (candidate) =>
-        !candidates.some(
+        !this.offerCandidatesList.some(
           (assignedCandidate : any) => assignedCandidate._id === candidate._id
         )
     );
@@ -98,6 +102,8 @@ export class OfferComponent {
         .toLowerCase()
         .includes(query)
     );
+    console.log('after')
+    console.log(this.UnassignedCandidates)
   }
 
 
@@ -133,5 +139,31 @@ export class OfferComponent {
       console.error(error);
     }
   );
+  }
+
+  exportCandidates(): void {
+    if (!this.offerCandidates || this.offerCandidates.length === 0) {
+      alert('No assigned candidates to export.');
+      return;
+    }
+
+    const data = this.offerCandidates.map((candidate: any) => ({
+      Name: candidate.candidate.name,
+      Email: candidate.candidate.email,
+      Passport: candidate.candidate.passportNumber,
+      Position: candidate.position || 'N/A',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidates');
+
+    XLSX.writeFile(workbook, `Offer_${this.offer?.name}_Candidates.xlsx`);
+  }
+
+  getProgressPercentage(pos: any): number {
+    if (!pos || pos.candidatesNeeded === 0) return 0;
+    const progress = (pos.candidatesAchieved / pos.candidatesNeeded) * 100;
+    return Math.min(Math.round(progress), 100); // Ensure progress doesn't exceed 100%
   }
 }

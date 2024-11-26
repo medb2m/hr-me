@@ -1,0 +1,18 @@
+.progress-bar {
+    font-size: 0.85rem;
+    color: white;
+    text-align: center;
+  }
+  
+  .progress-bar.bg-success {
+    background-color: #28a745 !important;
+  }
+  
+  .progress-bar.bg-warning {
+    background-color: #ffc107 !important;
+  }
+  
+  .progress-bar.bg-danger {
+    background-color: #dc3545 !important;
+  }
+  
