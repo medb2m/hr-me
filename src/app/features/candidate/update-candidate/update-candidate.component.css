@@ -1,0 +1,91 @@
+/* General form styling */
+.form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  
+  .error-message {
+    color: #d9534f;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+  
+  /* Image Upload */
+  .upload-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .upload-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .upload-btn:hover {
+    background-color: #e9ecef;
+  }
+  
+  .image-preview-container {
+    position: relative;
+    margin-top: 1rem;
+  }
+  
+  .image-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  
+  .remove-image-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #ff6f61;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .remove-image-btn:hover {
+    background-color: #e05b50;
+  }
+  
+  /* Candidate Image */
+  .image-section {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .candidate-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #ddd;
+  }
+  

@@ -1,5 +1,6 @@
 import { Offer } from "./offer";
 import { Position } from "./position";
+import { Skill } from "./skill";
 
 export class Candidate {
     _id!: string;
@@ -12,7 +13,7 @@ export class Candidate {
     position?: Position;
     status?: 'waiting' | 'interviewing' | 'hired' | 'assigned'; // Expand this as needed
     experience?: number;
-    skills?: string[];
+    skills?: Skill[];
     image?: string;
     selectedPositionId ?: string;
     createdAt?: Date;

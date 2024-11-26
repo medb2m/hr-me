@@ -1,78 +1,164 @@
-<p>add-candidate works!</p>
-<form [formGroup]="candidateForm" (ngSubmit)="onSubmit()">
-    <div>
+<div class="container mt-4">
+  <h2 class="text-center mb-4">Add New Candidate</h2>
+
+  <form [formGroup]="candidateForm" (ngSubmit)="onSubmit()" class="form-container">
+    <!-- Name -->
+    <div class="form-group">
       <label for="name">Name</label>
-      <input id="name" formControlName="name" />
-      <div *ngIf="candidateForm.get('name')?.invalid && candidateForm.get('name')?.touched">
+      <input id="name" formControlName="name" class="form-control" />
+      <small
+        class="text-danger"
+        *ngIf="candidateForm.get('name')?.invalid && candidateForm.get('name')?.touched"
+      >
         Name is required.
-      </div>
+      </small>
     </div>
-  
-    <div>
+
+    <!-- Email -->
+    <div class="form-group">
       <label for="email">Email</label>
-      <input id="email" formControlName="email" type="email" />
-      <div *ngIf="candidateForm.get('email')?.invalid && candidateForm.get('email')?.touched">
+      <input id="email" formControlName="email" type="email" class="form-control" />
+      <small
+        class="text-danger"
+        *ngIf="candidateForm.get('email')?.invalid && candidateForm.get('email')?.touched"
+      >
         Enter a valid email.
-      </div>
+      </small>
     </div>
 
-    <div>
+    <!-- Phone -->
+    <div class="form-group">
       <label for="phone">Phone</label>
-      <input id="phone" formControlName="phone" type="number" />
-      <div *ngIf="candidateForm.get('phone')?.invalid && candidateForm.get('phone')?.touched">
+      <input id="phone" formControlName="phone" type="number" class="form-control" />
+      <small
+        class="text-danger"
+        *ngIf="candidateForm.get('phone')?.invalid && candidateForm.get('phone')?.touched"
+      >
         Enter a valid phone number.
-      </div>
+      </small>
     </div>
 
-    <div>
+    <!-- Passport Number -->
+    <div class="form-group">
       <label for="passportNumber">Passport Number</label>
-      <input id="passportNumber" formControlName="passportNumber" />
-      <div *ngIf="candidateForm.get('passportNumber')?.invalid && candidateForm.get('passportNumber')?.touched">
+      <input id="passportNumber" formControlName="passportNumber" class="form-control" />
+      <small
+        class="text-danger"
+        *ngIf="candidateForm.get('passportNumber')?.invalid && candidateForm.get('passportNumber')?.touched"
+      >
         Passport Number is required.
-      </div>
+      </small>
     </div>
 
-    <div>
+    <!-- CIN -->
+    <div class="form-group">
       <label for="cin">CIN</label>
-      <input id="cin" formControlName="cin" />
-      <div *ngIf="candidateForm.get('cin')?.invalid && candidateForm.get('cin')?.touched">
-        Passport Number is required.
-      </div>
+      <input id="cin" formControlName="cin" class="form-control" />
+      <small
+        class="text-danger"
+        *ngIf="candidateForm.get('cin')?.invalid && candidateForm.get('cin')?.touched"
+      >
+        CIN is required.
+      </small>
     </div>
-  
-    <div>
+
+    <!-- Position -->
+    <div class="form-group">
       <label for="position">Position</label>
-      <select id="position" formControlName="position">
+      <select id="position" formControlName="position" class="form-control">
         <option *ngFor="let position of positions" [value]="position._id">
-          {{ position.name }} 
+          {{ position.name }}
         </option>
       </select>
     </div>
-  
-    <div>
+
+    <!-- Status -->
+    <div class="form-group">
       <label for="status">Status</label>
-      <select id="status" formControlName="status">
+      <select id="status" formControlName="status" class="form-control">
         <option value="waiting">Waiting</option>
         <option value="interviewing">Interviewing</option>
         <option value="hired">Hired</option>
       </select>
     </div>
-  
-    <div>
+
+    <!-- Experience -->
+    <div class="form-group">
       <label for="experience">Experience (years)</label>
-      <input id="experience" formControlName="experience" type="number" />
-    </div>
-  
-    <div>
-      <label for="skills">Skills</label>
-      <input id="skills" formControlName="skills" placeholder="e.g. JavaScript, Python" />
+      <input
+        id="experience"
+        formControlName="experience"
+        type="number"
+        class="form-control"
+      />
     </div>
 
-    <div>
-      <label for="image">Image</label>
-      <input type="file" id="image" (change)="onFileSelect($event)" />
+    <!-- Skills -->
+    <div class="form-group">
+      <label for="skills">Skills</label>
+      <input
+        id="skills"
+        type="text"
+        class="form-control"
+        placeholder="Type to search and add skills"
+        formControlName="skillSearch"
+        (input)="onSearch()"
+        (keydown.enter)="addSkill($event)"
+      />
+
+      <!-- Suggested skills -->
+      <ul *ngIf="suggestedSkills.length > 0" class="suggestions-list">
+        <li *ngFor="let skill of suggestedSkills" (click)="addSkillFromSuggestion(skill)">
+          {{ skill.name }}
+        </li>
+      </ul>
+
+      <!-- Added skills -->
+      <div class="added-skills mt-2">
+        <span
+          class="skill-badge"
+          *ngFor="let skill of selectedSkills"
+        >
+          {{ skill.name }}
+          <button type="button" class="btn-close" (click)="removeSkill(skill)">&times;</button>
+        </span>
+      </div>
     </div>
-  
-    <button type="submit">Add Candidate</button>
+
+    <!-- Image Upload -->
+    <div class="form-group">
+      <label>Image</label>
+      <div class="upload-container">
+        <input
+          type="file"
+          id="image"
+          (change)="onFileSelect($event)"
+          class="d-none"
+        />
+        <button
+          class="btn btn-outline-secondary upload-btn"
+          type="button"
+          (click)="triggerFileInput()"
+        >
+          <i class="fas fa-upload"></i> Upload Image
+        </button>
+
+        <div *ngIf="uploadedImage" class="image-preview-container">
+          <img [src]="uploadedImage" alt="Uploaded" class="image-preview" />
+          <button
+            class="btn btn-danger btn-sm close-btn"
+            type="button"
+            (click)="removeUploadedFile()"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="candidateForm.invalid">
+      Add Candidate
+    </button>
   </form>
-  
+</div>

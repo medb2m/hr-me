@@ -1,22 +1,86 @@
-<p>details-candidate works!</p>
-<div *ngIf="candidate">
-    <a [routerLink]="['/update-candidate', candidateId]"> update infos of {{ candidate.name }}</a>
-    <h2>{{ candidate.name }}</h2>
-    <p><strong>Email:</strong> {{ candidate.email }}</p>
-    <p><strong>Phone:</strong> {{ candidate.phone }}</p>
-    <p><strong>Passport Number:</strong> {{ candidate.passportNumber }}</p>
-    <p><strong>CIN:</strong> {{ candidate.cin }}</p>
-    <p><strong>Position:</strong> {{ candidate.position.name }}</p>
-    <p><strong>Offers:</strong> </p> 
-    <div *ngFor="let offer of offers">
-        {{ offer.name }}
+<div *ngIf="candidate" class="candidate-details-container">
+    <!-- Candidate Image -->
+    <div class="image-section">
+      <img
+        [src]="candidate.image || 'assets/img/user.jpg'"
+        alt="{{ candidate.name }}"
+        class="candidate-image"
+      />
     </div>
-    <p><strong>Status:</strong> {{ candidate.status }}</p>
-    <p><strong>Experience:</strong> {{ candidate.experience }} years</p>
-    <p><strong>Skills:</strong> {{ candidate.skills.join(', ') }}</p>
-    
-    <!-- Display the image if it exists -->
-    <div *ngIf="candidate.image">
-        <img [src]="candidate.image" alt="Candidate Image" width="200" height="200">
+  
+    <!-- Candidate Info Section -->
+    <div class="details-section">
+     
+  
+      <!-- Candidate Details -->
+      <div class="info-field">
+        <span class="info-label">Name:</span>
+        <span class="info-value">{{ candidate.name }}</span>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">Email:</span>
+        <span class="info-value">{{ candidate.email || 'N/A' }}</span>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">Phone:</span>
+        <span class="info-value">{{ candidate.phone || 'N/A' }}</span>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">Passport Number:</span>
+        <span class="info-value">{{ candidate.passportNumber || 'N/A' }}</span>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">CIN:</span>
+        <span class="info-value">{{ candidate.cin || 'N/A' }}</span>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">Position:</span>
+        <span class="info-value">{{ candidate.position?.name || 'No Position Assigned' }}</span>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">Offers:</span>
+        <div class="info-value">
+          <!-- Use ng-template for conditional rendering -->
+          <ng-container *ngIf="offers.length > 0; else noOffers">
+            <ul class="offer-list">
+              <li *ngFor="let offer of offers">{{ offer.name }}</li>
+            </ul>
+          </ng-container>
+          <ng-template #noOffers>
+            <div>No Offer Yet</div>
+          </ng-template>
+        </div>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">Status:</span>
+        <span class="info-value">{{ candidate.status || 'N/A' }}</span>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">Experience:</span>
+        <span class="info-value">{{ candidate.experience || '0' }} years</span>
+      </div>
+  
+      <div class="info-field">
+        <span class="info-label">Skills:</span>
+        <span class="info-value">{{ candidate.skills?.length ? candidate.skills.join(', ') : 'No skills added' }}</span>
+      </div>
     </div>
-</div>
+     <!-- Update Button -->
+     <div class="update-button-container">
+        <button
+          class="btn btn-primary update-btn"
+          [routerLink]="['/update-candidate', candidateId]"
+        >
+          Update Info of {{ candidate.name }}
+        </button>
+      </div>
+  </div>
+  

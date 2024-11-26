@@ -19,6 +19,11 @@ export class UpdateCandidateComponent {
   positions: Position[] = [];
   selectedFile: File | null = null;
 
+  uploadedImage: string | null = null; // For image preview
+  imageError: string | null = null; // To display upload errors
+
+  currentImage: string = ''
+
   constructor(
     private fb: FormBuilder,
     private candidateService: CandidateService,
@@ -70,30 +75,15 @@ export class UpdateCandidateComponent {
         image: candidate.image || '',
       };
 
+      if(candidate.image){this.currentImage = candidate.image}
+      
+
       // Patch the form with transformed data
       this.candidateForm.patchValue(transformedCandidate);
     });
   }
 
-  // Handle file sleection
-  onFileSelect(event: Event) : void {
-    const fileInput = event.target as HTMLInputElement;
-    if (fileInput.files){
-      this.selectedFile = fileInput.files[0]
-    }
-  }
-  private debugFormErrors() {
-    Object.keys(this.candidateForm.controls).forEach((key) => {
-      const control = this.candidateForm.get(key);
-      if (control && control.invalid) {
-        console.error(`Field "${key}" is invalid. Errors:`, control.errors);
-      }
-    });
   
-    // Log the overall form status
-    console.log('Form status:', this.candidateForm.status);
-    console.log('Form controls:', this.candidateForm.controls);
-  }
 
   // Submit updated Data 
   onSubmit(){
@@ -107,6 +97,9 @@ export class UpdateCandidateComponent {
       if (value !== null && value !== undefined) {
         if (key === 'skills') {
           // Convert array to a comma-separated string if needed
+          console.log(value);
+          const formattedValue = value.join(', ');
+          console.log('hello'+formattedValue);
           formData.append(key, value.join(','));
         } else if (typeof value === 'object' && key !== 'position' && key !== 'offer') {
           // Serialize objects except `position` and `offer`
@@ -128,7 +121,48 @@ export class UpdateCandidateComponent {
       )
     } else {
       console.log('Form is invalid')
-      this.debugFormErrors();
     }
+  }
+
+  triggerFileInput(): void {
+    const fileInput = document.getElementById('image') as HTMLInputElement;
+    fileInput.click();
+  }
+
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      this.selectedFile = file;
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please upload a valid image file (JPEG or PNG).');
+        return;
+      }
+
+      // Validate file size
+      const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+      if (file.size > maxSizeInBytes) {
+        alert('File size exceeds the 2MB limit.');
+        return;
+      }
+
+      // Convert image to base64 for preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.uploadedImage = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeUploadedFile(): void {
+    this.uploadedImage = null;
+    this.selectedFile = null;
+
+    const fileInput = document.getElementById('image') as HTMLInputElement;
+    fileInput.value = '';
   }
 }

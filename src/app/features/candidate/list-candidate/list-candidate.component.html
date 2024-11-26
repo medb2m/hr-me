@@ -1,5 +1,22 @@
-<p>list-candidate works!</p>
-<!-- list-candidate.component.html -->
-<div *ngFor="let candidate of candidates">
-    <a [routerLink]="['/candidate', candidate._id]">{{ candidate.name }}</a>
-</div>
+<div class="candidate-list">
+    <div *ngFor="let candidate of candidates" class="candidate-card">
+      <div class="image-container">
+        <img
+          [src]="candidate.image || 'assets/img/user.jpg'"
+          alt="{{ candidate.name }}"
+          class="candidate-image"
+        />
+      </div>
+      <div class="candidate-details">
+        <h3 class="candidate-name">{{ candidate.name }}</h3>
+        <p class="candidate-position">{{ candidate.position?.name || 'No Position' }}</p>
+        <p class="candidate-phone">{{ candidate.phone || 'No Phone Number' }}</p>
+      </div>
+      <div class="view-details">
+        <button class="btn btn-primary" [routerLink]="['/candidate', candidate._id]">
+          View Profile
+        </button>
+      </div>
+    </div>
+  </div>
+  

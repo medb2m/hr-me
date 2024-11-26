@@ -1,0 +1,86 @@
+/* General container styles */
+.candidate-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  /* Card styling */
+  .candidate-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 250px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    background-color: #ffffff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .candidate-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Image styling */
+  .image-container {
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    margin-bottom: 10px;
+  }
+  
+  .candidate-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Candidate details */
+  .candidate-details {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  .candidate-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .candidate-position {
+    font-size: 1em;
+    color: #666;
+  }
+  
+  .candidate-phone {
+    font-size: 0.9em;
+    color: #999;
+  }
+  
+  /* Button styling */
+  .view-details button {
+    font-size: 0.9em;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .view-details .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    transition: background-color 0.2s ease;
+  }
+  
+  .view-details .btn-primary:hover {
+    background-color: #0056b3;
+  }
+  
