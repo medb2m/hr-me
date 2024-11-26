@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { Offer } from '../models/offer';
 import { Application } from 'express';
 import { Candidate } from '../models/candidate';
+import { AppAssignedResponse } from '../models/appAssignedResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -45,8 +46,8 @@ export class ApplicationService {
     return this.http.get<Application[]>(`offer/${offerId}`);
   }
 
-  getAssignedCandidates(offerId: string): Observable<Candidate[]> {
-    return this.http.get<Candidate[]>(`${this.apiUrl}/assigned/${offerId}`);
+  getAssignedCandidates(offerId: string): Observable<AppAssignedResponse[]> {
+    return this.http.get<AppAssignedResponse[]>(`${this.apiUrl}/assigned/${offerId}`);
   }
 
 
