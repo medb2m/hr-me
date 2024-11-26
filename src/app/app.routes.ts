@@ -8,6 +8,11 @@ import { OfferComponent } from './features/management/offer/offer/offer.componen
 import { PositionComponent } from './features/management/position/position/position.component';
 import { UpdateCandidateComponent } from './features/candidate/update-candidate/update-candidate.component';
 import { UpdateOfferComponent } from './features/management/offer/update-offer/update-offer.component';
+import { AddTicketComponent } from './features/management/ticket/add-ticket/add-ticket.component';
+import { ListTicketComponent } from './features/management/ticket/list-ticket/list-ticket.component';
+import { TicketComponent } from './features/management/ticket/ticket/ticket.component';
+import { UpdateTicketComponent } from './features/management/ticket/update-ticket/update-ticket.component';
+import { SkillComponent } from './features/management/skill/skill.component';
 
 export const routes: Routes = [
     // Candidate Routes
@@ -22,7 +27,15 @@ export const routes: Routes = [
     { path: 'offer/:id', component: OfferComponent },
     { path: 'update-offer/:id', component: UpdateOfferComponent },
 
-    // Management => Offer
+    // Management => Position
     { path: 'position', component: PositionComponent },
 
+    // Management => Ticket
+    { path: 'add-ticket', component: AddTicketComponent },
+    { path: 'list-ticket', component: ListTicketComponent },
+    { path: 'ticket/:id', component: TicketComponent },
+    { path: 'update-ticket/:id', component: UpdateTicketComponent },
+
+    // Management => skill
+    { path: 'skill', component: SkillComponent },
 ];
