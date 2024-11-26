@@ -1,0 +1,23 @@
+<div class="container">
+    <h2>Manage Skills</h2>
+  
+    <div class="form-group">
+      <input
+        type="text"
+        [(ngModel)]="newSkillName"
+        placeholder="Enter skill name"
+        class="form-control"
+      />
+      <button (click)="addSkill()" class="btn btn-primary mt-2">Add Skill</button>
+    </div>
+  
+    <ul class="list-group mt-4">
+      <li *ngFor="let skill of skills" class="list-group-item d-flex justify-content-between align-items-center">
+        {{ skill.name }}
+        <button (click)="removeSkill(skill._id)" class="btn btn-danger btn-sm">
+          &times;
+        </button>
+      </li>
+    </ul>
+  </div>
+  
