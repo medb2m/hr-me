@@ -1,0 +1,63 @@
+<p>update-ticket works!</p>
+<div class="container mt-4">
+    <h2>Edit Ticket</h2>
+    <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+      <!-- Title -->
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input
+          id="title"
+          class="form-control"
+          formControlName="title"
+          type="text"
+          placeholder="Enter ticket title"
+        />
+        <small
+          class="text-danger"
+          *ngIf="ticketForm.get('title')?.invalid && ticketForm.get('title')?.touched"
+        >
+          Title is required.
+        </small>
+      </div>
+  
+      <!-- Description -->
+      <div class="form-group mt-3">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          class="form-control"
+          formControlName="description"
+          rows="4"
+          placeholder="Enter ticket description"
+        ></textarea>
+        <small
+          class="text-danger"
+          *ngIf="ticketForm.get('description')?.invalid && ticketForm.get('description')?.touched"
+        >
+          Description is required.
+        </small>
+      </div>
+  
+      <!-- Status -->
+      <div class="form-group mt-3">
+        <label for="status">Status</label>
+        <select id="status" class="form-control" formControlName="status">
+          <option *ngFor="let option of statuses" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+  
+      <!-- Priority -->
+      <div class="form-group mt-3">
+        <label for="priority">Priority</label>
+        <select id="priority" class="form-control" formControlName="priority">
+          <option *ngFor="let option of priorities" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+  
+      <!-- Submit Button -->
+      <button class="btn btn-primary mt-4" type="submit" [disabled]="ticketForm.invalid">
+        Update
+      </button>
+    </form>
+  </div>
+  

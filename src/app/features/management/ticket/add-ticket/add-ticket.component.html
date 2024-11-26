@@ -1,0 +1,95 @@
+<p>add-ticket works!</p>
+
+<div class="container mt-4">
+    <h2>Add New Ticket</h2>
+    <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+      <!-- Title -->
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input
+          id="title"
+          class="form-control"
+          formControlName="title"
+          type="text"
+          placeholder="Enter ticket title"
+        />
+        <small class="text-danger" *ngIf="ticketForm.get('title')?.invalid && ticketForm.get('title')?.touched">
+          Title is required.
+        </small>
+      </div>
+  
+      <!-- Description -->
+      <div class="form-group mt-3">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          class="form-control"
+          formControlName="description"
+          rows="4"
+          placeholder="Enter ticket description"
+        ></textarea>
+        <small class="text-danger" *ngIf="ticketForm.get('description')?.invalid && ticketForm.get('description')?.touched">
+          Description is required.
+        </small>
+      </div>
+  
+      <!-- Status -->
+      <div class="form-group mt-3">
+        <label for="status">Status</label>
+        <select id="status" class="form-control" formControlName="status">
+          <option *ngFor="let option of statuses" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+  
+      <!-- Priority -->
+      <div class="form-group mt-3">
+        <label for="priority">Priority</label>
+        <select id="priority" class="form-control" formControlName="priority">
+          <option *ngFor="let option of priorities" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+  
+      <!-- Type -->
+      <div class="form-group mt-3">
+        <label for="type">Type</label>
+        <select id="type" class="form-control" formControlName="type">
+          <option *ngFor="let option of types" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+  
+      <!-- Assigned Team -->
+      <div class="form-group mt-3">
+        <label for="assignedTeam">Assigned Team</label>
+        <select id="assignedTeam" class="form-control" formControlName="assignedTeam">
+          <option *ngFor="let option of assignedTeams" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+  
+      <!-- Deadline -->
+      <div class="form-group mt-3">
+        <label for="deadline">Deadline</label>
+        <input id="deadline" class="form-control" formControlName="deadline" type="date" />
+      </div>
+
+      <div class="form-group mt-3">
+        <label for="files">Attachments</label>
+        <input 
+          id="files" 
+          type="file" 
+          class="form-control" 
+          (change)="onFileSelected($event)" 
+          multiple 
+        />
+        <small class="text-danger" *ngIf="files.length > 5">
+          You can upload a maximum of 5 files.
+        </small>
+      </div>
+      
+  
+      <!-- Submit Button -->
+      <button class="btn btn-primary mt-4" type="submit" [disabled]="ticketForm.invalid">
+        Submit
+      </button>
+    </form>
+  </div>
+  

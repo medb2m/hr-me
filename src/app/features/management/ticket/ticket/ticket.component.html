@@ -1,0 +1,58 @@
+<p>ticket works!</p>
+
+<div class="container mt-4">
+    <div *ngIf="ticket; else loadingTemplate">
+        <button [routerLink]="['/update-ticket', ticket._id]">Edit ticket</button>
+      <h2 class="mb-3">{{ ticket.title }}</h2>
+  
+      <div class="card">
+        <div class="card-body">
+          <!-- Description -->
+          <h5>Description:</h5>
+          <p>{{ ticket.description }}</p>
+  
+          <!-- Priority and Status -->
+          <div class="mb-3">
+            <span class="badge" [ngClass]="getPriorityClass(ticket.priority)">
+              Priority: {{ ticket.priority }}
+            </span>
+            <span class="badge" [ngClass]="getStatusClass(ticket.status)">
+              Status: {{ ticket.status }}
+            </span>
+          </div>
+  
+          <!-- Type -->
+          <h6>Type:</h6>
+          <p>{{ ticket.type }}</p>
+  
+          <!-- Assigned Team -->
+          <h6>Assigned Team:</h6>
+          <p>{{ ticket.assignedTeam }}</p>
+  
+          <!-- Deadline -->
+          <h6>Deadline:</h6>
+          <p>{{ ticket.deadline | date: 'longDate' }}</p>
+  
+          <!-- Uploaded Files -->
+          <div *ngIf="ticket && ticket.files && ticket.files.length > 0">
+            <h6>Uploaded Files:</h6>
+            <ul class="list-group">
+              <li
+                *ngFor="let file of ticket.files"
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <a [href]="file.filepath" target="_blank">{{ file.filename }}</a>
+                <span class="badge bg-secondary">{{ file.uploadedAt | date: 'short' }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Loading Template -->
+    <ng-template #loadingTemplate>
+      <p>Loading ticket details...</p>
+    </ng-template>
+  </div>
+  
