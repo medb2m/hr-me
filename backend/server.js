@@ -14,6 +14,8 @@ import candidateRoutes from './routes/candidate.routes.js';
 import offerRoutes from './routes/offer.routes.js';
 import positionRoutes from './routes/position.routes.js';
 import applicationRoutes from './routes/application.routes.js';
+import ticketRoutes from './routes/ticket.routes.js';
+import skillRoutes from './routes/skill.routes.js';
 
 // path 
 import path from 'path';
@@ -46,6 +48,8 @@ app.get('/', (req, res) => {
 
 // Images Routes
 app.use('/img', express.static(path.join(__dirname, 'public', 'images')))
+// Images Routes
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')))
 
 // Candidates Routes
 app.use('/api/candidates', candidateRoutes);
@@ -53,8 +57,12 @@ app.use('/api/candidates', candidateRoutes);
 app.use('/api/offer', offerRoutes);
 // Position Routes
 app.use('/api/position', positionRoutes);
-// Position Routes
+// Application Routes
 app.use('/api/application', applicationRoutes);
+// Ticket Routes
+app.use('/api/ticket', ticketRoutes);
+// Skill Routes
+app.use('/api/skill', skillRoutes);
 
 // global error handler
 app.use(errorHandler);
