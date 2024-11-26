@@ -10,7 +10,12 @@ const candidateSchema = new mongoose.Schema({
   position: { type: mongoose.Schema.Types.ObjectId, ref: 'Position' },
   status: { type: String, default: 'waiting' },
   experience: Number,
-  skills: [String],
+  skills: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Skill',
+    },
+  ],
   image : String
 },
 {timestamps: true}
