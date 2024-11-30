@@ -13,8 +13,15 @@ import { ListTicketComponent } from './features/management/ticket/list-ticket/li
 import { TicketComponent } from './features/management/ticket/ticket/ticket.component';
 import { UpdateTicketComponent } from './features/management/ticket/update-ticket/update-ticket.component';
 import { SkillComponent } from './features/management/skill/skill.component';
+import { NotFoundComponent } from './shared/components/not-found/not-found.component';
+import { HomeComponent } from './shared/components/home/home.component';
+import { TestComponent } from './shared/components/test/test.component';
 
 export const routes: Routes = [
+    // home
+    { path: '', redirectTo: '/home', pathMatch: 'full' },
+    { path: 'home', component: HomeComponent},
+    
     // Candidate Routes
     { path: 'add-candidate', component: AddCandidateComponent},
     { path: 'list-candidates', component: ListCandidateComponent},
@@ -38,4 +45,10 @@ export const routes: Routes = [
 
     // Management => skill
     { path: 'skill', component: SkillComponent },
+
+    // TEST
+    { path: 'test', component: TestComponent },
+
+    // 404
+    { path: '**', component: NotFoundComponent}
 ];

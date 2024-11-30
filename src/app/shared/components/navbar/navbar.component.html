@@ -1,0 +1,166 @@
+<div class="layout">
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar bg-dark text-white" [class.open]="isSidebarOpen">
+      <div class="p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h4>Sidebar</h4>
+          <!-- Close Button -->
+          <button class="btn btn-close btn-close-white" (click)="toggleSidebar()" aria-label="Close">X</button>
+        </div>
+        <ul class="nav flex-column mt-3">
+          <li class="nav-item">
+            <a class="nav-link text-white" routerLink="/">Home</a>
+          </li>
+          <!-- Candidate Group -->
+        <li class="nav-item">
+            <button
+              class="nav-link text-white d-flex justify-content-between align-items-center"
+              
+              (click)="toggleDropdown('candidate')"
+            >
+              Candidate
+              <i [ngClass]="{'bi-chevron-down': !dropdowns['candidate'], 'bi-chevron-up': dropdowns['candidate']}" class="bi"></i>
+            </button>
+            <ul
+              class="nav flex-column ms-3 dropdown-list"
+              *ngIf="dropdowns['candidate']"
+            >
+              <li class="nav-item">
+                <a class="nav-link text-white" routerLink="/add-candidate">Add Candidate</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white" routerLink="/list-candidate">List Candidate</a>
+              </li>
+            </ul>
+          </li>
+          <!-- Offer Group -->
+        <li class="nav-item">
+            <button
+              class="nav-link text-white d-flex justify-content-between align-items-center"
+              
+              (click)="toggleDropdown('offer')"
+            >
+              Offer
+              <i [ngClass]="{'bi-chevron-down': !dropdowns['offer'], 'bi-chevron-up': dropdowns['offer']}" class="bi"></i>
+            </button>
+            <ul
+              class="nav flex-column ms-3 dropdown-list"
+              *ngIf="dropdowns['offer']"
+            >
+              <li class="nav-item">
+                <a class="nav-link text-white" routerLink="/add-offer">Add Offer</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white" routerLink="/list-offer">List Offers</a>
+              </li>
+            </ul>
+          </li>
+  
+          <!-- Other Routes -->
+          <li class="nav-item">
+            <a class="nav-link text-white" routerLink="/position">Position Manage</a>
+          </li>
+  
+          <!-- Ticket Group -->
+          <li class="nav-item">
+            <button
+              class="nav-link text-white d-flex justify-content-between align-items-center"
+              
+              (click)="toggleDropdown('ticket')"
+            >
+              Ticket
+              <i [ngClass]="{'bi-chevron-down': !dropdowns['ticket'], 'bi-chevron-up': dropdowns['ticket']}" class="bi"></i>
+            </button>
+            <ul
+              class="nav flex-column ms-3 dropdown-list"
+              *ngIf="dropdowns['ticket']"
+            >
+              <li class="nav-item">
+                <a class="nav-link text-white" routerLink="/add-ticket">Add Ticket</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white" routerLink="/list-ticket">List Ticket</a>
+              </li>
+            </ul>
+          </li>
+  
+          <li class="nav-item">
+            <a class="nav-link text-white" routerLink="/skill">Skills Manage</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Navbar -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <!-- Sidebar Toggle Button -->
+          <button class="btn btn-outline-light me-2" (click)="toggleSidebar()">☰</button>
+          <a class="navbar-brand" href="#">HrMe</a>
+  
+          <!-- Toggle button for mobile view -->
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+  
+          <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+              <ng-container *ngIf="!isUserConnected">
+                <li class="nav-item">
+                  <a class="nav-link" (click)="login()">Login</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" routerLink="/register">Register</a>
+                </li>
+              </ng-container>
+  
+              <ng-container *ngIf="isUserConnected">
+                <li class="nav-item dropdown">
+                  <!-- User Profile Dropdown -->
+                  <a
+                    class="nav-link dropdown-toggle d-flex align-items-center"
+                    href="#"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <img
+                      src="assets/img/user.jpg"
+                      alt="User"
+                      class="rounded-circle me-2"
+                      style="width: 30px; height: 30px;"
+                    />
+                    <span>User Name</span>
+                    <i class="ms-1 bi bi-chevron-down"></i>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a class="dropdown-item" routerLink="/settings">Settings</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" (click)="logout()">Logout</a>
+                    </li>
+                  </ul>
+                </li>
+              </ng-container>
+            </ul>
+          </div>
+        </div>
+      </nav>
+  
+      <!-- Router Outlet for Displaying Routed Components -->
+      <div class="container mt-4">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>

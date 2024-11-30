@@ -1,0 +1,40 @@
+/* General dropdown hover styles */
+.dropdown-menu-dark .dropdown-item:hover {
+    background-color: #444; /* Dark theme hover effect */
+    color: #fff;
+  }
+  
+  .custom-light-dropdown {
+    background-color: #f8f9fa; /* Light background for dropdown */
+    border: 1px solid #ddd;
+  }
+  
+  .custom-light-dropdown .dropdown-item:hover {
+    background-color: #e2e6ea; /* Light theme hover effect */
+    color: #000;
+  }
+  
+  /* Navbar background transition */
+  .bg-dark {
+    background-color: #212529 !important;
+    color: #fff;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  }
+  
+  .bg-light {
+    background-color: #f8f9fa !important;
+    color: #000;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  }
+  
+  /* Ensure website background aligns with the navbar theme */
+  body.bg-dark {
+    background-color: #121212;
+    color: #fff;
+  }
+  
+  body.bg-light {
+    background-color: #fff;
+    color: #000;
+  }
+  

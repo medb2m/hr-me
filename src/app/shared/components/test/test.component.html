@@ -1,0 +1,156 @@
+
+  
+  
+
+  <!-- separate -->
+
+  <header class="p-3 mb-3 border-bottom" [class.bg-dark]="isDarkTheme" [class.bg-light]="!isDarkTheme">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center justify-content-between">
+            <!-- Logo -->
+            <a routerLink="/home" class="d-flex align-items-center mb-2 mb-lg-0 text-decoration-none"
+                [class.text-light]="isDarkTheme" [class.text-dark]="!isDarkTheme">
+                <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap">
+                    <use xlink:href="#bootstrap"></use>
+                </svg>
+                <span class="fs-4">HR-me App</span>
+            </a>
+
+            <!-- Hamburger Menu for Mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar Links -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-2" href="#" id="candidateDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false" [class.link-light]="isDarkTheme"
+                            [class.link-dark]="!isDarkTheme">
+                            Candidate
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="candidateDropdown"
+                            [class.dropdown-menu-dark]="isDarkTheme" [class.custom-light-dropdown]="!isDarkTheme">
+                            <li>
+                                <a class="dropdown-item" routerLink="/add-candidate">Add Candidate</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" routerLink="/list-candidates">List Candidates</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-2" href="#" id="offerDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false" [class.link-light]="isDarkTheme" [class.link-dark]="!isDarkTheme">
+                            Offer
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="offerDropdown"
+                            [class.dropdown-menu-dark]="isDarkTheme" [class.custom-light-dropdown]="!isDarkTheme">
+                            <li>
+                                <a class="dropdown-item" routerLink="/add-offer">Add Offer</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" routerLink="/list-offers">List Offers</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="nav-link px-2" [class.link-light]="isDarkTheme" [class.link-dark]="!isDarkTheme"
+                            routerLink="/position">Position Management</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-2" href="#" id="ticketDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false" [class.link-light]="isDarkTheme" [class.link-dark]="!isDarkTheme">
+                            Ticket
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="ticketDropdown"
+                            [class.dropdown-menu-dark]="isDarkTheme" [class.custom-light-dropdown]="!isDarkTheme">
+                            <li>
+                                <a class="dropdown-item" routerLink="/add-ticket">Add Ticket</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" routerLink="/list-ticket">List Tickets</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="nav-link px-2" [class.link-light]="isDarkTheme" [class.link-dark]="!isDarkTheme"
+                            routerLink="/skill">Skills Management</a>
+                    </li>
+                </ul>
+                <!-- Theme Toggle -->
+                <button class="btn btn-outline-secondary me-2" (click)="toggleTheme()" [class.btn-light]="isDarkTheme"
+                    [class.btn-dark]="!isDarkTheme">
+                    {{ isDarkTheme ? 'Light Theme' : 'Dark Theme' }}
+                </button>
+
+                <!-- Language Dropdown -->
+                <div class="dropdown text-end">
+                    <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false" [class.text-light]="isDarkTheme"
+                        [class.text-dark]="!isDarkTheme">
+                        Language
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" (click)="switchLanguage('en')">English</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" (click)="switchLanguage('fr')">Français</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <!-- Theme Toggle Button -->
+            <!-- <button class="btn btn-outline-secondary me-2" (click)="toggleTheme()" [class.btn-light]="isDarkTheme"
+                [class.btn-dark]="!isDarkTheme">
+                {{ isDarkTheme ? 'Light Theme' : 'Dark Theme' }}
+            </button> -->
+
+
+
+            <!-- Search Bar -->
+            <!--  search bar need to switch background color when toggling color  -->
+            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+                <input type="search" class="form-control bg-dark text-light border-light" placeholder="Search..."
+                    aria-label="Search" />
+            </form>
+
+            <!-- Profile / Login -->
+            <ng-container *ngIf="isUserConnected; else notLoggedIn">
+                <div class="dropdown text-end">
+                    <a href="#" class="d-block text-decoration-none dropdown-toggle" id="userDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false" [class.text-light]="isDarkTheme"
+                        [class.text-dark]="!isDarkTheme">
+                        <img src="https://github.com/mdo.png" alt="User Profile" width="32" height="32"
+                            class="rounded-circle" />
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark text-small" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" routerLink="/profile">Profile</a></li>
+                        <li><a class="dropdown-item" routerLink="/settings">Settings</a></li>
+                        <li>
+                            <hr class="dropdown-divider" />
+                        </li>
+                        <li><a class="dropdown-item" (click)="logout()">Sign Out</a></li>
+                    </ul>
+                </div>
+            </ng-container>
+            <ng-template #notLoggedIn>
+                <!-- <a
+            routerLink="/login"
+            class="btn btn-outline-light me-2"
+          >
+            Login
+          </a> -->
+                <a (click)="login()" class="btn me-2" [class.btn-outline-light]="isDarkTheme"
+                    [class.btn-outline-dark]="!isDarkTheme">
+                    Login
+                </a>
+            </ng-template>
+        </div>
+    </div>
+</header>

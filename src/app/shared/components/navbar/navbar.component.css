@@ -1,0 +1,119 @@
+/* General Layout */
+.layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 250px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%);
+    z-index: 1030;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar ul {
+    padding: 0;
+    list-style: none;
+  }
+  
+  .sidebar ul li {
+    padding: 10px;
+  }
+  
+  .sidebar ul li a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .sidebar ul li a:hover {
+    background-color: #444;
+    color: #fff;
+  }
+
+  /* Dropdown Animation */
+.dropdown-list {
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    max-height: 300px; /* Enough for the inner items */
+    opacity: 1;
+  }
+  
+  .dropdown-list.ng-leave-active {
+    max-height: 0;
+    opacity: 0;
+  }
+  
+  .sidebar .btn-close {
+    background: none;
+    border: none;
+  }
+  
+  /* Main Content */
+  .main-content {
+    flex-grow: 1;
+    margin-left: 0;
+    margin-top: 56px;
+    transition: margin-left 0.3s ease-in-out;
+  }
+  
+  .sidebar.open ~ .main-content {
+    margin-left: 250px;
+  }
+  
+  /* Navbar */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1020;
+    transition: margin-left 0.3s ease-in-out;
+  }
+  
+  /* Profile Dropdown */
+  .navbar .dropdown-menu {
+    min-width: 200px;
+  }
+  
+  .navbar .dropdown-menu .dropdown-item {
+    padding: 10px;
+  }
+  
+  .navbar .dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: absolute;
+      height: 100%;
+      z-index: 1040;
+    }
+  
+    .main-content {
+      margin-left: 0;
+    }
+  
+    .sidebar.open ~ .main-content {
+      margin-left: 0;
+    }
+  
+    .navbar {
+      margin-left: 0;
+    }
+  
+    .sidebar.open ~ .main-content .navbar {
+      margin-left: 0;
+    }
+  }
