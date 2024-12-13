@@ -1,0 +1,14 @@
+<div *ngIf="isBrowser">
+  <ng-container *ngIf="isBrowser; else ssrFallback">
+    <ngx-extended-pdf-viewer
+      *ngIf="isBrowser"
+      [src]="'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'"
+      height="80vh"
+      [logLevel]="logLevel"
+    ></ngx-extended-pdf-viewer>
+  </ng-container>
+</div>
+
+<ng-template #ssrFallback>
+  <p>PDF preview is not available in server-side rendering mode.</p>
+</ng-template>

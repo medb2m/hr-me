@@ -1,0 +1,31 @@
+<div class="container">
+    <h2>Candidate List</h2>
+  
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="Search candidates by name, phone, or passport number..."
+        [(ngModel)]="searchTerm"
+        (input)="filterCandidates()"
+      />
+    </div>
+  
+    <!-- Candidate List -->
+    <div class="candidate-list">
+      <div
+        class="candidate-card"
+        *ngFor="let candidate of filteredCandidates"
+        (click)="viewCandidate(candidate)"
+      >
+        <img [src]="candidate.image || 'default-avatar.png'" alt="Candidate Image" />
+        <div class="candidate-details">
+          <h3>{{ candidate.name }}</h3>
+          <p>Phone: {{ candidate.phone }}</p>
+          <p>PP Number: {{ candidate.passportNumber }}</p>
+          <p>Created: {{ candidate.createdAt | date: 'mediumDate' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  

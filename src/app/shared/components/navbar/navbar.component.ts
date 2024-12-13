@@ -5,7 +5,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule,RouterOutlet,RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -25,6 +25,13 @@ export class NavbarComponent {
 
   toggleSidebar(): void {
     this.isSidebarOpen = !this.isSidebarOpen;
+    if(this.isSidebarOpen){
+      window.scrollTo({ top: 0, behavior: 'smooth'})
+    }
+  }
+
+  navigateAndCloseSidebar(): void {
+    this.isSidebarOpen = false;
   }
 
   toggleDropdown(group: string): void {

@@ -1,0 +1,53 @@
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .search-bar {
+    margin-bottom: 20px;
+  }
+  
+  .search-bar input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+  
+  .candidate-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .candidate-card {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .candidate-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 12px;
+  }
+  
+  .candidate-details h3 {
+    margin: 0 0 5px;
+    font-size: 1.2em;
+  }
+  
+  .candidate-details p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #555;
+  }
+  

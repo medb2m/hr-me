@@ -16,7 +16,20 @@ const candidateSchema = new mongoose.Schema({
       ref: 'Skill',
     },
   ],
-  image : String
+  image : String,
+  dossier: [
+    {
+      fileType: {
+        type: String,
+        enum: ['passport', 'cv', 'diploma', 'other'], // Ensure 'other' is included
+        required: true,
+      },
+      filename: { type: String, required: true },
+      filepath: { type: String, required: true },
+      uploadedAt: { type: Date, default: Date.now },
+      status: { type: String, default: 'uploaded' },
+    },
+  ],
 },
 {timestamps: true}
 );

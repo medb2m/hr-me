@@ -38,3 +38,87 @@
     color: #000;
   }
   
+
+/* General Layout */
+.layout {
+    display: flex;
+    height: 100vh; /* Ensure full height for the layout */
+    overflow: hidden; /* Prevent body scrolling when sidebar is open */
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 250px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background-color: #343a40;
+    overflow-y: auto;
+    z-index: 1040; /* Above the main content */
+    transform: translateX(-100%); /* Hidden by default */
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0); /* Slide in */
+  }
+  
+  /* Disable body scrolling when sidebar is open */
+  body.sidebar-open {
+    overflow: hidden;
+  }
+  
+  .sidebar ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  
+  .sidebar ul li {
+    padding: 10px;
+  }
+  
+  .sidebar ul li a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .sidebar ul li a:hover {
+    background-color: #444;
+  }
+  
+  /* Navbar */
+  .navbar {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 1050; /* Above the sidebar */
+  }
+  
+  /* Main Content */
+  .main-content {
+    flex-grow: 1;
+    margin-left: 0;
+    padding: 20px;
+    margin-top: 56px; /* Height of the navbar */
+    overflow-y: auto;
+    width: 100%;
+  }
+  
+  .sidebar.open ~ .main-content {
+    margin-left: 250px; /* Sidebar width */
+    transition: margin-left 0.3s ease-in-out;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 100%; /* Full width on smaller screens */
+    }
+  
+    .sidebar.open ~ .main-content {
+      margin-left: 0;
+    }
+  }
+  

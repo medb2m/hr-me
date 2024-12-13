@@ -16,6 +16,9 @@ import { SkillComponent } from './features/management/skill/skill.component';
 import { NotFoundComponent } from './shared/components/not-found/not-found.component';
 import { HomeComponent } from './shared/components/home/home.component';
 import { TestComponent } from './shared/components/test/test.component';
+import { DossierComponent } from './features/candidate/dossier/dossier.component';
+import { CandidatesListComponent } from './features/candidate/candidates-list/candidates-list.component';
+import { FilePreviewComponent } from './features/candidate/file-preview/file-preview.component';
 
 export const routes: Routes = [
     // home
@@ -24,9 +27,11 @@ export const routes: Routes = [
     
     // Candidate Routes
     { path: 'add-candidate', component: AddCandidateComponent},
-    { path: 'list-candidates', component: ListCandidateComponent},
+    { path: 'list-candidate', component: ListCandidateComponent},
     { path: 'candidate/:id', component: DetailsCandidateComponent},
     { path: 'update-candidate/:id', component: UpdateCandidateComponent},
+    { path: 'candidate-dossier/:id', component: DossierComponent},
+    { path: 'list', component: CandidatesListComponent},
 
     // Management => Offer
     { path: 'add-offer', component: AddOfferComponent },
@@ -48,6 +53,10 @@ export const routes: Routes = [
 
     // TEST
     { path: 'test', component: TestComponent },
+
+    // pdf 
+    { path: 'pdf', component: FilePreviewComponent },
+    
 
     // 404
     { path: '**', component: NotFoundComponent}

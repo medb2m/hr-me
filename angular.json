@@ -74,6 +74,26 @@
           },
           "defaultConfiguration": "development"
         },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/hr-me-server",
+            "main": "src/main.server.ts",
+            "tsConfig": "tsconfig.server.json",
+            "externalDependencies": ["canvas"]
+          },
+          "configurations": {
+            "production": {
+              "sourceMap": false,
+              "optimization": true
+            },
+            "development": {
+              "sourceMap": true,
+              "optimization": false
+            }
+          },
+          "defaultConfiguration": "production"
+        },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {

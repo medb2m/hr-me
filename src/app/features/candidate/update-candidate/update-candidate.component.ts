@@ -5,6 +5,8 @@ import { CandidateService } from '../../../services/candidate.service';
 import { PositionService } from '../../../services/position.service';
 import { ActivatedRoute } from '@angular/router';
 import { Position } from '../../../models/position';
+import { Skill } from '../../../models/skill';
+import { SkillService } from '../../../services/skill.service';
 
 @Component({
   selector: 'app-update-candidate',
@@ -24,11 +26,16 @@ export class UpdateCandidateComponent {
 
   currentImage: string = ''
 
+  // skills 
+  suggestedSkills: Skill[] = [];
+  selectedSkills: Skill[] = [];
+
   constructor(
     private fb: FormBuilder,
     private candidateService: CandidateService,
     private positionService: PositionService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private skillService: SkillService
   ) {
     this.candidateForm = this.fb.group({
       name: ['', Validators.required],
@@ -92,10 +99,10 @@ export class UpdateCandidateComponent {
       const candidateData = this.candidateForm.value;
 
        // Append form fields to FormData
-    Object.keys(candidateData).forEach((key) => {
+    /* Object.keys(candidateData).forEach((key) => {
       const value = candidateData[key];
       if (value !== null && value !== undefined) {
-        if (key === 'skills') {
+        if (key === 'skills' && this.candidateForm.value.skills[0] != '') {
           // Convert array to a comma-separated string if needed
           console.log(value);
           const formattedValue = value.join(', ');
@@ -108,7 +115,14 @@ export class UpdateCandidateComponent {
           formData.append(key, value);
         }
       }
+    }); */
+    Object.keys(candidateData).forEach((key) => {
+      if (key !== 'skills') {
+        formData.append(key, candidateData[key]);
+      }
     });
+
+    formData.append('skills', JSON.stringify(this.selectedSkills.map(skill => skill._id)));
 
       // Append image if uploaded
       if (this.selectedFile){
@@ -164,5 +178,58 @@ export class UpdateCandidateComponent {
 
     const fileInput = document.getElementById('image') as HTMLInputElement;
     fileInput.value = '';
+  }
+
+  // skills 
+  searchTerm: string = '';
+
+  // Fetch suggestions from backend
+  onSearch(): void {
+    const searchTerm = this.candidateForm.get('skillSearch')?.value || '';
+    if (searchTerm.trim()) {
+      this.skillService.getAllSkills().subscribe((skills) => {
+        this.suggestedSkills = skills.filter(skill =>
+          skill.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+        );
+      });
+    } else {
+      this.suggestedSkills = [];
+    }
+  }
+
+  // Add skill from suggestion or input
+  addSkill(event: Event): void {
+    event.preventDefault();
+    const searchTerm = this.candidateForm.get('skillSearch')?.value || '';
+    const newSkill = this.suggestedSkills.find(skill => skill.name === searchTerm);
+    if (newSkill) {
+      this.addSkillFromSuggestion(newSkill);
+    } else if (searchTerm.trim()) {
+      const newCustomSkill = { _id: '', name: searchTerm };
+      this.addSkillFromSuggestion(newCustomSkill);
+    }
+    this.candidateForm.get('skillSearch')?.setValue('');
+    this.suggestedSkills = [];
+  }
+
+  // Add skill from suggestion
+  addSkillFromSuggestion(skill: Skill): void {
+    if (!this.selectedSkills.some(s => s.name === skill.name)) {
+      this.selectedSkills.push(skill);
+      this.updateFormSkills();
+    }
+  }
+
+  // Remove skill
+  removeSkill(skill: Skill): void {
+    this.selectedSkills = this.selectedSkills.filter(s => s._id !== skill._id);
+    this.updateFormSkills();
+  }
+
+  // Sync skills to form
+  updateFormSkills(): void {
+    this.candidateForm.patchValue({
+      skills: this.selectedSkills.map(skill => skill._id),
+    });
   }
 }

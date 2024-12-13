@@ -1,34 +1,3 @@
-<!-- Navbar with Links and Language Switcher -->
-<!-- <nav>
-  <ul>
-    <li>
-      <a routerLink="/add-candidate">Add Candidate</a>
-    </li>
-    <li>
-      <a routerLink="/list-candidates">List Candidates</a>
-    </li>
-    <li>
-      <a routerLink="/add-offer">Add offer</a>
-    </li>
-    <li>
-      <a routerLink="/list-offers">List offers</a>
-    </li>
-    <li>
-      <a routerLink="/position">Position Management</a>
-    </li>
-    <li>
-      <a routerLink="/add-ticket">Add ticket</a>
-    </li>
-    <li>
-      <a routerLink="/list-ticket">List ticket</a>
-    </li>
-    <li>
-      <a routerLink="/skill">Skills Management</a>
-    </li>
-  </ul>
-    
-    
-</nav> -->
 <!-- <div>
       <button (click)="switchLanguage('en')">English</button>
       <button (click)="switchLanguage('fr')">Français</button>
@@ -36,9 +5,22 @@
   <!-- Welcome Message -->
   <!-- <h1>{{ 'welcome' | translate }}</h1> -->
 
-<app-navbar></app-navbar>
-  
+<!-- Navbar -->
+<!-- <app-navbar></app-navbar> -->
+
+
+<!-- Router Outlet for Displaying Routed Components -->
+<!-- <div class="container mt-4">
+  <router-outlet></router-outlet>
+</div> -->
+<div class="layout">
+  <!-- Navbar -->
+  <app-navbar></app-navbar>
 
   
-  <!-- Router Outlet for Displaying Routed Components -->
-  <!-- <router-outlet></router-outlet> -->
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

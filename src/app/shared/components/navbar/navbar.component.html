@@ -9,7 +9,7 @@
         </div>
         <ul class="nav flex-column mt-3">
           <li class="nav-item">
-            <a class="nav-link text-white" routerLink="/">Home</a>
+            <a class="nav-link text-white" routerLink="/" (click)="navigateAndCloseSidebar()">Home</a>
           </li>
           <!-- Candidate Group -->
         <li class="nav-item">
@@ -26,10 +26,10 @@
               *ngIf="dropdowns['candidate']"
             >
               <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/add-candidate">Add Candidate</a>
+                <a class="nav-link text-white" routerLink="/add-candidate" (click)="navigateAndCloseSidebar()">Add Candidate</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/list-candidate">List Candidate</a>
+                <a class="nav-link text-white" routerLink="/list-candidate" (click)="navigateAndCloseSidebar()">List Candidate</a>
               </li>
             </ul>
           </li>
@@ -48,17 +48,17 @@
               *ngIf="dropdowns['offer']"
             >
               <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/add-offer">Add Offer</a>
+                <a class="nav-link text-white" routerLink="/add-offer" (click)="navigateAndCloseSidebar()">Add Offer</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/list-offer">List Offers</a>
+                <a class="nav-link text-white" routerLink="/list-offers" (click)="navigateAndCloseSidebar()">List Offers</a>
               </li>
             </ul>
           </li>
   
           <!-- Other Routes -->
           <li class="nav-item">
-            <a class="nav-link text-white" routerLink="/position">Position Manage</a>
+            <a class="nav-link text-white" routerLink="/position" (click)="navigateAndCloseSidebar()">Position Manage</a>
           </li>
   
           <!-- Ticket Group -->
@@ -76,29 +76,30 @@
               *ngIf="dropdowns['ticket']"
             >
               <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/add-ticket">Add Ticket</a>
+                <a class="nav-link text-white" routerLink="/add-ticket" (click)="navigateAndCloseSidebar()">Add Ticket</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/list-ticket">List Ticket</a>
+                <a class="nav-link text-white" routerLink="/list-ticket" (click)="navigateAndCloseSidebar()">List Ticket</a>
               </li>
             </ul>
           </li>
   
           <li class="nav-item">
-            <a class="nav-link text-white" routerLink="/skill">Skills Manage</a>
+            <a class="nav-link text-white" routerLink="/skill" (click)="navigateAndCloseSidebar()">Skills Manage</a>
           </li>
         </ul>
       </div>
     </div>
   
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Navbar -->
-      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
           <!-- Sidebar Toggle Button -->
           <button class="btn btn-outline-light me-2" (click)="toggleSidebar()">☰</button>
-          <a class="navbar-brand" href="#">HrMe</a>
+          
+            <a class="navbar-brand" routerLink="/">
+                <img src="/assets/img/hr-me-logo.png" alt="Hr-me_Logo" class="logo">
+            </a>
   
           <!-- Toggle button for mobile view -->
           <button
@@ -157,10 +158,10 @@
           </div>
         </div>
       </nav>
+    <!-- Main Content -->
+    <!-- <div class="main-content">
+      
   
-      <!-- Router Outlet for Displaying Routed Components -->
-      <div class="container mt-4">
-        <router-outlet></router-outlet>
-      </div>
-    </div>
+      
+    </div> -->
   </div>

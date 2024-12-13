@@ -1,0 +1,80 @@
+<div class="container">
+    <h2>Dossier for {{ selectedCandidate?.name }}</h2>
+  
+    <!-- Existing Dossier Files -->
+    <div *ngIf="selectedCandidate && selectedCandidate.dossier && selectedCandidate.dossier.length > 0">
+      <h3>Existing Files</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>File Name</th>
+            <th>File Type</th>
+            <th>Uploaded At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let file of selectedCandidate.dossier">
+            <td>{{ file.filename }}</td>
+            <td>{{ file.fileType }}</td>
+            <td>{{ file.uploadedAt | date: 'short' }}</td>
+            <!-- <td>
+              <button (click)="openFile(file.filepath)">Preview</button>
+            </td> -->
+            <td>
+              <button (click)="previewFile(file)">Preview</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="selectedCandidate && !selectedCandidate.dossier || selectedCandidate?.dossier?.length === 0">
+      <p>No files available in the dossier.</p>
+    </div>
+  
+    <!-- File Upload -->
+    <div>
+      <h3>Upload New Files</h3>
+      <label for="files">Select Files</label>
+      <input type="file" id="files" (change)="onFileChange($event)" multiple />
+    </div>
+  
+    <!-- Display Uploaded Files with Type Selection -->
+    <div *ngIf="uploadedFiles.length > 0" class="uploaded-files">
+      <h3>Uploaded Files</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>File Name</th>
+            <th>File Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let file of uploadedFiles; let i = index">
+            <td>{{ file.name }}</td>
+            <td>
+              <select [(ngModel)]="fileTypes[i]">
+                <option *ngFor="let type of fileTypesOptions" [value]="type">
+                  {{ type }}
+                </option>
+              </select>
+            </td>
+            <td>
+              <button (click)="removeFile(i)">Remove</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- Submit Dossier -->
+    <button
+      type="button"
+      [disabled]="uploadedFiles.length === 0"
+      (click)="updateDossier()"
+    >
+      Submit Dossier
+    </button>
+  </div>
+  

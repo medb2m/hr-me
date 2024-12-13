@@ -86,10 +86,36 @@
     <input id="experience" formControlName="experience" type="number" class="form-control" />
   </div>
 
-  <!-- Skills Field -->
+  <!-- Skills -->
   <div class="form-group">
-    <label for="skills" class="form-label">Skills</label>
-    <input id="skills" formControlName="skills" placeholder="e.g. JavaScript, Python" class="form-control" />
+    <label for="skills">Skills</label>
+    <input
+      id="skills"
+      type="text"
+      class="form-control"
+      placeholder="Type to search and add skills"
+      formControlName="skillSearch"
+      (input)="onSearch()"
+      (keydown.enter)="addSkill($event)"
+    />
+
+    <!-- Suggested skills -->
+    <ul *ngIf="suggestedSkills.length > 0" class="suggestions-list">
+      <li *ngFor="let skill of suggestedSkills" (click)="addSkillFromSuggestion(skill)">
+        {{ skill.name }}
+      </li>
+    </ul>
+
+    <!-- Added skills -->
+    <div class="added-skills mt-2">
+      <span
+        class="skill-badge"
+        *ngFor="let skill of selectedSkills"
+      >
+        {{ skill.name }}
+        <button type="button" class="btn-close" (click)="removeSkill(skill)">&times;</button>
+      </span>
+    </div>
   </div>
 
   <!-- Image Upload -->

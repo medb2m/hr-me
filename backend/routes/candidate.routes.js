@@ -1,7 +1,8 @@
 import express from 'express';
 
-import { createCandidate, getAllCandidates, getCandidateById, updateCandidate } from '../controllers/candidate.controller.js';
+import { checkDossierStatus, createCandidate, getAllCandidates, getCandidateById, getDossier, updateCandidate, updateDossier } from '../controllers/candidate.controller.js';
 import { uploadImage } from '../middleware/multer-config.js';
+import { uploadFiles } from '../middleware/multer-uploads.js';
 
 const router = express.Router();
 
@@ -16,4 +17,10 @@ router.get('/:id', getCandidateById);
 
 // Update a candidate
 router.put('/:id', uploadImage.single('image'), updateCandidate);
+
+// Dossier
+router.post('/:id/dossier', uploadFiles.array('files', 5), updateDossier);
+router.get('/:id/dossier', getDossier);
+router.get('/:id/dossier/status', checkDossierStatus);
+
 export default router;

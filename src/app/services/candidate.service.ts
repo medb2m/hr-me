@@ -31,4 +31,15 @@ export class CandidateService {
   updateCandidate(id: string, candidateData: FormData): Observable<Candidate> {
     return this.http.put<Candidate>(`${this.apiUrl}/${id}`, candidateData);
   }
+
+  // Dossier
+  // Fetch dossier of a candidate
+  getCandidateDossier(candidateId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${candidateId}/dossier`);
+  }
+
+  // Update dossier with files
+  updateCandidateDossier(candidateId: string, formData: FormData): Observable<Candidate> {
+    return this.http.post<Candidate>(`${this.apiUrl}/${candidateId}/dossier`, formData);
+  }
 }

@@ -18,4 +18,11 @@ export class Candidate {
     selectedPositionId ?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    dossier?: {
+      fileType: string;
+      filename: string;
+      filepath: string;
+      uploadedAt: Date;
+      status: 'uploaded' | 'missing';
+    }[];
   }
