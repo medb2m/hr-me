@@ -1,0 +1,30 @@
+.session-detail .summary-text {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.transcript .msg {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.transcript .msg-user {
+  background: #e8f4fc;
+}
+
+.transcript .msg-ai {
+  background: #f4f4f8;
+}
+
+.transcript .msg-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+  color: #5f6368;
+}

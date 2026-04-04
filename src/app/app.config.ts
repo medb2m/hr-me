@@ -24,7 +24,6 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([interceptorInterceptor])
     ),
     importProvidersFrom(
-      HttpClientModule,
       ReactiveFormsModule, 
       RouterModule,
       TranslateModule.forRoot({

@@ -19,6 +19,10 @@ import { TestComponent } from './shared/components/test/test.component';
 import { DossierComponent } from './features/candidate/dossier/dossier.component';
 import { CandidatesListComponent } from './features/candidate/candidates-list/candidates-list.component';
 import { FilePreviewComponent } from './features/candidate/file-preview/file-preview.component';
+import { InterviewHubComponent } from './features/recruitment/interview/interview-hub.component';
+import { InterviewRoomComponent } from './features/recruitment/interview/interview-room.component';
+import { InterviewSessionsListComponent } from './features/recruitment/interview/interview-sessions-list.component';
+import { InterviewSessionDetailComponent } from './features/recruitment/interview/interview-session-detail.component';
 
 export const routes: Routes = [
     // home
@@ -50,6 +54,12 @@ export const routes: Routes = [
 
     // Management => skill
     { path: 'skill', component: SkillComponent },
+
+    // Recruitment => AI interview
+    { path: 'recruitment/interview', component: InterviewHubComponent },
+    { path: 'recruitment/interview/room/:sessionId', component: InterviewRoomComponent },
+    { path: 'recruitment/interview/sessions', component: InterviewSessionsListComponent },
+    { path: 'recruitment/interview/sessions/:sessionId', component: InterviewSessionDetailComponent },
 
     // TEST
     { path: 'test', component: TestComponent },

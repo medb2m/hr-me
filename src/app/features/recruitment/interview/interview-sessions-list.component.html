@@ -1,0 +1,75 @@
+<div class="container py-4 interview-sessions">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Interview sessions</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h4 mb-0">Interview sessions</h1>
+    <a routerLink="/recruitment/interview" class="btn btn-sm btn-primary">
+      New interview
+    </a>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-auto">
+      <label class="form-label visually-hidden" for="status-filter">Status</label>
+      <select
+        id="status-filter"
+        class="form-select form-select-sm"
+        [(ngModel)]="statusFilter"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option value="">All statuses</option>
+        <option value="in_progress">In progress</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-warning">{{ error }}</div>
+
+  <div *ngIf="loading" class="text-secondary">Loading…</div>
+
+  <div *ngIf="!loading && !sessions.length" class="text-secondary">
+    No sessions yet. Start one from <a routerLink="/recruitment/interview">AI interview</a>.
+  </div>
+
+  <div class="table-responsive" *ngIf="!loading && sessions.length">
+    <table class="table table-sm table-hover align-middle">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Candidate</th>
+          <th>Status</th>
+          <th>Updated</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of sessions">
+          <td>{{ s.title }}</td>
+          <td>{{ s.candidateName || '—' }}</td>
+          <td>
+            <span
+              class="badge"
+              [class.text-bg-warning]="s.status === 'in_progress'"
+              [class.text-bg-success]="s.status === 'completed'"
+            >{{ s.status === 'in_progress' ? 'In progress' : 'Completed' }}</span>
+          </td>
+          <td class="text-secondary small">
+            {{ s.updatedAt | date: 'short' }}
+          </td>
+          <td class="text-end">
+            <a
+              class="btn btn-sm btn-outline-primary"
+              [routerLink]="['/recruitment/interview/sessions', s._id]"
+              >Open</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

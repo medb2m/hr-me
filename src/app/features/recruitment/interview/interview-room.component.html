@@ -1,0 +1,202 @@
+<div class="interview-room" *ngIf="!loadError; else loadErr">
+  <header class="room-toolbar">
+    <div class="toolbar-left">
+      <a routerLink="/recruitment/interview" class="btn btn-link text-light btn-sm px-2 shrink-0">
+        ← Back
+      </a>
+      <div class="titles">
+        <span class="room-label">AI interview</span>
+        <h1 class="room-title mb-0">
+          {{ session?.title || 'Interview room' }}
+        </h1>
+        <span class="room-meta text-secondary small" *ngIf="session?.candidateName">
+          Candidate: {{ session?.candidateName }}
+        </span>
+      </div>
+    </div>
+    <div class="toolbar-right small text-secondary">
+      Session: <code class="text-light">{{ sessionId || '—' }}</code>
+    </div>
+  </header>
+
+  <div *ngIf="apiError" class="alert alert-danger rounded-0 mb-0 py-2 small">
+    {{ apiError }}
+  </div>
+
+  <div class="room-body">
+    <!-- Left: camera + mic, live AI captions, current question -->
+    <section class="stage stage--main" aria-label="Interview video and AI prompts">
+      <div class="main-column">
+        <div class="camera-mic-row">
+          <div class="video-wrap">
+            <video
+              #videoEl
+              class="self-video"
+              playsinline
+              muted
+              autoplay
+              [class.active]="cameraActive"
+            ></video>
+            <div class="video-placeholder" *ngIf="!cameraActive && !cameraError">
+              <span>Starting camera…</span>
+            </div>
+            <div class="video-placeholder error" *ngIf="cameraError">
+              {{ cameraError }}
+            </div>
+            <div class="nameplate">You</div>
+          </div>
+
+          <div class="mic-rail">
+            <button
+              type="button"
+              class="mic-btn"
+              [class.mic-btn--on]="isListening"
+              [class.mic-btn--pulse]="micInvitationActive"
+              (click)="toggleListen()"
+              [disabled]="!canUseMic && !isListening"
+              [attr.aria-pressed]="isListening"
+              [attr.aria-label]="isListening ? 'Microphone on, tap to turn off' : 'Microphone off, tap to answer'"
+            >
+              <i class="bi" [ngClass]="isListening ? 'bi-mic-mute-fill' : 'bi-mic-fill'"></i>
+            </button>
+            <p class="mic-hint" *ngIf="micInvitationActive">
+              Click to answer
+            </p>
+            <p class="mic-hint mic-hint--active" *ngIf="isListening">
+              Listening…
+            </p>
+            <p class="mic-hint mic-hint--wait" *ngIf="!micInvitationActive && !isListening && sttSupported && !isComplete && (aiSpeaking || sending || !!streamingAiText)">
+              Wait for the interviewer
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="caption-panel live-captions"
+          *ngIf="liveAiCaptionsText"
+          role="status"
+          aria-live="polite"
+          aria-relevant="additions text"
+        >
+          <span class="caption-panel-label">Live — what the interviewer is saying</span>
+          <p class="caption-panel-text mb-0">
+            {{ liveAiCaptionsText }}<span *ngIf="streamingAiText" class="type-caret" aria-hidden="true"></span>
+          </p>
+        </div>
+        <div class="caption-panel live-captions live-captions--empty" *ngIf="!liveAiCaptionsText && !isComplete">
+          <span class="caption-panel-label">Live captions</span>
+          <p class="caption-panel-muted mb-0">The interviewer’s words will appear here as they speak.</p>
+        </div>
+
+        <div class="caption-panel last-question" *ngIf="lastQuestionText">
+          <span class="caption-panel-label">Your question</span>
+          <p class="caption-panel-text mb-0 last-question-body">{{ lastQuestionText }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: messenger-style chat -->
+    <aside class="chat-sidebar" aria-label="Conversation with interviewer">
+      <header class="chat-header">
+        <div class="ai-avatar chat-header-avatar" aria-hidden="true">
+          <i class="bi bi-chat-dots-fill"></i>
+        </div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="chat-header-title">Conversation</div>
+          <div class="chat-header-sub">Messages with the AI interviewer</div>
+          <div class="ai-status d-flex flex-wrap gap-1 mt-1">
+            <span *ngIf="streamingAiText" class="badge rounded-pill text-bg-primary">Typing…</span>
+            <span *ngIf="aiSpeaking" class="badge rounded-pill text-bg-info">Speaking</span>
+            <span *ngIf="sending && !streamingAiText" class="badge rounded-pill text-bg-warning text-dark">Thinking…</span>
+            <span *ngIf="isListening" class="badge rounded-pill text-bg-success">Mic on</span>
+            <span
+              *ngIf="!aiSpeaking && !sending && !isListening && !isComplete && !streamingAiText"
+              class="badge rounded-pill border border-secondary text-secondary"
+            >Your turn</span>
+            <span *ngIf="isComplete" class="badge rounded-pill text-bg-secondary">Done</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="chat-scroll" #transcriptBox role="log" aria-live="polite" aria-relevant="additions">
+        <div class="chat-scroll-inner">
+          <div
+            *ngFor="let m of visibleMessages; trackBy: trackByMsg"
+            class="chat-row"
+            [class.chat-row--in]="m.role === 'assistant'"
+            [class.chat-row--out]="m.role === 'user'"
+          >
+            <div class="chat-bubble">
+              <span class="chat-meta">
+                {{ m.role === 'assistant' ? 'Interviewer' : 'You' }}{{ msgTimeSuffix(m) }}
+              </span>
+              <div class="chat-text">{{ m.content }}</div>
+            </div>
+          </div>
+
+          <div *ngIf="liveTranscript" class="chat-row chat-row--out">
+            <div class="chat-bubble chat-bubble--interim">
+              <span class="chat-meta">You · listening <span class="live-dot"></span></span>
+              <div class="chat-text">{{ liveTranscript }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="chat-composer">
+        <div class="chat-actions-row" *ngIf="isListening && (liveTranscript?.length ?? 0) > 0">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-info"
+            (click)="flushSpeechNow()"
+            [disabled]="sending"
+          >
+            Send voice now
+          </button>
+        </div>
+        <p *ngIf="!sttSupported" class="small text-warning mb-0">
+          Voice typing isn’t available in this browser — type below.
+        </p>
+
+        <div class="chat-input-wrap">
+          <textarea
+            class="chat-textarea"
+            rows="1"
+            placeholder="Message"
+            [(ngModel)]="typedAnswer"
+            [disabled]="sending || isComplete || completing"
+            (keydown)="onComposerKeydown($event)"
+            aria-label="Type your message to the interviewer"
+          ></textarea>
+          <button
+            type="button"
+            class="chat-send-btn"
+            (click)="submitTyped()"
+            [disabled]="sending || isComplete || completing || !typedAnswer.trim()"
+            title="Send"
+            aria-label="Send message"
+          >
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm end-session-btn"
+          (click)="endInterview()"
+          [disabled]="completing || isComplete || sending"
+        >
+          <span *ngIf="!completing">End interview &amp; save</span>
+          <span *ngIf="completing">Saving…</span>
+        </button>
+      </footer>
+    </aside>
+  </div>
+</div>
+
+<ng-template #loadErr>
+  <div class="container py-5 text-center text-secondary">
+    <p>{{ loadError }}</p>
+    <a routerLink="/recruitment/interview" class="btn btn-primary">Back to setup</a>
+  </div>
+</ng-template>

@@ -1,0 +1,75 @@
+<div class="interview-hub container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+      <li class="breadcrumb-item active" aria-current="page">AI interview (setup)</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <h1 class="h4 mb-1">Start an interview session</h1>
+          <p class="text-secondary small mb-4">
+            Opens a saved interview in MongoDB: voice + subtitles for the AI,
+            microphone answers (or type them), full transcript for recruiters.
+          </p>
+
+          <div *ngIf="apiError" class="alert alert-warning small" role="alert">
+            {{ apiError }}
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="createMeeting()">
+            <div class="mb-3">
+              <label class="form-label" for="interview-title">Meeting title</label>
+              <input
+                id="interview-title"
+                type="text"
+                class="form-control"
+                formControlName="title"
+                autocomplete="off"
+              />
+              <div
+                class="invalid-feedback d-block"
+                *ngIf="form.controls.title.touched && form.controls.title.invalid"
+              >
+                Please enter a title.
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label" for="candidate-name">Candidate name (optional)</label>
+              <input
+                id="candidate-name"
+                type="text"
+                class="form-control"
+                formControlName="candidateName"
+                placeholder="e.g. Alex"
+                autocomplete="name"
+              />
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="submitting"
+              >
+                <span *ngIf="!submitting">Open interview room</span>
+                <span *ngIf="submitting">Starting…</span>
+              </button>
+              <a routerLink="/home" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <p class="small text-muted mt-3 mb-0">
+        The server needs <code class="text-muted">LLM_API_KEY</code> (see
+        <code class="text-muted">backend/.env.example</code>). Recruiters can
+        review sessions under Recruitment → Interview sessions.
+      </p>
+    </div>
+  </div>
+</div>
