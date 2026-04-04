@@ -1,10 +1,275 @@
-<div class="hero-section">
-    <div class="hero-content">
-      <h1>Streamline Your Recruitment Process with HR-Me</h1>
-      <p>
-        Revolutionize the way you manage recruitment with a platform designed for efficiency, collaboration, and success.
-      </p>
-      <button class="cta-button">Get Started</button>
+<!-- ================================================================
+     HERO
+     ================================================================ -->
+<section class="hero">
+  <!-- decorative blobs -->
+  <div class="hero-blob hero-blob--1"></div>
+  <div class="hero-blob hero-blob--2"></div>
+  <div class="hero-blob hero-blob--3"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <i class="bi bi-lightning-charge-fill"></i>
+      Intelligent Recruitment Platform
+    </div>
+
+    <h1 class="hero-title">
+      Streamline Your<br>
+      <span class="hero-title-highlight">Recruitment</span> Process
+    </h1>
+
+    <p class="hero-subtitle">
+      Manage candidates, track job offers, run AI-powered interviews,
+      and align your team — all from one modern HR workspace.
+    </p>
+
+    <div class="hero-actions">
+      <a routerLink="/list-candidate" class="btn-hero-primary">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+        Get Started
+      </a>
+      <a routerLink="/recruitment/interview" class="btn-hero-ghost">
+        <i class="bi bi-play-circle-fill"></i>
+        Try AI Interview
+      </a>
     </div>
   </div>
-  
+
+  <!-- Floating card preview -->
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="hc-header">
+        <span class="hc-dot hc-dot--red"></span>
+        <span class="hc-dot hc-dot--yellow"></span>
+        <span class="hc-dot hc-dot--green"></span>
+        <span class="hc-title">Active Pipeline</span>
+      </div>
+      <div class="hc-rows">
+        <div class="hc-row">
+          <div class="hc-avatar hc-avatar--purple">A</div>
+          <div class="hc-info">
+            <div class="hc-name">Alice Martin</div>
+            <div class="hc-role">Frontend Developer</div>
+          </div>
+          <span class="hc-tag hc-tag--green">Interview</span>
+        </div>
+        <div class="hc-row">
+          <div class="hc-avatar hc-avatar--blue">B</div>
+          <div class="hc-info">
+            <div class="hc-name">Bob Johnson</div>
+            <div class="hc-role">UX Designer</div>
+          </div>
+          <span class="hc-tag hc-tag--amber">Review</span>
+        </div>
+        <div class="hc-row">
+          <div class="hc-avatar hc-avatar--indigo">C</div>
+          <div class="hc-info">
+            <div class="hc-name">Clara Nguyen</div>
+            <div class="hc-role">Data Engineer</div>
+          </div>
+          <span class="hc-tag hc-tag--blue">Applied</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     STATS
+     ================================================================ -->
+<section class="stats-section">
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap stat-icon-wrap--indigo">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-number">1,240</span>
+        <span class="stat-label">Total Candidates</span>
+      </div>
+      <div class="stat-trend stat-trend--up">
+        <i class="bi bi-arrow-up-short"></i>+12%
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap stat-icon-wrap--violet">
+        <i class="bi bi-briefcase-fill"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-number">86</span>
+        <span class="stat-label">Open Positions</span>
+      </div>
+      <div class="stat-trend stat-trend--up">
+        <i class="bi bi-arrow-up-short"></i>+5%
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap stat-icon-wrap--amber">
+        <i class="bi bi-ticket-perforated-fill"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-number">34</span>
+        <span class="stat-label">Pending Tickets</span>
+      </div>
+      <div class="stat-trend stat-trend--down">
+        <i class="bi bi-arrow-down-short"></i>-8%
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap stat-icon-wrap--emerald">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-number">320</span>
+        <span class="stat-label">Hired This Year</span>
+      </div>
+      <div class="stat-trend stat-trend--up">
+        <i class="bi bi-arrow-up-short"></i>+21%
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================================================================
+     FEATURES
+     ================================================================ -->
+<section class="features-section">
+  <div class="section-head">
+    <span class="section-eyebrow">Why HR-Me?</span>
+    <h2 class="section-title">Everything your HR team needs</h2>
+    <p class="section-subtitle">
+      A unified platform covering the full recruitment lifecycle — from sourcing to onboarding.
+    </p>
+  </div>
+
+  <div class="features-grid">
+
+    <div class="feature-card">
+      <div class="feature-icon-wrap feature-icon-wrap--indigo">
+        <i class="bi bi-person-check-fill"></i>
+      </div>
+      <h3 class="feature-title">Candidate Pipeline</h3>
+      <p class="feature-desc">
+        Track every applicant from first contact to final decision with a clear, stage-by-stage view.
+      </p>
+      <a routerLink="/list-candidate" class="feature-link">
+        Manage Candidates <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="feature-card feature-card--gradient">
+      <div class="feature-icon-wrap feature-icon-wrap--white">
+        <i class="bi bi-robot"></i>
+      </div>
+      <h3 class="feature-title">AI-Powered Interviews</h3>
+      <p class="feature-desc">
+        Let our AI conduct first-round video interviews, score responses, and highlight top talent automatically.
+      </p>
+      <a routerLink="/recruitment/interview" class="feature-link feature-link--light">
+        Start Interview <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-wrap feature-icon-wrap--violet">
+        <i class="bi bi-briefcase-fill"></i>
+      </div>
+      <h3 class="feature-title">Job Offer Management</h3>
+      <p class="feature-desc">
+        Create, publish and manage job offers in minutes. Keep offers current with real-time editing.
+      </p>
+      <a routerLink="/list-offers" class="feature-link">
+        Browse Offers <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-wrap feature-icon-wrap--amber">
+        <i class="bi bi-ticket-perforated-fill"></i>
+      </div>
+      <h3 class="feature-title">Support Tickets</h3>
+      <p class="feature-desc">
+        Keep your HR operations smooth by tracking and resolving internal support requests effortlessly.
+      </p>
+      <a routerLink="/list-ticket" class="feature-link">
+        View Tickets <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-wrap feature-icon-wrap--emerald">
+        <i class="bi bi-diagram-3-fill"></i>
+      </div>
+      <h3 class="feature-title">Position Mapping</h3>
+      <p class="feature-desc">
+        Define roles, map skill requirements, and align positions with business objectives seamlessly.
+      </p>
+      <a routerLink="/position" class="feature-link">
+        Explore Positions <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-wrap feature-icon-wrap--rose">
+        <i class="bi bi-stars"></i>
+      </div>
+      <h3 class="feature-title">Skills Repository</h3>
+      <p class="feature-desc">
+        Build and maintain a rich catalog of skills to match candidates with precision to open roles.
+      </p>
+      <a routerLink="/skill" class="feature-link">
+        Manage Skills <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================================================================
+     QUICK ACTIONS
+     ================================================================ -->
+<section class="quick-section">
+  <div class="section-head">
+    <span class="section-eyebrow">Quick Access</span>
+    <h2 class="section-title">Jump right in</h2>
+  </div>
+
+  <div class="quick-grid">
+    <a routerLink="/add-candidate" class="quick-card">
+      <i class="bi bi-person-plus-fill"></i>
+      <span>Add Candidate</span>
+    </a>
+    <a routerLink="/add-offer" class="quick-card">
+      <i class="bi bi-plus-circle-fill"></i>
+      <span>Post Job Offer</span>
+    </a>
+    <a routerLink="/add-ticket" class="quick-card">
+      <i class="bi bi-ticket-perforated-fill"></i>
+      <span>Open Ticket</span>
+    </a>
+    <a routerLink="/recruitment/interview" class="quick-card quick-card--accent">
+      <i class="bi bi-camera-video-fill"></i>
+      <span>AI Interview</span>
+    </a>
+  </div>
+</section>
+
+<!-- ================================================================
+     FOOTER CTA
+     ================================================================ -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-title">Ready to transform your hiring?</h2>
+    <p class="cta-sub">
+      Join HR teams who trust HR-Me to find, evaluate, and onboard top talent faster.
+    </p>
+    <a routerLink="/list-candidate" class="btn-cta">
+      Start Now <i class="bi bi-arrow-right-circle-fill"></i>
+    </a>
+  </div>
+</section>

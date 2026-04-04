@@ -1,167 +1,253 @@
-<div class="layout">
-    <!-- Sidebar -->
-    <div id="sidebar" class="sidebar bg-dark text-white" [class.open]="isSidebarOpen">
-      <div class="p-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <h4>Sidebar</h4>
-          <!-- Close Button -->
-          <button class="btn btn-close btn-close-white" (click)="toggleSidebar()" aria-label="Close">X</button>
-        </div>
-        <ul class="nav flex-column mt-3">
-          <li class="nav-item">
-            <a class="nav-link text-white" routerLink="/" (click)="navigateAndCloseSidebar()">Home</a>
+<!-- ================================================================
+     BACKDROP (closes sidebar on click)
+     ================================================================ -->
+<div class="nav-backdrop" [class.visible]="isSidebarOpen" (click)="toggleSidebar()"></div>
+
+<!-- ================================================================
+     SIDEBAR
+     ================================================================ -->
+<aside class="sidebar" [class.open]="isSidebarOpen">
+
+  <!-- Header -->
+  <div class="sidebar-header">
+    <a routerLink="/home" class="sidebar-brand" (click)="navigateAndCloseSidebar()">
+      <div class="sidebar-brand-icon">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-name">HR-Me</span>
+        <span class="sidebar-brand-sub">Recruitment Platform</span>
+      </div>
+    </a>
+    <button class="sidebar-close-btn" (click)="toggleSidebar()" aria-label="Close sidebar">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav" role="navigation">
+
+    <!-- Overview -->
+    <div class="nav-section-label">Overview</div>
+    <ul class="nav-list">
+      <li>
+        <a class="nav-item"
+           routerLink="/home"
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact:true}"
+           (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Recruitment -->
+    <div class="nav-section-label">Recruitment</div>
+    <ul class="nav-list">
+
+      <!-- Candidates -->
+      <li class="nav-group" [class.expanded]="dropdowns['candidate']">
+        <button class="nav-item nav-toggle" (click)="toggleDropdown('candidate')">
+          <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
+          <span class="nav-label">Candidates</span>
+          <i class="bi bi-chevron-right nav-arrow"></i>
+        </button>
+        <ul class="nav-submenu" [class.open]="dropdowns['candidate']">
+          <li>
+            <a class="nav-subitem" routerLink="/add-candidate" (click)="navigateAndCloseSidebar()">
+              <i class="bi bi-person-plus-fill"></i> Add Candidate
+            </a>
           </li>
-          <!-- Candidate Group -->
-        <li class="nav-item">
-            <button
-              class="nav-link text-white d-flex justify-content-between align-items-center"
-              
-              (click)="toggleDropdown('candidate')"
-            >
-              Candidate
-              <i [ngClass]="{'bi-chevron-down': !dropdowns['candidate'], 'bi-chevron-up': dropdowns['candidate']}" class="bi"></i>
-            </button>
-            <ul
-              class="nav flex-column ms-3 dropdown-list"
-              *ngIf="dropdowns['candidate']"
-            >
-              <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/add-candidate" (click)="navigateAndCloseSidebar()">Add Candidate</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/list-candidate" (click)="navigateAndCloseSidebar()">List Candidate</a>
-              </li>
-            </ul>
-          </li>
-          <!-- Offer Group -->
-        <li class="nav-item">
-            <button
-              class="nav-link text-white d-flex justify-content-between align-items-center"
-              
-              (click)="toggleDropdown('offer')"
-            >
-              Offer
-              <i [ngClass]="{'bi-chevron-down': !dropdowns['offer'], 'bi-chevron-up': dropdowns['offer']}" class="bi"></i>
-            </button>
-            <ul
-              class="nav flex-column ms-3 dropdown-list"
-              *ngIf="dropdowns['offer']"
-            >
-              <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/add-offer" (click)="navigateAndCloseSidebar()">Add Offer</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/list-offers" (click)="navigateAndCloseSidebar()">List Offers</a>
-              </li>
-            </ul>
-          </li>
-  
-          <!-- Other Routes -->
-          <li class="nav-item">
-            <a class="nav-link text-white" routerLink="/position" (click)="navigateAndCloseSidebar()">Position Manage</a>
-          </li>
-  
-          <!-- Ticket Group -->
-          <li class="nav-item">
-            <button
-              class="nav-link text-white d-flex justify-content-between align-items-center"
-              
-              (click)="toggleDropdown('ticket')"
-            >
-              Ticket
-              <i [ngClass]="{'bi-chevron-down': !dropdowns['ticket'], 'bi-chevron-up': dropdowns['ticket']}" class="bi"></i>
-            </button>
-            <ul
-              class="nav flex-column ms-3 dropdown-list"
-              *ngIf="dropdowns['ticket']"
-            >
-              <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/add-ticket" (click)="navigateAndCloseSidebar()">Add Ticket</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link text-white" routerLink="/list-ticket" (click)="navigateAndCloseSidebar()">List Ticket</a>
-              </li>
-            </ul>
-          </li>
-  
-          <li class="nav-item">
-            <a class="nav-link text-white" routerLink="/skill" (click)="navigateAndCloseSidebar()">Skills Manage</a>
+          <li>
+            <a class="nav-subitem" routerLink="/list-candidate" (click)="navigateAndCloseSidebar()">
+              <i class="bi bi-card-list"></i> All Candidates
+            </a>
           </li>
         </ul>
-      </div>
-    </div>
-  
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-          <!-- Sidebar Toggle Button -->
-          <button class="btn btn-outline-light me-2" (click)="toggleSidebar()">☰</button>
-          
-            <a class="navbar-brand" routerLink="/">
-                <img src="/assets/img/hr-me-logo.png" alt="Hr-me_Logo" class="logo">
+      </li>
+
+      <!-- Job Offers -->
+      <li class="nav-group" [class.expanded]="dropdowns['offer']">
+        <button class="nav-item nav-toggle" (click)="toggleDropdown('offer')">
+          <span class="nav-icon"><i class="bi bi-briefcase-fill"></i></span>
+          <span class="nav-label">Job Offers</span>
+          <i class="bi bi-chevron-right nav-arrow"></i>
+        </button>
+        <ul class="nav-submenu" [class.open]="dropdowns['offer']">
+          <li>
+            <a class="nav-subitem" routerLink="/add-offer" (click)="navigateAndCloseSidebar()">
+              <i class="bi bi-plus-circle-fill"></i> Post Offer
             </a>
-  
-          <!-- Toggle button for mobile view -->
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
+          </li>
+          <li>
+            <a class="nav-subitem" routerLink="/list-offers" (click)="navigateAndCloseSidebar()">
+              <i class="bi bi-card-list"></i> All Offers
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- AI Recruitment -->
+      <li class="nav-group" [class.expanded]="dropdowns['recruitment']">
+        <button class="nav-item nav-toggle" (click)="toggleDropdown('recruitment')">
+          <span class="nav-icon"><i class="bi bi-robot"></i></span>
+          <span class="nav-label">AI Recruitment</span>
+          <span class="nav-badge-new">New</span>
+          <i class="bi bi-chevron-right nav-arrow"></i>
+        </button>
+        <ul class="nav-submenu" [class.open]="dropdowns['recruitment']">
+          <li>
+            <a class="nav-subitem" routerLink="/recruitment/interview" (click)="navigateAndCloseSidebar()">
+              <i class="bi bi-camera-video-fill"></i> AI Interview
+            </a>
+          </li>
+          <li>
+            <a class="nav-subitem" routerLink="/recruitment/interview/sessions" (click)="navigateAndCloseSidebar()">
+              <i class="bi bi-collection-play-fill"></i> Interview sessions
+            </a>
+          </li>
+        </ul>
+      </li>
+
+    </ul>
+
+    <!-- Management -->
+    <div class="nav-section-label">Management</div>
+    <ul class="nav-list">
+
+      <li>
+        <a class="nav-item"
+           routerLink="/position"
+           routerLinkActive="active"
+           (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><i class="bi bi-diagram-3-fill"></i></span>
+          <span class="nav-label">Positions</span>
+        </a>
+      </li>
+
+      <!-- Tickets -->
+      <li class="nav-group" [class.expanded]="dropdowns['ticket']">
+        <button class="nav-item nav-toggle" (click)="toggleDropdown('ticket')">
+          <span class="nav-icon"><i class="bi bi-ticket-perforated-fill"></i></span>
+          <span class="nav-label">Tickets</span>
+          <i class="bi bi-chevron-right nav-arrow"></i>
+        </button>
+        <ul class="nav-submenu" [class.open]="dropdowns['ticket']">
+          <li>
+            <a class="nav-subitem" routerLink="/add-ticket" (click)="navigateAndCloseSidebar()">
+              <i class="bi bi-plus-circle-fill"></i> New Ticket
+            </a>
+          </li>
+          <li>
+            <a class="nav-subitem" routerLink="/list-ticket" (click)="navigateAndCloseSidebar()">
+              <i class="bi bi-card-list"></i> All Tickets
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li>
+        <a class="nav-item"
+           routerLink="/skill"
+           routerLinkActive="active"
+           (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><i class="bi bi-stars"></i></span>
+          <span class="nav-label">Skills</span>
+        </a>
+      </li>
+
+    </ul>
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <span class="sidebar-version">HR-Me &copy; 2026</span>
+  </div>
+
+</aside>
+
+<!-- ================================================================
+     TOP NAVBAR
+     ================================================================ -->
+<header class="topnav">
+  <div class="topnav-inner">
+
+    <!-- Left: hamburger + brand -->
+    <div class="topnav-start">
+      <button class="hamburger"
+              (click)="toggleSidebar()"
+              [class.is-active]="isSidebarOpen"
+              aria-label="Toggle navigation menu">
+        <span class="hb-line"></span>
+        <span class="hb-line"></span>
+        <span class="hb-line"></span>
+      </button>
+
+      <a routerLink="/home" class="topnav-brand">
+        <img src="/assets/img/hr-me-logo.png"
+             alt="HR-Me"
+             class="topnav-logo"
+             onerror="this.style.display='none'">
+        <span class="topnav-brand-text">HR<span class="brand-accent">-Me</span></span>
+      </a>
+    </div>
+
+    <!-- Right: auth / user -->
+    <div class="topnav-end">
+
+      <!-- Guest state -->
+      <ng-container *ngIf="!isUserConnected">
+        <button class="btn-signin" (click)="login()">
+          <i class="bi bi-box-arrow-in-right"></i>
+          <span>Sign In</span>
+        </button>
+        <a routerLink="/register" class="btn-register">Get Started</a>
+      </ng-container>
+
+      <!-- Authenticated state -->
+      <ng-container *ngIf="isUserConnected">
+        <button class="topnav-icon-btn" title="Notifications" aria-label="Notifications">
+          <i class="bi bi-bell-fill"></i>
+          <span class="notif-dot"></span>
+        </button>
+
+        <!-- Profile dropdown -->
+        <div class="profile-wrap">
+          <button class="profile-trigger" (click)="toggleUserDropdown()">
+            <div class="avatar">
+              <img src="assets/img/user.jpg"
+                   alt="User avatar"
+                   class="avatar-img"
+                   onerror="this.style.display='none'">
+              <span class="avatar-initials">U</span>
+            </div>
+            <span class="profile-name">User Name</span>
+            <i class="bi bi-chevron-down profile-caret" [class.flipped]="isUserDropdownOpen"></i>
           </button>
-  
-          <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            <ul class="navbar-nav">
-              <ng-container *ngIf="!isUserConnected">
-                <li class="nav-item">
-                  <a class="nav-link" (click)="login()">Login</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" routerLink="/register">Register</a>
-                </li>
-              </ng-container>
-  
-              <ng-container *ngIf="isUserConnected">
-                <li class="nav-item dropdown">
-                  <!-- User Profile Dropdown -->
-                  <a
-                    class="nav-link dropdown-toggle d-flex align-items-center"
-                    href="#"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <img
-                      src="assets/img/user.jpg"
-                      alt="User"
-                      class="rounded-circle me-2"
-                      style="width: 30px; height: 30px;"
-                    />
-                    <span>User Name</span>
-                    <i class="ms-1 bi bi-chevron-down"></i>
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <a class="dropdown-item" routerLink="/settings">Settings</a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" (click)="logout()">Logout</a>
-                    </li>
-                  </ul>
-                </li>
-              </ng-container>
-            </ul>
+
+          <div class="profile-dropdown" *ngIf="isUserDropdownOpen">
+            <div class="pd-header">
+              <div class="avatar avatar--md">
+                <span class="avatar-initials">U</span>
+              </div>
+              <div>
+                <div class="pd-name">User Name</div>
+                <div class="pd-email">user&#64;hr-me.com</div>
+              </div>
+            </div>
+            <div class="pd-divider"></div>
+            <a class="pd-item" routerLink="/settings">
+              <i class="bi bi-gear-fill"></i> Settings
+            </a>
+            <div class="pd-divider"></div>
+            <button class="pd-item pd-item--danger" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i> Sign Out
+            </button>
           </div>
         </div>
-      </nav>
-    <!-- Main Content -->
-    <!-- <div class="main-content">
-      
-  
-      
-    </div> -->
+      </ng-container>
+
+    </div>
   </div>
+</header>

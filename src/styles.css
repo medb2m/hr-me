@@ -1,1 +1,109 @@
-/* You can add global styles to this file, and also import other style files */
+/* ============================================================
+   DESIGN SYSTEM — CSS Custom Properties
+   ============================================================ */
+:root {
+  /* Brand colors */
+  --clr-primary:        #6366f1;
+  --clr-primary-dark:   #4f46e5;
+  --clr-primary-light:  #a5b4fc;
+  --clr-secondary:      #8b5cf6;
+  --clr-accent:         #f59e0b;
+  --clr-success:        #10b981;
+  --clr-warning:        #f59e0b;
+  --clr-danger:         #ef4444;
+  --clr-info:           #3b82f6;
+
+  /* Surfaces */
+  --clr-bg:             #f1f5f9;
+  --clr-surface:        #ffffff;
+  --clr-surface-2:      #f8fafc;
+
+  /* Text */
+  --clr-text:           #0f172a;
+  --clr-text-2:         #475569;
+  --clr-text-muted:     #94a3b8;
+
+  /* Borders */
+  --clr-border:         #e2e8f0;
+  --clr-border-light:   #f1f5f9;
+
+  /* Sidebar (dark navy) */
+  --sidebar-bg:         #0f172a;
+  --sidebar-hover:      rgba(255,255,255,.06);
+  --sidebar-active:     rgba(99,102,241,.18);
+  --sidebar-text:       #cbd5e1;
+  --sidebar-text-muted: #64748b;
+  --sidebar-icon:       #6366f1;
+
+  /* Layout */
+  --navbar-h:           64px;
+  --sidebar-w:          280px;
+
+  /* Shadows */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,.05);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.08),  0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:  0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+  --shadow-lg:  0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
+  --shadow-xl:  0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1);
+
+  /* Radii */
+  --radius-sm:  6px;
+  --radius:     10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+
+  /* Transitions */
+  --ease:        cubic-bezier(.4, 0, .2, 1);
+  --dur:         .2s;
+  --dur-md:      .35s;
+}
+
+/* ============================================================
+   BASE RESET
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--clr-bg);
+  color: var(--clr-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a  { text-decoration: none; color: inherit; }
+button { cursor: pointer; background: none; border: none; font-family: inherit; }
+img { max-width: 100%; height: auto; display: block; }
+ul  { list-style: none; padding: 0; margin: 0; }
+
+/* ============================================================
+   APP SHELL LAYOUT
+   ============================================================ */
+.main-content {
+  margin-top: var(--navbar-h);
+  min-height: calc(100vh - var(--navbar-h));
+}
+
+body.sidebar-open { overflow: hidden; }
+
+/* ============================================================
+   CUSTOM SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar              { width: 6px; height: 6px; }
+::-webkit-scrollbar-track        { background: transparent; }
+::-webkit-scrollbar-thumb        { background: var(--clr-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover  { background: var(--clr-text-muted); }
+
+/* ============================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+@media (max-width: 576px) {
+  :root { --navbar-h: 56px; }
+}

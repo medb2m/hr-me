@@ -1,49 +1,65 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { Component, HostListener } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
-  // Sidebar toggle state
-  isSidebarOpen = false;
 
-  // Dropdown states
+  isSidebarOpen     = false;
+  isUserDropdownOpen = false;
+  isUserConnected   = false;
+
   dropdowns: { [key: string]: boolean } = {
-    candidate: false,
-    offer: false,
-    ticket: false,
+    candidate:   false,
+    offer:       false,
+    ticket:      false,
+    recruitment: false,
   };
-
-  // Simulate user connection state
-  isUserConnected = false;
 
   toggleSidebar(): void {
     this.isSidebarOpen = !this.isSidebarOpen;
-    if(this.isSidebarOpen){
-      window.scrollTo({ top: 0, behavior: 'smooth'})
+    if (this.isSidebarOpen) {
+      document.body.classList.add('sidebar-open');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      document.body.classList.remove('sidebar-open');
     }
   }
 
   navigateAndCloseSidebar(): void {
     this.isSidebarOpen = false;
+    document.body.classList.remove('sidebar-open');
   }
 
   toggleDropdown(group: string): void {
     this.dropdowns[group] = !this.dropdowns[group];
   }
 
+  toggleUserDropdown(): void {
+    this.isUserDropdownOpen = !this.isUserDropdownOpen;
+  }
+
   login(): void {
-    this.isUserConnected = true;
+    this.isUserConnected    = true;
+    this.isUserDropdownOpen = false;
   }
 
   logout(): void {
-    this.isUserConnected = false;
+    this.isUserConnected    = false;
+    this.isUserDropdownOpen = false;
   }
-  
+
+  /** Close profile dropdown when clicking outside of it */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.profile-wrap')) {
+      this.isUserDropdownOpen = false;
+    }
+  }
 }
