@@ -4,11 +4,10 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-list-candidate',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './list-candidate.component.html',
-  styleUrl: './list-candidate.component.css'
+    selector: 'app-list-candidate',
+    imports: [CommonModule, RouterLink],
+    templateUrl: './list-candidate.component.html',
+    styleUrl: './list-candidate.component.css'
 })
 export class ListCandidateComponent {
   candidates : any

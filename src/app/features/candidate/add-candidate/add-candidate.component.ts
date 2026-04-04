@@ -8,11 +8,10 @@ import { Skill } from '../../../models/skill';
 import { SkillService } from '../../../services/skill.service';
 
 @Component({
-  selector: 'app-add-candidate',
-  standalone: true,
-  imports: [ReactiveFormsModule,CommonModule, FormsModule],
-  templateUrl: './add-candidate.component.html',
-  styleUrl: './add-candidate.component.css'
+    selector: 'app-add-candidate',
+    imports: [ReactiveFormsModule, CommonModule, FormsModule],
+    templateUrl: './add-candidate.component.html',
+    styleUrl: './add-candidate.component.css'
 })
 export class AddCandidateComponent {
   candidateForm: FormGroup;
@@ -23,7 +22,7 @@ export class AddCandidateComponent {
 
   positions : Position[] = []
 
-  uploadedImage: string | null = null; 
+  uploadedImage: string | null = null;  
 
   suggestedSkills: Skill[] = [];
   selectedSkills: Skill[] = [];

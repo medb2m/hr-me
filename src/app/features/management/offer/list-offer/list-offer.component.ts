@@ -5,14 +5,13 @@ import { Offer } from '../../../../models/offer';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-list-offer',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink
-  ],
-  templateUrl: './list-offer.component.html',
-  styleUrl: './list-offer.component.css'
+    selector: 'app-list-offer',
+    imports: [
+        CommonModule,
+        RouterLink
+    ],
+    templateUrl: './list-offer.component.html',
+    styleUrl: './list-offer.component.css'
 })
 export class ListOfferComponent {
   offers: Offer[] = [];

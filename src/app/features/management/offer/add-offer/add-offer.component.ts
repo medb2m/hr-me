@@ -6,13 +6,13 @@ import { PositionService } from '../../../../services/position.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-add-offer',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule],
-  templateUrl: './add-offer.component.html',
-  styleUrl: './add-offer.component.css'
+    selector: 'app-add-offer',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule
+    ],
+    templateUrl: './add-offer.component.html',
+    styleUrl: './add-offer.component.css'
 })
 export class AddOfferComponent {
   offerForm: FormGroup;

@@ -9,11 +9,10 @@ import { Skill } from '../../../models/skill';
 import { SkillService } from '../../../services/skill.service';
 
 @Component({
-  selector: 'app-update-candidate',
-  standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, FormsModule],
-  templateUrl: './update-candidate.component.html',
-  styleUrl: './update-candidate.component.css'
+    selector: 'app-update-candidate',
+    imports: [ReactiveFormsModule, CommonModule, FormsModule],
+    templateUrl: './update-candidate.component.html',
+    styleUrl: './update-candidate.component.css'
 })
 export class UpdateCandidateComponent {
   candidateForm: FormGroup;

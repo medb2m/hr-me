@@ -11,15 +11,14 @@ import { Application } from '../../../../models/application';
 import * as XLSX from 'xlsx';
 
 @Component({
-  selector: 'app-offer',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterLink
-  ],
-  templateUrl: './offer.component.html',
-  styleUrl: './offer.component.css'
+    selector: 'app-offer',
+    imports: [
+        CommonModule,
+        FormsModule,
+        RouterLink
+    ],
+    templateUrl: './offer.component.html',
+    styleUrl: './offer.component.css'
 })
 export class OfferComponent {
   offer?: Offer;

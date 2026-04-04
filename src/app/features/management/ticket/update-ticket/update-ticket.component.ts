@@ -5,11 +5,10 @@ import { TicketService } from '../../../../services/ticket.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
-  selector: 'app-update-ticket',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './update-ticket.component.html',
-  styleUrl: './update-ticket.component.css'
+    selector: 'app-update-ticket',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './update-ticket.component.html',
+    styleUrl: './update-ticket.component.css'
 })
 export class UpdateTicketComponent {
   ticketForm!: FormGroup;

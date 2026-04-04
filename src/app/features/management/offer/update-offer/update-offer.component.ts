@@ -7,11 +7,10 @@ import { OfferService } from '../../../../services/offer.service';
 import { PositionService } from '../../../../services/position.service';
 
 @Component({
-  selector: 'app-update-offer',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './update-offer.component.html',
-  styleUrl: './update-offer.component.css'
+    selector: 'app-update-offer',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './update-offer.component.html',
+    styleUrl: './update-offer.component.css'
 })
 export class UpdateOfferComponent {
   offerForm: FormGroup;

@@ -7,11 +7,10 @@ import { CommonModule } from '@angular/common';
 
 
 @Component({
-  selector: 'app-candidates-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './candidates-list.component.html',
-  styleUrl: './candidates-list.component.css'
+    selector: 'app-candidates-list',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './candidates-list.component.html',
+    styleUrl: './candidates-list.component.css'
 })
 export class CandidatesListComponent {
   candidates: Candidate[] = [];

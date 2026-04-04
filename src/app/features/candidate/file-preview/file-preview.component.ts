@@ -4,11 +4,11 @@ import { NgxExtendedPdfViewerModule, VerbosityLevel } from 'ngx-extended-pdf-vie
 
 
 @Component({
-  selector: 'app-file-preview',
-  standalone: true,
-  imports: [CommonModule, NgxExtendedPdfViewerModule],
-  templateUrl: './file-preview.component.html',
-  styleUrl: './file-preview.component.css'
+    selector: 'app-file-preview',
+    standalone: true,
+    imports: [CommonModule, NgxExtendedPdfViewerModule],
+    templateUrl: './file-preview.component.html',
+    styleUrl: './file-preview.component.css'
 })
 export class FilePreviewComponent {
   @Input() pdfSrc: string = '/assets/sample.pdf'; // Path to your PDF file

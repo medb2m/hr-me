@@ -6,14 +6,13 @@ import { Ticket } from '../../../../models/ticket';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-add-ticket',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule
-  ],
-  templateUrl: './add-ticket.component.html',
-  styleUrl: './add-ticket.component.css'
+    selector: 'app-add-ticket',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule
+    ],
+    templateUrl: './add-ticket.component.html',
+    styleUrl: './add-ticket.component.css'
 })
 export class AddTicketComponent {
   ticketForm!: FormGroup;

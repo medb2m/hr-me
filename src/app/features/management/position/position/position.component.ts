@@ -5,14 +5,13 @@ import { PositionService } from '../../../../services/position.service';
 import { Position } from '../../../../models/position';
 
 @Component({
-  selector: 'app-position',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule
-  ],
-  templateUrl: './position.component.html',
-  styleUrl: './position.component.css'
+    selector: 'app-position',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule
+    ],
+    templateUrl: './position.component.html',
+    styleUrl: './position.component.css'
 })
 export class PositionComponent {
   positionForm: FormGroup;

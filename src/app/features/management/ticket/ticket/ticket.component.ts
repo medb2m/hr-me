@@ -6,11 +6,10 @@ import { TicketService } from '../../../../services/ticket.service';
 import { tick } from '@angular/core/testing';
 
 @Component({
-  selector: 'app-ticket',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
-  templateUrl: './ticket.component.html',
-  styleUrl: './ticket.component.css'
+    selector: 'app-ticket',
+    imports: [CommonModule, RouterLink],
+    templateUrl: './ticket.component.html',
+    styleUrl: './ticket.component.css'
 })
 export class TicketComponent {
   ticket: Ticket | null = null;

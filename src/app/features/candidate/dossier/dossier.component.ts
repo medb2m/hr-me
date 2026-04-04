@@ -7,11 +7,10 @@ import { ActivatedRoute } from '@angular/router';
 import { FilePreviewComponent } from '../file-preview/file-preview.component';
 
 @Component({
-  selector: 'app-dossier',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule/* , FilePreviewComponent */],
-  templateUrl: './dossier.component.html',
-  styleUrl: './dossier.component.css'
+    selector: 'app-dossier',
+    imports: [CommonModule, ReactiveFormsModule, FormsModule /* , FilePreviewComponent */],
+    templateUrl: './dossier.component.html',
+    styleUrl: './dossier.component.css'
 })
 export class DossierComponent {
   selectedCandidate?: Candidate;

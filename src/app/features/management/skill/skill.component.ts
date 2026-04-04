@@ -5,11 +5,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-skill',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './skill.component.html',
-  styleUrl: './skill.component.css'
+    selector: 'app-skill',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './skill.component.html',
+    styleUrl: './skill.component.css'
 })
 export class SkillComponent {
   skills: Skill[] = [];

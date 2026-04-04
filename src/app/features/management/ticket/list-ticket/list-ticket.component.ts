@@ -8,11 +8,10 @@ import { RouterLink } from '@angular/router';
 import { TicketResponse } from '../../../../models/ticketResponse';
 
 @Component({
-  selector: 'app-list-ticket',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './list-ticket.component.html',
-  styleUrl: './list-ticket.component.css'
+    selector: 'app-list-ticket',
+    imports: [CommonModule, FormsModule, RouterLink],
+    templateUrl: './list-ticket.component.html',
+    styleUrl: './list-ticket.component.css'
 })
 export class ListTicketComponent {
   tickets: Ticket[] = [];
