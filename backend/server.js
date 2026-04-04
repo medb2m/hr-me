@@ -16,6 +16,8 @@ import positionRoutes from './routes/position.routes.js';
 import applicationRoutes from './routes/application.routes.js';
 import ticketRoutes from './routes/ticket.routes.js';
 import skillRoutes from './routes/skill.routes.js';
+import interviewRoutes from './routes/interview.routes.js';
+import ttsRoutes from './routes/tts.routes.js';
 
 // path 
 import path from 'path';
@@ -63,6 +65,10 @@ app.use('/api/application', applicationRoutes);
 app.use('/api/ticket', ticketRoutes);
 // Skill Routes
 app.use('/api/skill', skillRoutes);
+// AI Interview sessions
+app.use('/api/interview', interviewRoutes);
+// Free neural TTS (Microsoft Edge online — no API key)
+app.use('/api/tts', ttsRoutes);
 
 // global error handler
 app.use(errorHandler);
