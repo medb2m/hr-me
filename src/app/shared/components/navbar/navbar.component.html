@@ -1,18 +1,14 @@
 <!-- ================================================================
-     BACKDROP (closes sidebar on click)
+     BACKDROP & SIDEBAR — authenticated users only
      ================================================================ -->
+@if (isUserConnected) {
 <div class="nav-backdrop" [class.visible]="isSidebarOpen" (click)="toggleSidebar()"></div>
-
-<!-- ================================================================
-     SIDEBAR
-     ================================================================ -->
 <aside class="sidebar" [class.open]="isSidebarOpen">
 
-  <!-- Header -->
   <div class="sidebar-header">
     <a routerLink="/home" class="sidebar-brand" (click)="navigateAndCloseSidebar()">
       <div class="sidebar-brand-icon">
-        <i class="bi bi-people-fill"></i>
+        <svg lucideUsers class="lc-icon"></svg>
       </div>
       <div class="sidebar-brand-text">
         <span class="sidebar-brand-name">HR-Me</span>
@@ -20,91 +16,129 @@
       </div>
     </a>
     <button class="sidebar-close-btn" (click)="toggleSidebar()" aria-label="Close sidebar">
-      <i class="bi bi-x-lg"></i>
+      <svg lucideX class="lc-icon"></svg>
     </button>
   </div>
 
-  <!-- Navigation -->
   <nav class="sidebar-nav" role="navigation">
 
-    <!-- Overview -->
+    <div class="nav-section-label">Website</div>
+    <ul class="nav-list">
+      <li>
+        <a class="nav-item" routerLink="/jobs" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><svg lucideBriefcase class="lc-icon"></svg></span>
+          <span class="nav-label">Open jobs</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-item" routerLink="/services" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><svg lucideLayoutGrid class="lc-icon"></svg></span>
+          <span class="nav-label">Services</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-item" routerLink="/about" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><svg lucideInfo class="lc-icon"></svg></span>
+          <span class="nav-label">About</span>
+        </a>
+      </li>
+    </ul>
+
     <div class="nav-section-label">Overview</div>
     <ul class="nav-list">
       <li>
-        <a class="nav-item"
-           routerLink="/home"
-           routerLinkActive="active"
-           [routerLinkActiveOptions]="{exact:true}"
-           (click)="navigateAndCloseSidebar()">
-          <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
+        <a class="nav-item" routerLink="/home" routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact:true}" (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><svg lucideGauge class="lc-icon"></svg></span>
           <span class="nav-label">Dashboard</span>
         </a>
       </li>
     </ul>
 
-    <!-- Recruitment -->
     <div class="nav-section-label">Recruitment</div>
     <ul class="nav-list">
 
-      <!-- Candidates -->
       <li class="nav-group" [class.expanded]="dropdowns['candidate']">
         <button class="nav-item nav-toggle" (click)="toggleDropdown('candidate')">
-          <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
+          <span class="nav-icon"><svg lucideUsers class="lc-icon"></svg></span>
           <span class="nav-label">Candidates</span>
-          <i class="bi bi-chevron-right nav-arrow"></i>
+          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
         </button>
         <ul class="nav-submenu" [class.open]="dropdowns['candidate']">
           <li>
             <a class="nav-subitem" routerLink="/add-candidate" (click)="navigateAndCloseSidebar()">
-              <i class="bi bi-person-plus-fill"></i> Add Candidate
+              <svg lucideUserPlus class="lc-icon lc-icon--sm"></svg> Add Candidate
             </a>
           </li>
           <li>
             <a class="nav-subitem" routerLink="/list-candidate" (click)="navigateAndCloseSidebar()">
-              <i class="bi bi-card-list"></i> All Candidates
+              <svg lucideList class="lc-icon lc-icon--sm"></svg> All Candidates
             </a>
           </li>
         </ul>
       </li>
 
-      <!-- Job Offers -->
       <li class="nav-group" [class.expanded]="dropdowns['offer']">
         <button class="nav-item nav-toggle" (click)="toggleDropdown('offer')">
-          <span class="nav-icon"><i class="bi bi-briefcase-fill"></i></span>
+          <span class="nav-icon"><svg lucideBriefcase class="lc-icon"></svg></span>
           <span class="nav-label">Job Offers</span>
-          <i class="bi bi-chevron-right nav-arrow"></i>
+          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
         </button>
         <ul class="nav-submenu" [class.open]="dropdowns['offer']">
           <li>
             <a class="nav-subitem" routerLink="/add-offer" (click)="navigateAndCloseSidebar()">
-              <i class="bi bi-plus-circle-fill"></i> Post Offer
+              <svg lucidePlusCircle class="lc-icon lc-icon--sm"></svg> Post Offer
             </a>
           </li>
           <li>
             <a class="nav-subitem" routerLink="/list-offers" (click)="navigateAndCloseSidebar()">
-              <i class="bi bi-card-list"></i> All Offers
+              <svg lucideList class="lc-icon lc-icon--sm"></svg> All Offers
             </a>
           </li>
         </ul>
       </li>
 
-      <!-- AI Recruitment -->
       <li class="nav-group" [class.expanded]="dropdowns['recruitment']">
         <button class="nav-item nav-toggle" (click)="toggleDropdown('recruitment')">
-          <span class="nav-icon"><i class="bi bi-robot"></i></span>
+          <span class="nav-icon"><svg lucideBot class="lc-icon"></svg></span>
           <span class="nav-label">AI Recruitment</span>
           <span class="nav-badge-new">New</span>
-          <i class="bi bi-chevron-right nav-arrow"></i>
+          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
         </button>
         <ul class="nav-submenu" [class.open]="dropdowns['recruitment']">
           <li>
             <a class="nav-subitem" routerLink="/recruitment/interview" (click)="navigateAndCloseSidebar()">
-              <i class="bi bi-camera-video-fill"></i> AI Interview
+              <svg lucideVideo class="lc-icon lc-icon--sm"></svg> AI Interview
             </a>
           </li>
           <li>
             <a class="nav-subitem" routerLink="/recruitment/interview/sessions" (click)="navigateAndCloseSidebar()">
-              <i class="bi bi-collection-play-fill"></i> Interview sessions
+              <svg lucidePlaySquare class="lc-icon lc-icon--sm"></svg> Interview sessions
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="nav-group" [class.expanded]="dropdowns['meetings']">
+        <button class="nav-item nav-toggle" (click)="toggleDropdown('meetings')">
+          <span class="nav-icon"><svg lucideMic2 class="lc-icon"></svg></span>
+          <span class="nav-label">Entretiens en ligne</span>
+          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
+        </button>
+        <ul class="nav-submenu" [class.open]="dropdowns['meetings']">
+          <li>
+            <a class="nav-subitem" routerLink="/meetings" (click)="navigateAndCloseSidebar()">
+              <svg lucideVideo class="lc-icon lc-icon--sm"></svg> Mes entretiens
+            </a>
+          </li>
+          <li>
+            <a class="nav-subitem" routerLink="/meetings/new" (click)="navigateAndCloseSidebar()">
+              <svg lucidePlusCircle class="lc-icon lc-icon--sm"></svg> Planifier
+            </a>
+          </li>
+          <li>
+            <a class="nav-subitem" routerLink="/calendar" (click)="navigateAndCloseSidebar()">
+              <svg lucideCalendar class="lc-icon lc-icon--sm"></svg> Calendrier
             </a>
           </li>
         </ul>
@@ -112,47 +146,39 @@
 
     </ul>
 
-    <!-- Management -->
     <div class="nav-section-label">Management</div>
     <ul class="nav-list">
 
       <li>
-        <a class="nav-item"
-           routerLink="/position"
-           routerLinkActive="active"
-           (click)="navigateAndCloseSidebar()">
-          <span class="nav-icon"><i class="bi bi-diagram-3-fill"></i></span>
+        <a class="nav-item" routerLink="/position" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><svg lucideNetwork class="lc-icon"></svg></span>
           <span class="nav-label">Positions</span>
         </a>
       </li>
 
-      <!-- Tickets -->
       <li class="nav-group" [class.expanded]="dropdowns['ticket']">
         <button class="nav-item nav-toggle" (click)="toggleDropdown('ticket')">
-          <span class="nav-icon"><i class="bi bi-ticket-perforated-fill"></i></span>
+          <span class="nav-icon"><svg lucideTicket class="lc-icon"></svg></span>
           <span class="nav-label">Tickets</span>
-          <i class="bi bi-chevron-right nav-arrow"></i>
+          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
         </button>
         <ul class="nav-submenu" [class.open]="dropdowns['ticket']">
           <li>
             <a class="nav-subitem" routerLink="/add-ticket" (click)="navigateAndCloseSidebar()">
-              <i class="bi bi-plus-circle-fill"></i> New Ticket
+              <svg lucidePlusCircle class="lc-icon lc-icon--sm"></svg> New Ticket
             </a>
           </li>
           <li>
             <a class="nav-subitem" routerLink="/list-ticket" (click)="navigateAndCloseSidebar()">
-              <i class="bi bi-card-list"></i> All Tickets
+              <svg lucideList class="lc-icon lc-icon--sm"></svg> All Tickets
             </a>
           </li>
         </ul>
       </li>
 
       <li>
-        <a class="nav-item"
-           routerLink="/skill"
-           routerLinkActive="active"
-           (click)="navigateAndCloseSidebar()">
-          <span class="nav-icon"><i class="bi bi-stars"></i></span>
+        <a class="nav-item" routerLink="/skill" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><svg lucideSparkles class="lc-icon"></svg></span>
           <span class="nav-label">Skills</span>
         </a>
       </li>
@@ -160,12 +186,18 @@
     </ul>
   </nav>
 
-  <!-- Sidebar Footer -->
   <div class="sidebar-footer">
+    @if (isUserConnected) {
+      <button type="button" class="nav-item nav-toggle" (click)="logout()">
+        <span class="nav-icon"><svg lucideLogOut class="lc-icon"></svg></span>
+        <span class="nav-label">Sign Out</span>
+      </button>
+    }
     <span class="sidebar-version">HR-Me &copy; 2026</span>
   </div>
 
 </aside>
+} <!-- end @if isUserConnected -->
 
 <!-- ================================================================
      TOP NAVBAR
@@ -173,16 +205,18 @@
 <header class="topnav">
   <div class="topnav-inner">
 
-    <!-- Left: hamburger + brand -->
     <div class="topnav-start">
-      <button class="hamburger"
-              (click)="toggleSidebar()"
-              [class.is-active]="isSidebarOpen"
-              aria-label="Toggle navigation menu">
-        <span class="hb-line"></span>
-        <span class="hb-line"></span>
-        <span class="hb-line"></span>
-      </button>
+      <!-- Hamburger only visible for authenticated users -->
+      @if (isUserConnected) {
+        <button class="hamburger"
+                (click)="toggleSidebar()"
+                [class.is-active]="isSidebarOpen"
+                aria-label="Toggle navigation menu">
+          <span class="hb-line"></span>
+          <span class="hb-line"></span>
+          <span class="hb-line"></span>
+        </button>
+      }
 
       <a routerLink="/home" class="topnav-brand">
         <img src="/assets/img/hr-me-logo.png"
@@ -193,60 +227,96 @@
       </a>
     </div>
 
-    <!-- Right: auth / user -->
+    <nav class="topnav-center" aria-label="Site pages">
+      <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="topnav-link">Home</a>
+      <a routerLink="/jobs" routerLinkActive="active" class="topnav-link">Jobs</a>
+      <a routerLink="/services" routerLinkActive="active" class="topnav-link">Services</a>
+      <a routerLink="/about" routerLinkActive="active" class="topnav-link">About</a>
+    </nav>
+
     <div class="topnav-end">
 
-      <!-- Guest state -->
-      <ng-container *ngIf="!isUserConnected">
-        <button class="btn-signin" (click)="login()">
-          <i class="bi bi-box-arrow-in-right"></i>
+      @if (!isUserConnected) {
+        <a routerLink="/login" class="btn-signin">
+          <svg lucideLogIn class="lc-icon lc-icon--sm"></svg>
           <span>Sign In</span>
-        </button>
+        </a>
         <a routerLink="/register" class="btn-register">Get Started</a>
-      </ng-container>
+      }
 
-      <!-- Authenticated state -->
-      <ng-container *ngIf="isUserConnected">
-        <button class="topnav-icon-btn" title="Notifications" aria-label="Notifications">
-          <i class="bi bi-bell-fill"></i>
-          <span class="notif-dot"></span>
-        </button>
+      @if (isUserConnected) {
+        <div class="notif-panel-wrap">
+          <button
+            type="button"
+            class="topnav-icon-btn"
+            [class.notif-btn--live]="notifHub.socketStatus() === 'CONNECTED'"
+            title="Notifications"
+            aria-label="Notifications"
+            (click)="toggleNotifications($event)">
+            <svg lucideBell class="lc-icon" [class.notif-bell-swing]="notifHub.unreadTotal() > 0"></svg>
+            @if (notifHub.unreadLabel()) {
+              <span class="notif-badge">{{ notifHub.unreadLabel() }}</span>
+            }
+          </button>
+          @if (notifHub.panelOpen()) {
+            <div class="notif-panel" role="dialog" aria-label="Notifications">
+              <div class="notif-panel-head">
+                <strong>Notifications</strong>
+                <button type="button" class="notif-link" (click)="notifHub.markAllRead()">Tout lu</button>
+              </div>
+              <ul class="notif-list">
+                @for (n of notifHub.items(); track n.id) {
+                  <li
+                    class="notif-item"
+                    [class.unread]="!n.read"
+                    (click)="notifHub.markReadAndGo(n)">
+                    <span class="notif-title">{{ n.title }}</span>
+                    <span class="notif-body">{{ n.body }}</span>
+                    <button type="button" class="notif-dismiss" (click)="notifHub.dismiss(n, $event)">×</button>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
 
-        <!-- Profile dropdown -->
         <div class="profile-wrap">
           <button class="profile-trigger" (click)="toggleUserDropdown()">
             <div class="avatar">
               <img src="assets/img/user.jpg"
-                   alt="User avatar"
+                   alt=""
                    class="avatar-img"
                    onerror="this.style.display='none'">
-              <span class="avatar-initials">U</span>
+              <span class="avatar-initials">{{ userInitials() }}</span>
             </div>
-            <span class="profile-name">User Name</span>
-            <i class="bi bi-chevron-down profile-caret" [class.flipped]="isUserDropdownOpen"></i>
+            <span class="profile-name">{{ displayName() }}</span>
+            <svg lucideChevronDown class="lc-icon lc-icon--sm profile-caret" [class.flipped]="isUserDropdownOpen"></svg>
           </button>
 
           <div class="profile-dropdown" *ngIf="isUserDropdownOpen">
             <div class="pd-header">
               <div class="avatar avatar--md">
-                <span class="avatar-initials">U</span>
+                <span class="avatar-initials">{{ userInitials() }}</span>
               </div>
               <div>
-                <div class="pd-name">User Name</div>
-                <div class="pd-email">user&#64;hr-me.com</div>
+                <div class="pd-name">{{ displayName() }}</div>
+                <div class="pd-email">{{ auth.user()?.email }}</div>
+                @if (roleLabel()) {
+                  <div class="pd-role">{{ roleLabel() }}</div>
+                }
               </div>
             </div>
             <div class="pd-divider"></div>
             <a class="pd-item" routerLink="/settings">
-              <i class="bi bi-gear-fill"></i> Settings
+              <svg lucideSettings class="lc-icon lc-icon--sm"></svg> Settings
             </a>
             <div class="pd-divider"></div>
-            <button class="pd-item pd-item--danger" (click)="logout()">
-              <i class="bi bi-box-arrow-right"></i> Sign Out
+            <button type="button" class="pd-item pd-item--danger" (click)="logout()">
+              <svg lucideLogOut class="lc-icon lc-icon--sm"></svg> Sign Out
             </button>
           </div>
         </div>
-      </ng-container>
+      }
 
     </div>
   </div>

@@ -23,11 +23,50 @@ import { InterviewHubComponent } from './features/recruitment/interview/intervie
 import { InterviewRoomComponent } from './features/recruitment/interview/interview-room.component';
 import { InterviewSessionsListComponent } from './features/recruitment/interview/interview-sessions-list.component';
 import { InterviewSessionDetailComponent } from './features/recruitment/interview/interview-session-detail.component';
+import { AboutPageComponent } from './shared/components/public/about-page/about-page.component';
+import { JobsPageComponent } from './shared/components/public/jobs-page/jobs-page.component';
+import { ServicesPageComponent } from './shared/components/public/services-page/services-page.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
+import { VerifyEmailComponent } from './features/auth/verify-email/verify-email.component';
+import { ResendVerificationComponent } from './features/auth/resend-verification/resend-verification.component';
+import { guestOnlyGuard } from './core/guards/guest-only.guard';
+import { authRequiredGuard } from './core/guards/auth-required.guard';
 
 export const routes: Routes = [
     // home
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: 'home', component: HomeComponent},
+
+    // Public marketing (no sign-in required)
+    { path: 'about', component: AboutPageComponent },
+    { path: 'jobs', component: JobsPageComponent },
+    { path: 'services', component: ServicesPageComponent },
+    { path: 'login', component: LoginComponent, canActivate: [guestOnlyGuard] },
+    { path: 'register', component: RegisterComponent, canActivate: [guestOnlyGuard] },
+    { path: 'forgot-password', component: ForgotPasswordComponent },
+    { path: 'reset-password', component: ResetPasswordComponent },
+    { path: 'verify-email', component: VerifyEmailComponent },
+    { path: 'resend-verification', component: ResendVerificationComponent },
+
+    /** Admin area: own layout (loadChildren). Auth at `/admin/auth`, app at `/admin/dashboard`, etc. */
+    {
+      path: 'admin',
+      loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+    },
+
+    {
+      path: 'meetings',
+      loadChildren: () => import('./features/meetings/meetings.routes').then((m) => m.default),
+    },
+    {
+      path: 'calendar',
+      canActivate: [authRequiredGuard],
+      loadComponent: () =>
+        import('./features/calendar/calendar-page.component').then((m) => m.CalendarPageComponent),
+    },
     
     // Candidate Routes
     { path: 'add-candidate', component: AddCandidateComponent},
