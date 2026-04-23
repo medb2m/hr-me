@@ -1,0 +1,53 @@
+$burgundy: #7b1c2e;
+$dark: #0f1117;
+
+.lobby {
+  max-width: 560px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: linear-gradient(160deg, #1a1d24 0%, $dark 100%);
+  color: #e5e7eb;
+  border-radius: 16px;
+  border: 1px solid #272b36;
+}
+
+.back {
+  color: #f9a8d4;
+  text-decoration: none;
+}
+
+h1 {
+  color: #fff;
+  margin-top: 1rem;
+}
+
+.meta {
+  color: #9ca3af;
+}
+
+.pin {
+  background: rgba(123, 28, 46, 0.35);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(123, 28, 46, 0.6);
+}
+
+.hint {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.join {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.65rem 1.25rem;
+  background: $burgundy;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 10px;
+}
+
+.err {
+  color: #fca5a5;
+}

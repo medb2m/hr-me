@@ -1,0 +1,84 @@
+<div class="meeting-new">
+  <a routerLink="/meetings" class="back">← Entretiens</a>
+  <h1>Planifier un entretien</h1>
+
+  @if (conflictWarning()) {
+    <p class="warn">{{ conflictWarning() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label>Titre</label>
+    <input type="text" formControlName="title" />
+
+    <label>Type</label>
+    <select formControlName="type">
+      <option value="screening">Présélection</option>
+      <option value="technical">Technique</option>
+      <option value="final">Final</option>
+      <option value="ai_automated">IA automatisé</option>
+    </select>
+
+    <label>Date et heure (local)</label>
+    <input type="datetime-local" formControlName="scheduledAtLocal" />
+
+    <label>Durée (minutes)</label>
+    <input type="number" formControlName="durationMin" min="5" max="480" />
+
+    <label>Fuseau (IANA)</label>
+    <input type="text" formControlName="timezone" />
+
+    <label>Langue</label>
+    <select formControlName="language">
+      <option value="fr">Français</option>
+      <option value="en">English</option>
+      <option value="ar">العربية</option>
+      <option value="it">Italiano</option>
+    </select>
+
+    <label>Description</label>
+    <textarea rows="3" formControlName="description"></textarea>
+
+    <section class="invites" formArrayName="inviteRows">
+      <h2 class="invites-title">Invités (optionnel)</h2>
+      <p class="invites-hint">
+        Indiquez l’<strong>e-mail du compte HR me</strong> de chaque personne : c’est ce qui lui permet d’accéder au lobby et à la salle.
+        Si vous connaissez son <strong>ID utilisateur</strong> MongoDB (24 caractères, ex. depuis <code>/admin/users</code>), ajoutez-le pour lier le compte plus sûrement.
+      </p>
+      @for (_ctrl of inviteRows.controls; track $index; let i = $index) {
+        <div class="invite-row" [formGroupName]="i">
+          <div class="invite-field">
+            <label [attr.for]="'inv-email-' + i">E-mail</label>
+            <input [id]="'inv-email-' + i" type="email" formControlName="email" placeholder="recruteur@exemple.com" />
+          </div>
+          <div class="invite-field">
+            <label [attr.for]="'inv-name-' + i">Nom affiché</label>
+            <input [id]="'inv-name-' + i" type="text" formControlName="name" placeholder="Optionnel" />
+          </div>
+          <div class="invite-field invite-field--sm">
+            <label [attr.for]="'inv-role-' + i">Rôle</label>
+            <select [id]="'inv-role-' + i" formControlName="role">
+              <option value="recruiter">Recruteur / partenaire</option>
+              <option value="candidate">Candidat</option>
+            </select>
+          </div>
+          <div class="invite-field">
+            <label [attr.for]="'inv-uid-' + i">ID utilisateur (optionnel)</label>
+            <input [id]="'inv-uid-' + i" type="text" formControlName="userId" placeholder="24 caractères hex" />
+          </div>
+          @if (inviteRows.length > 1) {
+            <button type="button" class="btn-remove" (click)="removeInviteRow(i)" aria-label="Supprimer la ligne">×</button>
+          }
+        </div>
+      }
+      <button type="button" class="btn-add" (click)="addInviteRow()">+ Ajouter un invité</button>
+    </section>
+
+    @if (error()) {
+      <p class="err">{{ error() }}</p>
+    }
+
+    <button type="submit" class="btn-submit" [disabled]="submitting()">
+      {{ submitting() ? 'Enregistrement…' : 'Créer l’entretien' }}
+    </button>
+  </form>
+</div>

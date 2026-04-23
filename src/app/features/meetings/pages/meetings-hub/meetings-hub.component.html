@@ -1,0 +1,32 @@
+<div class="meetings-hub">
+  <header class="mh-head">
+    <h1>Entretiens en ligne</h1>
+    <p class="mh-sub">Planification, visioconférence et suivi — Module 10</p>
+    <a routerLink="/meetings/new" class="btn-primary">Nouvel entretien</a>
+    <a routerLink="/calendar" class="btn-secondary">Calendrier</a>
+  </header>
+
+  @if (loading()) {
+    <p class="mh-muted">Chargement…</p>
+  } @else if (error()) {
+    <p class="mh-error">{{ error() }}</p>
+  } @else if (items().length === 0) {
+    <p class="mh-muted">Aucun entretien sur les 45 prochains jours.</p>
+  } @else {
+    <ul class="mh-list">
+      @for (m of items(); track m.id) {
+        <li class="mh-card">
+          <div class="mh-card-main">
+            <strong>{{ m.title }}</strong>
+            <span class="mh-badge">{{ m.status }}</span>
+          </div>
+          <div class="mh-meta">{{ m.scheduledAt | date : 'medium' }} · {{ m.durationMin }} min</div>
+          <div class="mh-actions">
+            <a [routerLink]="['/meetings', m.id, 'lobby']">Lobby</a>
+            <a [routerLink]="['/meetings', m.id, 'room']">Rejoindre la salle</a>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -1,0 +1,48 @@
+<div class="cal-page">
+  <header class="cal-toolbar">
+    <h1>Calendrier</h1>
+    <div class="cal-nav">
+      <button type="button" (click)="prevMonth()">←</button>
+      <button type="button" (click)="today()">Aujourd’hui</button>
+      <button type="button" (click)="nextMonth()">→</button>
+    </div>
+    <a routerLink="/meetings/new" class="cal-link">Nouvel entretien</a>
+  </header>
+  <h2 class="cal-title">{{ title() }}</h2>
+
+  @if (socketHint()) {
+    <p class="cal-warn">{{ socketHint() }}</p>
+  }
+
+  @if (loading()) {
+    <p>Chargement des événements…</p>
+  }
+
+  <div class="cal-grid">
+    <div class="cal-dow">Lun</div>
+    <div class="cal-dow">Mar</div>
+    <div class="cal-dow">Mer</div>
+    <div class="cal-dow">Jeu</div>
+    <div class="cal-dow">Ven</div>
+    <div class="cal-dow">Sam</div>
+    <div class="cal-dow">Dim</div>
+    @for (week of gridWeeks(); track $index) {
+      @for (day of week; track dayKey(day)) {
+        <div
+          class="cal-cell"
+          [class.out]="day.getMonth() !== viewMonth().getMonth()">
+          <div class="cal-daynum">{{ day.getDate() }}</div>
+          @for (ev of eventsFor(day); track ev.id) {
+            <div
+              class="cal-pill"
+              [style.background]="ev.color"
+              [title]="ev.title">
+              {{ truncate(ev.title, 22) }}
+              <button type="button" class="ics" (click)="downloadIcs(ev); $event.stopPropagation()">.ics</button>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

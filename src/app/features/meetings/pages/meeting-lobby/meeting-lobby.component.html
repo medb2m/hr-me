@@ -1,0 +1,17 @@
+<div class="lobby">
+  <a routerLink="/meetings" class="back">← Liste</a>
+
+  @if (loading()) {
+    <p>Chargement…</p>
+  } @else if (error()) {
+    <p class="err">{{ error() }}</p>
+  } @else if (meeting()) {
+    <h1>{{ meeting()!.title }}</h1>
+    <p class="meta">{{ meeting()!.scheduledAt | date : 'full' }} · {{ meeting()!.durationMin }} min · {{ meeting()!.status }}</p>
+    @if (meeting()!.participants.length) {
+      <p class="pin">Code PIN (candidat) : <strong>{{ meeting()!.pinCode }}</strong></p>
+    }
+    <p class="hint">Vérifiez micro et caméra, puis ouvrez la salle sécurisée.</p>
+    <a class="join" [routerLink]="['/meetings', meeting()!.id, 'room']">Entrer dans la salle</a>
+  }
+</div>

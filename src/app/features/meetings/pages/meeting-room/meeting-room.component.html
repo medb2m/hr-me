@@ -1,0 +1,209 @@
+<div class="room">
+  @if (error()) {
+    <div class="room-error">{{ error() }}</div>
+  } @else {
+    <div class="room-shell" #roomShell>
+      <header class="room-top">
+        <div class="room-top-left">
+          <span class="room-brand">HR me</span>
+          <span class="room-title">{{ meetingTitle() }}</span>
+        </div>
+        <span class="room-status" [attr.title]="status()">{{ status() }}</span>
+      </header>
+
+      <div class="room-workspace">
+        <main class="room-stage">
+          <video #remoteV class="vid-remote" autoplay playsinline></video>
+          <div class="room-local-pip">
+            <video #localV class="vid-local" autoplay playsinline muted></video>
+            @if (!camOn()) {
+              <div class="cam-off-overlay">Vidéo off</div>
+            }
+            @if (screenSharing()) {
+              <div class="pip-badge">Écran</div>
+            }
+          </div>
+
+          <nav class="room-toolbar" aria-label="Contrôles de la salle">
+            <button
+              type="button"
+              class="tb-btn"
+              [class.tb-btn--off]="!micOn()"
+              (click)="toggleMic()"
+              [attr.aria-pressed]="micOn()"
+              [attr.aria-label]="micOn() ? 'Couper le micro' : 'Activer le micro'">
+              @if (micOn()) {
+                <svg lucideMic class="tb-ic"></svg>
+              } @else {
+                <svg lucideMicOff class="tb-ic"></svg>
+              }
+              <span class="tb-lbl">{{ micOn() ? 'Micro' : 'Micro off' }}</span>
+            </button>
+            <button
+              type="button"
+              class="tb-btn"
+              [class.tb-btn--off]="!camOn()"
+              (click)="toggleCam()"
+              [attr.aria-pressed]="camOn()"
+              [attr.aria-label]="camOn() ? 'Couper la caméra' : 'Activer la caméra'">
+              @if (camOn()) {
+                <svg lucideVideo class="tb-ic"></svg>
+              } @else {
+                <svg lucideVideoOff class="tb-ic"></svg>
+              }
+              <span class="tb-lbl">{{ camOn() ? 'Caméra' : 'Cam off' }}</span>
+            </button>
+            <button
+              type="button"
+              class="tb-btn"
+              [class.tb-btn--accent]="screenSharing()"
+              (click)="toggleScreenShare()"
+              [attr.aria-pressed]="screenSharing()"
+              aria-label="Partage d’écran">
+              <svg lucideMonitor class="tb-ic"></svg>
+              <span class="tb-lbl">{{ screenSharing() ? 'Arrêter' : 'Écran' }}</span>
+            </button>
+            <button type="button" class="tb-btn tb-btn--ghost" (click)="toggleFullscreen()" aria-label="Plein écran">
+              <svg lucideMaximize2 class="tb-ic"></svg>
+              <span class="tb-lbl">Plein écran</span>
+            </button>
+            <button type="button" class="tb-btn tb-btn--danger" (click)="leaveRoom()" aria-label="Quitter la salle">
+              <svg lucideLogOut class="tb-ic"></svg>
+              <span class="tb-lbl">Quitter</span>
+            </button>
+          </nav>
+        </main>
+
+        <aside class="room-rail" aria-label="Panneau latéral">
+          <div class="rail-tabs" role="tablist">
+            <button
+              type="button"
+              class="rail-tab"
+              role="tab"
+              [attr.aria-selected]="rightTab() === 'chat'"
+              [class.rail-tab--active]="rightTab() === 'chat'"
+              (click)="setRightTab('chat')">
+              <svg lucideMessageSquare class="rail-tab-ic"></svg>
+              Chat
+            </button>
+            <button
+              type="button"
+              class="rail-tab"
+              role="tab"
+              [attr.aria-selected]="rightTab() === 'room'"
+              [class.rail-tab--active]="rightTab() === 'room'"
+              (click)="setRightTab('room')">
+              <svg lucideUsers class="rail-tab-ic"></svg>
+              Salle
+            </button>
+          </div>
+
+          <div class="rail-body">
+            @if (rightTab() === 'chat') {
+              <div class="rail-pane rail-pane--chat">
+                <ul class="chat-list">
+                  @for (c of chatMessages(); track c.sentAt + c.content) {
+                    <li class="chat-li">
+                      <span class="chat-msg">{{ c.content }}</span>
+                      <span class="chat-meta">{{ c.sentAt | date : 'shortTime' }}</span>
+                    </li>
+                  }
+                </ul>
+                <div class="chat-row">
+                  <input
+                    type="text"
+                    [(ngModel)]="chatDraft"
+                    (keydown)="onChatKey($event)"
+                    placeholder="Écrire un message…"
+                    aria-label="Message"
+                  />
+                  <button type="button" class="chat-send" (click)="sendChat()">Envoyer</button>
+                </div>
+              </div>
+            } @else {
+              <div class="rail-pane rail-pane--room">
+                <h3 class="room-pane-h">Participants</h3>
+                <ul class="part-list">
+                  @for (p of participants(); track $index) {
+                    <li class="part-item">
+                      <div class="part-main">
+                        <span class="part-name">{{ p.name || p.email || '—' }}</span>
+                        @if (isSelfParticipant(p)) {
+                          <span class="part-you">Vous</span>
+                        }
+                        <span class="part-role">{{ p.role }}</span>
+                      </div>
+                      @if (p.userId) {
+                        <span class="part-id">ID {{ p.userId }}</span>
+                      }
+                      @if (canModerateParticipant(p)) {
+                        <div class="part-actions">
+                          <button type="button" class="part-btn" (click)="moderateParticipant(p, 'mute_audio')">
+                            Couper micro
+                          </button>
+                          <button type="button" class="part-btn" (click)="moderateParticipant(p, 'mute_video')">
+                            Couper caméra
+                          </button>
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+
+                @if (isHost()) {
+                  <div class="add-invite">
+                    <h4 class="add-invite-h">Ajouter un participant</h4>
+                    <p class="add-invite-note">
+                      E-mail du compte HR me. Optionnel : ID utilisateur (24 car.) pour lier le compte.
+                    </p>
+                    @if (addParticipantErr()) {
+                      <p class="add-invite-err">{{ addParticipantErr() }}</p>
+                    }
+                    <label class="sr-only" for="add-email">E-mail</label>
+                    <input
+                      id="add-email"
+                      type="email"
+                      [(ngModel)]="addInviteEmail"
+                      placeholder="email@exemple.com"
+                      class="add-field"
+                    />
+                    <label class="sr-only" for="add-name">Nom</label>
+                    <input
+                      id="add-name"
+                      type="text"
+                      [(ngModel)]="addInviteName"
+                      placeholder="Nom (optionnel)"
+                      class="add-field"
+                    />
+                    <label class="sr-only" for="add-role">Rôle</label>
+                    <select id="add-role" [(ngModel)]="addInviteRole" class="add-field">
+                      <option value="recruiter">Recruteur</option>
+                      <option value="candidate">Candidat</option>
+                    </select>
+                    <label class="sr-only" for="add-uid">ID utilisateur</label>
+                    <input
+                      id="add-uid"
+                      type="text"
+                      [(ngModel)]="addInviteUserId"
+                      placeholder="ID Mongo (optionnel)"
+                      class="add-field"
+                    />
+                    <button
+                      type="button"
+                      class="add-submit"
+                      [disabled]="addParticipantBusy()"
+                      (click)="submitAddParticipant()">
+                      {{ addParticipantBusy() ? 'Ajout…' : 'Inviter' }}
+                    </button>
+                  </div>
+                } @else {
+                  <p class="room-guest-hint">Seul l’animateur peut inviter ou modérer les participants.</p>
+                }
+              </div>
+            }
+          </div>
+        </aside>
+      </div>
+    </div>
+  }
+</div>

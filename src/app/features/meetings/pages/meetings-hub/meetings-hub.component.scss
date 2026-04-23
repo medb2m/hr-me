@@ -1,0 +1,94 @@
+$brand-burgundy: #7b1c2e;
+
+.meetings-hub {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.mh-head {
+  margin-bottom: 1.5rem;
+  h1 {
+    color: $brand-burgundy;
+    font-size: 1.75rem;
+    margin-bottom: 0.25rem;
+  }
+}
+
+.mh-sub {
+  color: #5c6578;
+  margin-bottom: 1rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-block;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: $brand-burgundy;
+  color: #fff;
+}
+
+.btn-secondary {
+  border: 1px solid $brand-burgundy;
+  color: $brand-burgundy;
+}
+
+.mh-muted {
+  color: #6b7280;
+}
+
+.mh-error {
+  color: #b91c1c;
+}
+
+.mh-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mh-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: #faf8f5;
+}
+
+.mh-card-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mh-badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  background: #ede9e4;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.mh-meta {
+  font-size: 0.85rem;
+  color: #4b5563;
+  margin-top: 0.35rem;
+}
+
+.mh-actions {
+  margin-top: 0.5rem;
+  a {
+    margin-right: 1rem;
+    color: $brand-burgundy;
+    font-weight: 600;
+  }
+}
