@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Confirm your email — {{appName}}</title>
+</head>
+<body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height: 1.5; color: #0f172a; max-width: 520px; margin: 0 auto; padding: 32px 20px;">
+  <p>Hi {{userName}},</p>
+  <p>Thanks for registering with <strong>{{appName}}</strong>. Please confirm your email address by clicking the button below.</p>
+  <p style="margin: 28px 0;">
+    <a href="{{verifyUrl}}" style="display: inline-block; background: #0f766e; color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 8px; font-weight: 600;">Verify my email</a>
+  </p>
+  <p style="word-break: break-all; font-size: 14px; color: #64748b;">If the button doesn’t work, copy and paste this link into your browser:<br />
+    <a href="{{verifyUrl}}" style="color: #0f766e;">{{verifyUrl}}</a>
+  </p>
+  <p style="font-size: 14px; color: #64748b;">If you did not create an account, you can ignore this message.</p>
+  <p style="margin-top: 32px; font-size: 12px; color: #94a3b8;">— {{appName}} · <a href="mailto:{{supportEmail}}" style="color: #64748b;">{{supportEmail}}</a></p>
+</body>
+</html>
