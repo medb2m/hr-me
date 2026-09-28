@@ -21,6 +21,7 @@ import interviewRoutes from './routes/interview.routes.js';
 import ttsRoutes from './routes/tts.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import clientRoutes from './client/routes/client.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
 import meetingsRoutes from './routes/meetings.routes.js';
 import calendarRoutes from './routes/calendar.routes.js';
@@ -66,6 +67,9 @@ app.use('/api/auth', authRoutes);
 
 // Admin (JWT + role admin)
 app.use('/api/admin', adminRoutes);
+
+// Espace candidat (JWT + role client) — profil, photo, etc.
+app.use('/api/client', clientRoutes);
 
 // Real-time stack: notifications, meetings, unified calendar
 app.use('/api/notifications', notificationsRoutes);

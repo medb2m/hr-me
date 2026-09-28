@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 /**
  * Self-service sign-ups use role `client`.
  * `admin`, `recruiter`, and `candidate` are created by administrators (not via public register).
+ * Détails profil candidat (prénom, parcours, etc.) : modèle `ClientProfile` lié par `user`.
  */
 const userSchema = new mongoose.Schema(
   {

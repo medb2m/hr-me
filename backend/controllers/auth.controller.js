@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
+import { ensureClientProfileForUser } from '../models/client-profile.model.js';
 import {
   sendVerifyEmail,
   sendPasswordResetEmail,
@@ -87,6 +88,12 @@ export async function register(req, res) {
       });
     }
 
+    try {
+      await ensureClientProfileForUser(user._id);
+    } catch (profileErr) {
+      console.error('[auth/register] client profile create failed:', profileErr);
+    }
+
     return res.status(201).json({
       message: 'Account created. Check your email to verify your address.',
       userId: user._id.toString(),
@@ -125,6 +132,13 @@ export async function login(req, res) {
     }
 
     const token = signToken(user);
+    if (user.role === 'client') {
+      try {
+        await ensureClientProfileForUser(user._id);
+      } catch (profileErr) {
+        console.error('[auth/login] client profile ensure failed:', profileErr);
+      }
+    }
     return res.json({
       token,
       user: {
