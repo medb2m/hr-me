@@ -16,7 +16,10 @@ export class SocketService {
     }
     this.disconnect();
     this.status.set('CONNECTING');
-    this.socket = io(environment.wsUrl, {
+    const origin =
+      (environment.wsUrl && environment.wsUrl.trim()) ||
+      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5000');
+    this.socket = io(origin, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,

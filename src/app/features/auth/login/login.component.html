@@ -1,0 +1,40 @@
+<div class="auth-shell">
+  <div class="auth-card">
+    <h1>Connexion</h1>
+    <p class="lead">Accédez à votre espace HrMe.</p>
+
+    @if (errorMsg) {
+      <div class="alert alert-error">{{ errorMsg }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" formControlName="email" autocomplete="email" />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <span class="err">E-mail valide requis.</span>
+        }
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <input id="password" type="password" formControlName="password" autocomplete="current-password" />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <span class="err">Au moins 8 caractères.</span>
+        }
+      </div>
+      <button class="btn-primary" type="submit" [disabled]="submitting">
+        {{ submitting ? 'Connexion…' : 'Se connecter' }}
+      </button>
+    </form>
+
+    <div class="links">
+      <a routerLink="/forgot-password">Mot de passe oublié</a>
+      ·
+      <a routerLink="/register">Créer un compte</a>
+    </div>
+    <p class="auth-alt">
+      <a routerLink="/admin/auth">Espace administrateur</a>
+      <span class="auth-alt-hint"> — comptes <strong>admin</strong> uniquement (URL directe : <code>/admin</code>)</span>
+    </p>
+  </div>
+</div>

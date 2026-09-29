@@ -29,8 +29,9 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.auth.refreshFromStorage();
     if (this.auth.isLoggedIn()) {
-      void this.router.navigateByUrl(this.resolveRedirect());
+      void this.router.navigateByUrl(this.auth.postLoginRedirectPath());
     }
   }
 
@@ -58,7 +59,7 @@ export class LoginComponent implements OnInit {
             this.errorMsg = 'Could not start your session. Please sign in again.';
             return;
           }
-          void this.router.navigateByUrl(this.resolveRedirect());
+          void this.router.navigateByUrl(this.auth.postLoginRedirectPath());
         },
         error: (err: { error?: { message?: string }; message?: string }) => {
           this.errorMsg =
@@ -67,8 +68,4 @@ export class LoginComponent implements OnInit {
       });
   }
 
-  /** Admins go to the admin panel; everyone else goes to the public home. */
-  private resolveRedirect(): string {
-    return this.auth.user()?.role === 'admin' ? '/admin/dashboard' : '/home';
-  }
 }

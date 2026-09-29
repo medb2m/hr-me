@@ -1,0 +1,21 @@
+<div class="auth-shell">
+  <div class="auth-card">
+    <h1>Vérification de l’e-mail</h1>
+
+    @if (loading) {
+      <p class="lead">Vérification en cours…</p>
+    }
+    @if (errorMsg) {
+      <div class="alert alert-error">{{ errorMsg }}</div>
+    }
+    @if (successMsg) {
+      <div class="alert alert-ok">{{ successMsg }}</div>
+    }
+
+    <div class="links">
+      <a routerLink="/login">Connexion</a>
+      ·
+      <a routerLink="/resend-verification">Renvoyer le lien</a>
+    </div>
+  </div>
+</div>
