@@ -1,0 +1,12 @@
+<div class="admin-dash">
+  <header>
+    <h1>Tableau de bord admin</h1>
+    <div class="actions">
+      @if (user(); as u) {
+        <span class="who">{{ u.email }} ({{ u.role }})</span>
+      }
+      <button type="button" class="btn-out" (click)="logout()">Déconnexion</button>
+      <a routerLink="/home">Site public</a>
+    </div>
+  </header>
+</div>

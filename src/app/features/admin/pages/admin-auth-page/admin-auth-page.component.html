@@ -1,0 +1,68 @@
+<div class="auth-shell">
+  @if (view === 'loading') {
+    <div class="auth-card">
+      <p class="lead">Chargement…</p>
+    </div>
+  }
+
+  @if (view === 'bootstrap') {
+    <div class="auth-card">
+      <h1>Premier administrateur</h1>
+      <p class="lead">Aucun admin n’existe encore. Créez le compte administrateur initial.</p>
+      @if (bootstrapError) {
+        <div class="alert alert-error">{{ bootstrapError }}</div>
+      }
+      <form [formGroup]="bootstrapForm" (ngSubmit)="submitBootstrap()">
+        <div class="field">
+          <label for="bname">Nom (optionnel)</label>
+          <input id="bname" type="text" formControlName="name" />
+        </div>
+        <div class="field">
+          <label for="bemail">E-mail</label>
+          <input id="bemail" type="email" formControlName="email" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="bpass">Mot de passe</label>
+          <input id="bpass" type="password" formControlName="password" autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label for="bconfirm">Confirmation</label>
+          <input id="bconfirm" type="password" formControlName="confirmPassword" autocomplete="new-password" />
+        </div>
+        <div class="field">
+          <label for="bsecret">Secret bootstrap (si requis par le serveur)</label>
+          <input id="bsecret" type="password" formControlName="bootstrapSecret" autocomplete="off" />
+        </div>
+        <button class="btn-primary" type="submit" [disabled]="submittingBootstrap">
+          {{ submittingBootstrap ? 'Création…' : 'Créer l’administrateur' }}
+        </button>
+      </form>
+    </div>
+  }
+
+  @if (view === 'login') {
+    <div class="auth-card">
+      <h1>Connexion administrateur</h1>
+      @if (errorMsg) {
+        <div class="alert alert-error">{{ errorMsg }}</div>
+      }
+      @if (loginError) {
+        <div class="alert alert-error">{{ loginError }}</div>
+      }
+      <form [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+        <div class="field">
+          <label for="lemail">E-mail</label>
+          <input id="lemail" type="email" formControlName="email" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="lpass">Mot de passe</label>
+          <input id="lpass" type="password" formControlName="password" autocomplete="current-password" />
+        </div>
+        <button class="btn-primary" type="submit" [disabled]="submittingLogin">
+          {{ submittingLogin ? 'Connexion…' : 'Se connecter' }}
+        </button>
+      </form>
+      <div class="links"><a routerLink="/home">← Site public</a></div>
+    </div>
+  }
+</div>
