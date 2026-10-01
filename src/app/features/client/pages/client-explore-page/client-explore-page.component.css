@@ -1,0 +1,63 @@
+.ep {
+  max-width: 800px;
+}
+
+.ep-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.45rem;
+  color: #003978;
+}
+
+.ep-lead {
+  margin: 0 0 1rem;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.ep-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ep-chip {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: #fff;
+  border: 1px solid #c8d4e6;
+  color: #475569;
+}
+
+.ep-chip.is-on {
+  background: #003978;
+  color: #fff;
+  border-color: #003978;
+}
+
+.ep-results {
+  background: #fff;
+  border: 1px solid #c8d4e6;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.ep-muted {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
+.ep-link {
+  display: inline-block;
+  font-weight: 600;
+  color: #005a9c;
+}
+
+.ep-link--block {
+  display: block;
+  margin-top: 0.75rem;
+}

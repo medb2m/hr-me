@@ -1,0 +1,64 @@
+import { Routes } from '@angular/router';
+import { ClientShellComponent } from './layouts/client-shell/client-shell.component';
+
+export const CLIENT_ROUTES: Routes = [
+  {
+    path: '',
+    component: ClientShellComponent,
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'overview' },
+      {
+        path: 'overview',
+        loadComponent: () =>
+          import('./pages/client-overview/client-overview.component').then((m) => m.ClientOverviewComponent),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./pages/client-profile-page/client-profile-page.component').then(
+            (m) => m.ClientProfilePageComponent,
+          ),
+      },
+      {
+        path: 'editor/cv',
+        loadComponent: () =>
+          import('./pages/client-cv-hub/client-cv-hub.component').then((m) => m.ClientCvHubComponent),
+      },
+      {
+        path: 'editor/cv/:cvId',
+        loadComponent: () =>
+          import('./pages/client-cv-europass-editor/client-cv-europass-editor.component').then(
+            (m) => m.ClientCvEuropassEditorComponent,
+          ),
+      },
+      {
+        path: 'editor/cl',
+        loadComponent: () =>
+          import('./pages/client-cl-editor-page/client-cl-editor-page.component').then(
+            (m) => m.ClientClEditorPageComponent,
+          ),
+      },
+      {
+        path: 'library',
+        loadComponent: () =>
+          import('./pages/client-library-page/client-library-page.component').then(
+            (m) => m.ClientLibraryPageComponent,
+          ),
+      },
+      {
+        path: 'skills',
+        loadComponent: () =>
+          import('./pages/client-skills-page/client-skills-page.component').then(
+            (m) => m.ClientSkillsPageComponent,
+          ),
+      },
+      {
+        path: 'explore',
+        loadComponent: () =>
+          import('./pages/client-explore-page/client-explore-page.component').then(
+            (m) => m.ClientExplorePageComponent,
+          ),
+      },
+    ],
+  },
+];

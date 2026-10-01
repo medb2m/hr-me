@@ -1,0 +1,20 @@
+<div class="ep">
+  <header class="ep-hero">
+    <h1 class="ep-hero__title">Mon espace candidat</h1>
+    <p class="ep-hero__lead">
+      Un parcours clair, inspiré des principes Europass : un profil unique, des documents exploitables,
+      et des outils d’édition pour vos candidatures.
+    </p>
+  </header>
+
+  <section class="ep-grid" aria-label="Accès rapides">
+    @for (t of tiles; track t.link) {
+      <a [routerLink]="t.link" class="ep-card">
+        <span class="ep-card__tag">{{ t.tag }}</span>
+        <h2 class="ep-card__title">{{ t.title }}</h2>
+        <p class="ep-card__desc">{{ t.desc }}</p>
+        <span class="ep-card__cta">Ouvrir →</span>
+      </a>
+    }
+  </section>
+</div>

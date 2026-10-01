@@ -1,0 +1,22 @@
+<div class="client-shell">
+  <app-client-header />
+  @if (!profileState.isProfileComplete()) {
+    <div class="client-shell__alert" role="status">
+      <div class="client-shell__alert-inner">
+        <strong>Profil incomplet ({{ profileState.completionPercent() }} %)</strong>
+        <p>
+          Complétez vos informations pour tirer le meilleur parti des outils CV, lettres et candidatures.
+        </p>
+        <button type="button" class="client-shell__alert-btn" (click)="goToProfile()">
+          Compléter mon profil
+        </button>
+      </div>
+    </div>
+  }
+  <div class="client-shell__body">
+    <app-client-sidebar />
+    <div class="client-shell__main">
+      <router-outlet />
+    </div>
+  </div>
+</div>

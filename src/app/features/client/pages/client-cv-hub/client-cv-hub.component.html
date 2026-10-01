@@ -1,0 +1,50 @@
+<div class="cv-hub">
+  <header class="cv-hub__head">
+    <h1 class="cv-hub__title">Mes CV</h1>
+    <p class="cv-hub__lead">
+      Créez plusieurs CV avec un nom chacun, puis ouvrez l’éditeur type Europass pour choisir les blocs, les données
+      profil ou du texte personnalisé, et la photo.
+    </p>
+  </header>
+
+  <section class="cv-hub__create" aria-labelledby="cv-new-title">
+    <h2 id="cv-new-title" class="cv-hub__h2">Nouveau CV</h2>
+    <div class="cv-hub__row">
+      <input
+        type="text"
+        class="cv-hub__input"
+        [(ngModel)]="newName"
+        name="newCvName"
+        maxlength="120"
+        placeholder="ex. CV ingénieur 2026"
+        (keyup.enter)="createCv()"
+      />
+      <button type="button" class="cv-hub__btn cv-hub__btn--primary" [disabled]="creating" (click)="createCv()">
+        {{ creating ? 'Création…' : 'Créer et ouvrir l’éditeur' }}
+      </button>
+    </div>
+    @if (createError) {
+      <p class="cv-hub__err">{{ createError }}</p>
+    }
+  </section>
+
+  @if (loading) {
+    <p class="cv-hub__muted">Chargement…</p>
+  } @else if (loadError) {
+    <p class="cv-hub__err">{{ loadError }}</p>
+  } @else if (cvs.length === 0) {
+    <p class="cv-hub__muted">Aucun CV pour l’instant — créez-en un ci-dessus.</p>
+  } @else {
+    <ul class="cv-hub__list">
+      @for (cv of cvs; track cv._id) {
+        <li class="cv-hub__item">
+          <a [routerLink]="['/client/editor/cv', cv._id]" class="cv-hub__link">{{ cv.name }}</a>
+          <span class="cv-hub__meta">Modifié {{ cv.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+          <button type="button" class="cv-hub__btn-del" (click)="deleteCv($event, cv)">Supprimer</button>
+        </li>
+      }
+    </ul>
+  }
+
+  <a routerLink="/client/overview" class="cv-hub__back">← Tableau de bord</a>
+</div>

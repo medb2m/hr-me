@@ -1,0 +1,60 @@
+<aside class="client-sidebar" aria-label="Navigation espace candidat">
+  <div class="client-sidebar__identity">
+    <div class="client-sidebar__photo-wrap">
+      @if (photoSrc(); as src) {
+        <img [src]="src" alt="" class="client-sidebar__photo" width="96" height="96" />
+      } @else {
+        <div class="client-sidebar__photo client-sidebar__photo--placeholder" aria-hidden="true"></div>
+      }
+    </div>
+    <p class="client-sidebar__label">Photo de profil</p>
+    @if (!photoSrc()) {
+      <p class="client-sidebar__photo-miss" role="status">À renseigner</p>
+    }
+
+    <div class="client-sidebar__field">
+      <span class="client-sidebar__field-label">Nom</span>
+      @if (hasDisplayName()) {
+        <span class="client-sidebar__value">{{ displayName() }}</span>
+      } @else {
+        <span class="client-sidebar__missing">À renseigner</span>
+      }
+    </div>
+
+    <div class="client-sidebar__field">
+      <span class="client-sidebar__field-label">Date de naissance</span>
+      @if (profileState.birthDate(); as bd) {
+        <span class="client-sidebar__value">{{ formatBirthDisplay(bd) }}</span>
+      } @else {
+        <span class="client-sidebar__missing">À renseigner</span>
+      }
+    </div>
+
+    <div class="client-sidebar__completion" aria-label="Complétion du profil">
+      <div class="client-sidebar__completion-head">
+        <span>Profil complété</span>
+        <strong>{{ profileState.completionPercent() }} %</strong>
+      </div>
+      <div class="client-sidebar__completion-bar" role="progressbar" [attr.aria-valuenow]="profileState.completionPercent()" aria-valuemin="0" aria-valuemax="100">
+        <div class="client-sidebar__completion-fill" [style.width.%]="profileState.completionPercent()"></div>
+      </div>
+      @if (!profileState.isProfileComplete()) {
+        <a routerLink="/client/profile" class="client-sidebar__completion-link">Compléter vers 100 %</a>
+      }
+    </div>
+  </div>
+
+  <nav class="client-sidebar__nav" aria-label="Sections">
+    @for (item of nav; track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: item.path === '/client/overview' }"
+        class="client-sidebar__link"
+      >
+        <span class="client-sidebar__icon" aria-hidden="true">{{ item.icon }}</span>
+        {{ item.label }}
+      </a>
+    }
+  </nav>
+</aside>

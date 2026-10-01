@@ -1,0 +1,154 @@
+@if (successAnchor) {
+  <div
+    class="ep-success-pop"
+    role="status"
+    aria-live="polite"
+    [style.left.px]="successAnchor.x"
+    [style.top.px]="successAnchor.y"
+  >
+    {{ successAnchor.message }}
+  </div>
+}
+
+<div class="ep">
+  <header class="ep-head">
+    <h1 class="ep-head__title">Identité & profil</h1>
+    <p class="ep-head__lead">
+      Dépôt central des données utilisées par le CV, les lettres et l’explorateur d’opportunités. Les champs manquants
+      sont signalés dans la barre latérale en rouge clair.
+    </p>
+    <div class="ep-cta-bar">
+      <a routerLink="/client/editor/cv" class="ep-cta">Mes CV — éditeur Europass</a>
+      <p class="ep-cta__note">
+        Créez plusieurs CV, choisissez les blocs et les données profil ou du texte libre, puis enregistrez chaque
+        version.
+      </p>
+    </div>
+  </header>
+
+  <div class="ep-panel">
+    <h2 class="ep-panel__h">Sections du profil (démo)</h2>
+    <p class="ep-panel__p">
+      Le pourcentage global inclut aussi le nom sur le compte, la photo et la date de naissance. Cochez les blocs
+      « complétés » et complétez les champs ci-dessous pour atteindre 100 % et masquer la bannière.
+    </p>
+    <ul class="ep-checks">
+      @for (row of sectionRows; track row.key) {
+        <li>
+          <label class="ep-check">
+            <input
+              type="checkbox"
+              [checked]="profileState.sections()[row.key]"
+              (change)="toggleSection(row.key)"
+            />
+            <span>{{ row.label }}</span>
+          </label>
+        </li>
+      }
+    </ul>
+  </div>
+
+  <div class="ep-panel ep-panel--identity">
+    <div class="ep-panel__col ep-panel__col--birth">
+      <h2 class="ep-panel__h">Date de naissance</h2>
+      <p class="ep-panel__p">
+        Enregistrée sur le serveur (fiche <code>ClientProfile</code>) et affichée dans la barre latérale.
+      </p>
+      <div class="ep-row">
+        <input
+          class="ep-input ep-input--date"
+          type="date"
+          [(ngModel)]="birthDateIso"
+          name="birthDateIso"
+          max="9999-12-31"
+        />
+        <button type="button" class="ep-btn" [disabled]="savingBirth" (click)="saveBirthDate($event)">
+          {{ savingBirth ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </div>
+      @if (birthSaveError) {
+        <p class="ep-birth-err">{{ birthSaveError }}</p>
+      }
+    </div>
+
+    <div class="ep-panel__col ep-panel__col--photo">
+      <app-profile-photo-upload
+        [uploading]="uploading"
+        [errorMessage]="uploadError"
+        [hasServerPhoto]="hasServerProfilePhoto()"
+        (validFileSelected)="clearPhotoUploadError()"
+        (upload)="onProfilePhotoUpload($event)"
+        (removeServer)="removeServerPhoto()"
+      />
+
+      @if (photoHistory.length > 0) {
+        <section class="ep-history" aria-labelledby="hist-title">
+          <h3 id="hist-title" class="ep-history__title">Historique des photos</h3>
+          <p class="ep-history__lead">
+            Versions précédemment enregistrées sur le serveur. Vous pouvez en faire votre photo de profil (avec ou
+            sans recadrage) ou les supprimer définitivement.
+          </p>
+          <ul class="ep-history__list">
+            @for (h of photoHistory; track h._id) {
+              <li class="ep-history__item">
+                <div class="ep-history__thumb-wrap">
+                  @if (profileApi.resolveMediaUrl(h.url); as src) {
+                    <img [src]="src" alt="" class="ep-history__thumb" width="72" height="72" />
+                  }
+                </div>
+                <div class="ep-history__body">
+                  <time class="ep-history__time" [attr.datetime]="h.uploadedAt">{{
+                    h.uploadedAt | date: 'dd/MM/yyyy HH:mm'
+                  }}</time>
+                  <div class="ep-history__actions">
+                    <button
+                      type="button"
+                      class="ep-history__btn ep-history__btn--primary"
+                      [disabled]="historyBusyId !== null || uploading"
+                      (click)="recropHistoryAsProfile(h)"
+                    >
+                      Recadrer &amp; définir
+                    </button>
+                    <button
+                      type="button"
+                      class="ep-history__btn"
+                      [disabled]="historyBusyId !== null || uploading"
+                      (click)="activateHistoryPhoto(h._id)"
+                    >
+                      Définir sans recadrer
+                    </button>
+                    <button
+                      type="button"
+                      class="ep-history__btn ep-history__btn--danger"
+                      [disabled]="historyBusyId !== null || uploading"
+                      (click)="deleteHistoryPhoto(h)"
+                    >
+                      Supprimer définitivement
+                    </button>
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <p class="ep-panel__p ep-panel__p--muted">Démo locale :</p>
+      <div class="ep-row">
+        <button type="button" class="ep-btn ep-btn--ghost" (click)="setDemoPhoto()">Photo test (assets)</button>
+        <button type="button" class="ep-btn ep-btn--ghost" (click)="clearPhoto()">Effacer (aperçu local)</button>
+      </div>
+    </div>
+  </div>
+
+  @if (historyError) {
+    <p class="ep-history-err" role="alert">{{ historyError }}</p>
+  }
+
+  <p class="ep-note">
+    Le nom affiché provient du compte (champ <code>name</code> côté auth). S’il est absent, la barre latérale affiche
+    <span class="ep-miss">À renseigner</span> — comme pour la date de naissance et la photo.
+  </p>
+
+  <a routerLink="/client/overview" class="ep-back">← Retour au tableau de bord</a>
+</div>

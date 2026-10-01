@@ -1,0 +1,133 @@
+.cv-hub {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.cv-hub__head {
+  margin-bottom: 1.5rem;
+}
+
+.cv-hub__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  color: #003978;
+}
+
+.cv-hub__lead {
+  margin: 0;
+  color: #475569;
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.cv-hub__create {
+  background: #fff;
+  border: 1px solid #c8d4e6;
+  border-radius: 10px;
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 57, 120, 0.05);
+}
+
+.cv-hub__h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  color: #003978;
+}
+
+.cv-hub__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cv-hub__input {
+  flex: 1 1 200px;
+  min-width: 180px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #c8d4e6;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.cv-hub__btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1px solid #c8d4e6;
+  background: #fff;
+  color: #003978;
+  cursor: pointer;
+}
+
+.cv-hub__btn--primary {
+  background: #003978;
+  color: #fff;
+  border-color: #003978;
+}
+
+.cv-hub__btn--primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cv-hub__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cv-hub__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cv-hub__link {
+  font-weight: 600;
+  color: #005a9c;
+  font-size: 1rem;
+}
+
+.cv-hub__meta {
+  font-size: 0.8rem;
+  color: #64748b;
+  flex: 1;
+}
+
+.cv-hub__btn-del {
+  font-size: 0.78rem;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 0.3rem 0.55rem;
+  cursor: pointer;
+}
+
+.cv-hub__muted,
+.cv-hub__err {
+  font-size: 0.9rem;
+}
+
+.cv-hub__muted {
+  color: #64748b;
+}
+
+.cv-hub__err {
+  color: #b91c1c;
+  margin: 0.5rem 0 0;
+}
+
+.cv-hub__back {
+  display: inline-block;
+  margin-top: 1.25rem;
+  font-weight: 600;
+  color: #005a9c;
+  font-size: 0.9rem;
+}

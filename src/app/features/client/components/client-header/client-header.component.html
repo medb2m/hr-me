@@ -1,0 +1,18 @@
+<header class="client-header">
+  <div class="client-header__brand">
+    <a routerLink="/client/overview" class="client-header__logo" aria-label="Accueil espace candidat">
+      <span class="client-header__logo-mark">E</span>
+      <span class="client-header__logo-text">HR-Me <em>Candidat</em></span>
+    </a>
+  </div>
+  <nav class="client-header__nav" aria-label="Raccourcis">
+    <a routerLink="/client/explore" routerLinkActive="is-active">Explorer</a>
+    <a routerLink="/client/profile" routerLinkActive="is-active">Profil</a>
+  </nav>
+  <div class="client-header__actions">
+    @if (user(); as u) {
+      <span class="client-header__email">{{ u.email }}</span>
+    }
+    <button type="button" class="client-header__btn-out" (click)="logout()">Déconnexion</button>
+  </div>
+</header>

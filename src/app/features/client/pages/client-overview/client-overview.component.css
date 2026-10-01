@@ -1,0 +1,78 @@
+.ep {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.ep-hero {
+  margin-bottom: 1.75rem;
+}
+
+.ep-hero__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #003978;
+  letter-spacing: -0.02em;
+}
+
+.ep-hero__lead {
+  margin: 0;
+  max-width: 52rem;
+  font-size: 1rem;
+  color: #334e6c;
+  line-height: 1.55;
+}
+
+.ep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.ep-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #c8d4e6;
+  border-radius: 10px;
+  padding: 1.15rem 1.2rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 57, 120, 0.06);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  color: inherit;
+  min-height: 170px;
+}
+
+.ep-card:hover {
+  border-color: #0b84c8;
+  box-shadow: 0 6px 20px rgba(0, 90, 156, 0.12);
+}
+
+.ep-card__tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #005a9c;
+  margin-bottom: 0.5rem;
+}
+
+.ep-card__title {
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+  color: #003978;
+}
+
+.ep-card__desc {
+  margin: 0;
+  flex: 1;
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.ep-card__cta {
+  margin-top: 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #005a9c;
+}

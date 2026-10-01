@@ -1,0 +1,53 @@
+.ep {
+  max-width: 800px;
+}
+
+.ep-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.45rem;
+  color: #003978;
+}
+
+.ep-lead {
+  margin: 0 0 1.25rem;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.ep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ep-card {
+  background: #fff;
+  border: 1px solid #c8d4e6;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 2px 8px rgba(0, 57, 120, 0.05);
+}
+
+.ep-card h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  color: #003978;
+}
+
+.ep-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.ep-link {
+  display: inline-block;
+  font-weight: 600;
+  color: #005a9c;
+}
+
+.ep-link--block {
+  display: block;
+  margin-top: 0.75rem;
+}

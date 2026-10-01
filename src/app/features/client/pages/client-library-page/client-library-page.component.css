@@ -1,0 +1,41 @@
+.ep {
+  max-width: 720px;
+}
+
+.ep-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.45rem;
+  color: #003978;
+}
+
+.ep-lead {
+  margin: 0 0 1rem;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.ep-list {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  color: #334155;
+}
+
+.ep-tag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #b45309;
+  background: #ffedd5;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.ep-link {
+  display: inline-block;
+  font-weight: 600;
+  color: #005a9c;
+}
+
+.ep-link--block {
+  display: block;
+  margin-top: 0.75rem;
+}

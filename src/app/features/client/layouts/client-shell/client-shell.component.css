@@ -1,0 +1,73 @@
+.client-shell {
+  --client-sidebar-w: 260px;
+  /* Hauteur viewport : le scroll reste dans __main, header + alert restent visibles */
+  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #eef3f8;
+}
+
+.client-shell__alert {
+  background: linear-gradient(90deg, #fff7ed 0%, #ffedd5 100%);
+  border-bottom: 1px solid #fdba74;
+  color: #9a3412;
+  padding: 0.65rem 1.25rem;
+}
+
+.client-shell__alert-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+}
+
+.client-shell__alert-inner p {
+  margin: 0;
+  flex: 1 1 200px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.client-shell__alert-btn {
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  background: #003978;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: none;
+  white-space: nowrap;
+}
+
+.client-shell__alert-btn:hover {
+  background: #005a9c;
+}
+
+.client-shell__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.client-shell__main {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 1.5rem 2rem;
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .client-shell__body {
+    flex-direction: column;
+  }
+
+  .client-shell__main {
+    padding: 1rem;
+  }
+}
