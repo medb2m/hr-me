@@ -43,4 +43,4 @@ testem.log
 Thumbs.
 
 # environemnts
-.env
+.envbackend/.env
