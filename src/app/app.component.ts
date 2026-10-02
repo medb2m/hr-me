@@ -5,12 +5,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
   imports: [CommonModule, RouterOutlet, RouterModule, TranslateModule, NavbarComponent, FooterComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.css',
 })
 export class AppComponent {
   title = 'hr-me';
@@ -20,18 +21,52 @@ export class AppComponent {
   constructor(
     private translate: TranslateService,
     private router: Router,
+    private auth: AuthService,
   ) {
     this.translate.setDefaultLang('en');
     const syncChrome = () => {
+      this.auth.refreshFromStorage();
       const path = this.router.url.split('?')[0];
       const admin = path === '/admin' || path.startsWith('/admin/');
+      const clientArea = path === '/client' || path.startsWith('/client/');
       const meetingRoom = /\/meetings\/[^/]+\/room$/.test(path);
-      this.showPublicChrome = !admin && !meetingRoom;
+      const clientLoggedIn = this.isClientUserInSession();
+      this.showPublicChrome = !admin && !meetingRoom && !clientArea && !clientLoggedIn;
+    };
+    const enforceClientScope = () => {
+      this.auth.refreshFromStorage();
+      if (!this.isClientUserInSession()) {
+        return;
+      }
+      const path = this.router.url.split('?')[0];
+      if (path === '/client' || path.startsWith('/client/')) {
+        return;
+      }
+      queueMicrotask(() => {
+        this.auth.refreshFromStorage();
+        if (!this.isClientUserInSession()) {
+          return;
+        }
+        const p = this.router.url.split('?')[0];
+        if (p !== '/client' && !p.startsWith('/client/')) {
+          void this.router.navigateByUrl('/client/overview', { replaceUrl: true });
+        }
+      });
     };
     syncChrome();
-    this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-      .subscribe(syncChrome);
+    enforceClientScope();
+    this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe(() => {
+      syncChrome();
+      enforceClientScope();
+    });
+  }
+
+  /** Compte candidat connecté (JWT + rôle `client`). */
+  private isClientUserInSession(): boolean {
+    if (typeof localStorage === 'undefined' || !localStorage.getItem('authToken')) {
+      return false;
+    }
+    return this.auth.isLoggedIn() && this.auth.user()?.role === 'client';
   }
 
   switchLanguage(language: string) {

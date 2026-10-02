@@ -55,6 +55,22 @@
       </li>
     </ul>
 
+    @if (auth.user()?.role === 'admin') {
+      <div class="nav-section-label">Administration</div>
+      <ul class="nav-list">
+        <li>
+          <a
+            class="nav-item"
+            routerLink="/admin/dashboard"
+            routerLinkActive="active"
+            (click)="navigateAndCloseSidebar()">
+            <span class="nav-icon"><svg lucideShield class="lc-icon"></svg></span>
+            <span class="nav-label">Admin console</span>
+          </a>
+        </li>
+      </ul>
+    }
+
     <div class="nav-section-label">Recruitment</div>
     <ul class="nav-list">
 
@@ -307,6 +323,14 @@
               </div>
             </div>
             <div class="pd-divider"></div>
+            @if (auth.user()?.role === 'admin') {
+              <a class="pd-item" routerLink="/admin/dashboard" (click)="isUserDropdownOpen = false">
+                <svg lucideShield class="lc-icon lc-icon--sm"></svg> Admin console
+              </a>
+            }
+            <a class="pd-item" routerLink="/client/overview" (click)="isUserDropdownOpen = false">
+              <svg lucideUserCircle class="lc-icon lc-icon--sm"></svg> Espace candidat
+            </a>
             <a class="pd-item" routerLink="/settings">
               <svg lucideSettings class="lc-icon lc-icon--sm"></svg> Settings
             </a>

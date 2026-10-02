@@ -1,0 +1,17 @@
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin respond-to($bp) {
+  @if $bp == sm {
+    @media (max-width: 575.98px) {
+      @content;
+    }
+  } @else if $bp == min-lg {
+    @media (min-width: 992px) {
+      @content;
+    }
+  }
+}

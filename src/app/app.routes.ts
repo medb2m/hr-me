@@ -57,6 +57,13 @@ export const routes: Routes = [
       loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
     },
 
+    /** Espace candidat (layout type Europass) : `/client/overview`, `/client/profile`, etc. */
+    {
+      path: 'client',
+      canActivate: [authRequiredGuard],
+      loadChildren: () => import('./features/client/client.routes').then((m) => m.CLIENT_ROUTES),
+    },
+
     {
       path: 'meetings',
       loadChildren: () => import('./features/meetings/meetings.routes').then((m) => m.default),
