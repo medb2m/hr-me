@@ -154,7 +154,7 @@ export async function createMeeting(req, res) {
           category: 'MEETING',
           priority: 'NORMAL',
           title: `Entretien planifié : ${title}`,
-          body: `Le ${scheduledAt.toISOString()} — rejoindre depuis HR me.`,
+          body: `Le ${scheduledAt.toISOString()} — rejoindre depuis Al Wassit.`,
           actionUrl: `/meetings/${meeting._id}/lobby`,
           actionLabel: 'Voir le lobby',
           sourceModule: 'meetings',
@@ -172,7 +172,7 @@ export async function createMeeting(req, res) {
         description: `${description}\nPIN candidat : ${pinCode}\nLien : ${videoLink}`,
         start: meeting.scheduledAt,
         end: endsAt,
-        location: 'HR me — visioconférence',
+        location: 'Al Wassit — visioconférence',
         url: videoLink,
       });
       for (const p of participants) {
@@ -183,7 +183,7 @@ export async function createMeeting(req, res) {
         try {
           await sendMail({
             to,
-            subject: `[HR me] Entretien : ${title}`,
+            subject: `[Al Wassit] Entretien : ${title}`,
             text: `Bonjour,\n\nUn entretien a été planifié le ${meeting.scheduledAt.toISOString()}.\nLien : ${videoLink}\n${p.role === 'candidate' ? `Code PIN : ${pinCode}\n` : ''}`,
             attachments: [{ filename: 'invite.ics', content: ics }],
           });

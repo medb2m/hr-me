@@ -203,7 +203,7 @@ export async function downloadIcs(req, res) {
       description: e.description,
       start: e.startsAt,
       end,
-      location: e.location || 'HR me',
+      location: e.location || 'Al Wassit',
       url: e.videoLink || undefined,
     });
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');

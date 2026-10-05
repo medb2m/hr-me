@@ -14,7 +14,7 @@ import { AuthService } from './core/services/auth.service';
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-  title = 'hr-me';
+  title = 'al-wassit';
   /** Hide public navbar/footer inside `/admin` (admin module has its own chrome). */
   showPublicChrome = true;
 

@@ -55,7 +55,7 @@ mongoose
 
 // Sample Route
 app.get('/', (req, res) => {
-  res.send('Welcome to the HR me backend');
+  res.send('Welcome to the Al Wassit backend');
 });
 
 // Images Routes

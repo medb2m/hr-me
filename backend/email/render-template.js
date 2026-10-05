@@ -12,7 +12,7 @@ const templatesDir = path.join(__dirname, 'templates');
  */
 export function templateDefaults(vars = {}) {
   return {
-    appName: process.env.APP_NAME || 'HR-Me',
+    appName: process.env.APP_NAME || 'Al Wassit',
     supportEmail: process.env.SUPPORT_EMAIL || 'support@localhost',
     ...vars,
   };
@@ -49,7 +49,7 @@ function minimalFallback(name, v) {
   const linkBlock = links.length ? `<p><a href="${links[0]}">${links[0]}</a></p>` : '';
   return `<!DOCTYPE html><html><body style="font-family:system-ui,sans-serif;padding:24px">
   <p>Hi ${escapeHtml(String(user))},</p>
-  <p>This is an automatic message from <strong>${escapeHtml(String(v.appName || 'HR-Me'))}</strong>.</p>
+  <p>This is an automatic message from <strong>${escapeHtml(String(v.appName || 'Al Wassit'))}</strong>.</p>
   ${linkBlock}
   <p style="color:#64748b;font-size:12px">Template file missing: ${escapeHtml(name)}</p>
 </body></html>`;

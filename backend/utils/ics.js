@@ -22,7 +22,7 @@ export function buildIcsEvent(opts) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//HR me//Calendar//FR',
+    'PRODID:-//Al Wassit//Calendar//FR',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

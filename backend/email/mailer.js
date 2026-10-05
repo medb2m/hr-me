@@ -48,7 +48,7 @@ export async function sendMail({ to, subject, html, text, replyTo, attachments }
     return { skipped: true };
   }
 
-  const from = process.env.MAIL_FROM || `"${process.env.APP_NAME || 'HR-Me'}" <noreply@localhost>`;
+  const from = process.env.MAIL_FROM || `"${process.env.APP_NAME || 'Al Wassit'}" <noreply@localhost>`;
 
   return tx.sendMail({
     from,
