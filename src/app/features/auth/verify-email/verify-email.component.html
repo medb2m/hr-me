@@ -1,6 +1,10 @@
-<div class="auth-shell">
-  <div class="auth-card">
-    <h1>Vérification de l’e-mail</h1>
+<div class="auth-layout">
+  <app-auth-visual />
+  <div class="auth-panel">
+    <a routerLink="/home" class="auth-back">← Accueil</a>
+    <div class="auth-card">
+      <img src="/assets/img/al-wassit-logo.png" alt="Al Wassit" class="auth-logo" />
+      <h1>Vérification de l’e-mail</h1>
 
     @if (loading) {
       <p class="lead">Vérification en cours…</p>
@@ -16,6 +20,7 @@
       <a routerLink="/login">Connexion</a>
       ·
       <a routerLink="/resend-verification">Renvoyer le lien</a>
+    </div>
     </div>
   </div>
 </div>

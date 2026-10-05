@@ -1,12 +1,16 @@
-<div class="auth-shell">
+<div class="auth-layout">
+  <app-auth-visual />
+  <div class="auth-panel">
   @if (view === 'loading') {
     <div class="auth-card">
+      <img src="/assets/img/al-wassit-logo.png" alt="Al Wassit" class="auth-logo" />
       <p class="lead">Chargement…</p>
     </div>
   }
 
   @if (view === 'bootstrap') {
     <div class="auth-card">
+      <img src="/assets/img/al-wassit-logo.png" alt="Al Wassit" class="auth-logo" />
       <h1>Premier administrateur</h1>
       <p class="lead">Aucun admin n’existe encore. Créez le compte administrateur initial.</p>
       @if (bootstrapError) {
@@ -15,7 +19,7 @@
       <form [formGroup]="bootstrapForm" (ngSubmit)="submitBootstrap()">
         <div class="field">
           <label for="bname">Nom (optionnel)</label>
-          <input id="bname" type="text" formControlName="name" />
+          <input id="bname" type="text" formControlName="name" autocomplete="name" />
         </div>
         <div class="field">
           <label for="bemail">E-mail</label>
@@ -23,15 +27,69 @@
         </div>
         <div class="field">
           <label for="bpass">Mot de passe</label>
-          <input id="bpass" type="password" formControlName="password" autocomplete="new-password" />
+          <div class="field-control">
+            <input
+              id="bpass"
+              [type]="showBootstrapPassword ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password" />
+            <button
+              type="button"
+              class="pw-toggle"
+              (click)="showBootstrapPassword = !showBootstrapPassword"
+              [attr.aria-label]="showBootstrapPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+              [attr.aria-pressed]="showBootstrapPassword">
+              @if (showBootstrapPassword) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
+          </div>
         </div>
         <div class="field">
           <label for="bconfirm">Confirmation</label>
-          <input id="bconfirm" type="password" formControlName="confirmPassword" autocomplete="new-password" />
+          <div class="field-control">
+            <input
+              id="bconfirm"
+              [type]="showBootstrapConfirm ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              autocomplete="new-password" />
+            <button
+              type="button"
+              class="pw-toggle"
+              (click)="showBootstrapConfirm = !showBootstrapConfirm"
+              [attr.aria-label]="showBootstrapConfirm ? 'Masquer la confirmation' : 'Afficher la confirmation'"
+              [attr.aria-pressed]="showBootstrapConfirm">
+              @if (showBootstrapConfirm) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
+          </div>
         </div>
         <div class="field">
           <label for="bsecret">Secret bootstrap (si requis par le serveur)</label>
-          <input id="bsecret" type="password" formControlName="bootstrapSecret" autocomplete="off" />
+          <div class="field-control">
+            <input
+              id="bsecret"
+              [type]="showBootstrapSecret ? 'text' : 'password'"
+              formControlName="bootstrapSecret"
+              autocomplete="off" />
+            <button
+              type="button"
+              class="pw-toggle"
+              (click)="showBootstrapSecret = !showBootstrapSecret"
+              [attr.aria-label]="showBootstrapSecret ? 'Masquer le secret' : 'Afficher le secret'"
+              [attr.aria-pressed]="showBootstrapSecret">
+              @if (showBootstrapSecret) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
+          </div>
         </div>
         <button class="btn-primary" type="submit" [disabled]="submittingBootstrap">
           {{ submittingBootstrap ? 'Création…' : 'Créer l’administrateur' }}
@@ -42,6 +100,7 @@
 
   @if (view === 'login') {
     <div class="auth-card">
+      <img src="/assets/img/al-wassit-logo.png" alt="Al Wassit" class="auth-logo" />
       <h1>Connexion administrateur</h1>
       @if (errorMsg) {
         <div class="alert alert-error">{{ errorMsg }}</div>
@@ -56,7 +115,25 @@
         </div>
         <div class="field">
           <label for="lpass">Mot de passe</label>
-          <input id="lpass" type="password" formControlName="password" autocomplete="current-password" />
+          <div class="field-control">
+            <input
+              id="lpass"
+              [type]="showLoginPassword ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password" />
+            <button
+              type="button"
+              class="pw-toggle"
+              (click)="showLoginPassword = !showLoginPassword"
+              [attr.aria-label]="showLoginPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+              [attr.aria-pressed]="showLoginPassword">
+              @if (showLoginPassword) {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
+          </div>
         </div>
         <button class="btn-primary" type="submit" [disabled]="submittingLogin">
           {{ submittingLogin ? 'Connexion…' : 'Se connecter' }}
@@ -65,4 +142,5 @@
       <div class="links"><a routerLink="/home">← Site public</a></div>
     </div>
   }
+  </div>
 </div>

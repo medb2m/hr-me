@@ -5,16 +5,19 @@ import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationsHubService } from '../../../core/services/notifications-hub.service';
+import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css', '../auth-shared.scss'],
 })
 export class LoginComponent implements OnInit {
   submitting = false;
   errorMsg = '';
+  showPassword = false;
+  needsVerification = false;
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -42,6 +45,7 @@ export class LoginComponent implements OnInit {
     }
     this.submitting = true;
     this.errorMsg = '';
+    this.needsVerification = false;
     this.auth
       .login(this.form.getRawValue())
       .pipe(finalize(() => (this.submitting = false)))
@@ -61,7 +65,8 @@ export class LoginComponent implements OnInit {
           }
           void this.router.navigateByUrl(this.auth.postLoginRedirectPath());
         },
-        error: (err: { error?: { message?: string }; message?: string }) => {
+        error: (err: { status?: number; error?: { message?: string }; message?: string }) => {
+          this.needsVerification = err.status === 403;
           this.errorMsg =
             err.error?.message || err.message || 'Sign in failed. Try again.';
         },

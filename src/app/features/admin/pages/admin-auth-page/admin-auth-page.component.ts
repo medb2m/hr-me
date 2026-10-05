@@ -5,12 +5,13 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize, take } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationsHubService } from '../../../../core/services/notifications-hub.service';
+import { AuthVisualComponent } from '../../../auth/auth-visual/auth-visual.component';
 
 type AuthView = 'loading' | 'bootstrap' | 'login';
 
 @Component({
   selector: 'app-admin-auth-page',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent],
   templateUrl: './admin-auth-page.component.html',
   styleUrls: ['./admin-auth-page.component.css', '../../../auth/auth-shared.scss'],
 })
@@ -27,6 +28,10 @@ export class AdminAuthPageComponent implements OnInit {
   loginError = '';
   submittingBootstrap = false;
   submittingLogin = false;
+  showBootstrapPassword = false;
+  showBootstrapConfirm = false;
+  showBootstrapSecret = false;
+  showLoginPassword = false;
 
   bootstrapForm = this.fb.nonNullable.group({
     name: [''],

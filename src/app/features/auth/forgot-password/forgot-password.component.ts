@@ -4,16 +4,18 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent],
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.css', '../auth-shared.scss'],
 })
 export class ForgotPasswordComponent {
   submitting = false;
   msg = '';
+  errorMsg = '';
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -31,6 +33,7 @@ export class ForgotPasswordComponent {
     }
     this.submitting = true;
     this.msg = '';
+    this.errorMsg = '';
     this.auth
       .forgotPassword(this.form.controls.email.value.trim())
       .pipe(finalize(() => (this.submitting = false)))
@@ -39,7 +42,7 @@ export class ForgotPasswordComponent {
           this.msg = r.message;
         },
         error: (err: { error?: { message?: string }; message?: string }) => {
-          this.msg = err.error?.message || err.message || 'Demande impossible.';
+          this.errorMsg = err.error?.message || err.message || 'Demande impossible.';
         },
       });
   }

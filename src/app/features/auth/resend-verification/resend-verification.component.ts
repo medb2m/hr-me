@@ -4,10 +4,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
   selector: 'app-resend-verification',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent],
   templateUrl: './resend-verification.component.html',
   styleUrls: ['./resend-verification.component.css', '../auth-shared.scss'],
 })
@@ -15,6 +16,7 @@ export class ResendVerificationComponent {
   submitting = false;
   errorMsg = '';
   successMsg = '';
+  showPassword = false;
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],

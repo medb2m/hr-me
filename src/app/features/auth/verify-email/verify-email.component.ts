@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
   selector: 'app-verify-email',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AuthVisualComponent],
   templateUrl: './verify-email.component.html',
   styleUrls: ['./verify-email.component.css', '../auth-shared.scss'],
 })
