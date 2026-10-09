@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, catchError, finalize } from 'rxjs';
@@ -23,7 +24,7 @@ export type CvBlockKey = Exclude<keyof CvEditorState, 'version'>;
 @Component({
   selector: 'app-client-cv-europass-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, BackButtonComponent],
   templateUrl: './client-cv-europass-editor.component.html',
   styleUrl: './client-cv-europass-editor.component.css',
 })

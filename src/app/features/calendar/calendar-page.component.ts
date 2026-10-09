@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { afterNextRender, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { LucideChevronLeft, LucideChevronRight } from '@lucide/angular';
 import { HttpClient } from '@angular/common/http';
 import { CalendarApiService } from '../../core/services/calendar-api.service';
 import { SocketService } from '../../core/services/socket.service';
@@ -10,7 +11,7 @@ import type { CalendarEventDto } from '../../core/models/hr-me-realtime.models';
 @Component({
   selector: 'app-calendar-page',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, LucideChevronLeft, LucideChevronRight],
   templateUrl: './calendar-page.component.html',
   styleUrl: './calendar-page.component.scss',
 })

@@ -146,16 +146,3 @@
   box-shadow: 0 12px 30px rgba(255, 211, 0, 0.4);
   color: #0f172a;
 }
-
-.link-back {
-  font-size: 0.85rem;
-  color: #64748b;
-  text-decoration: none;
-}
-
-.link-back:hover {
-  color: #0f172a;
-  text-decoration: underline;
-  text-decoration-color: #ffd300;
-  text-decoration-thickness: 2px;
-}

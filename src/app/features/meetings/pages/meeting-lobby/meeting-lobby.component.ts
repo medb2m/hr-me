@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
 import type { MeetingDto } from '../../../../core/models/hr-me-realtime.models';
 
 @Component({
   selector: 'app-meeting-lobby',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, BackButtonComponent],
   templateUrl: './meeting-lobby.component.html',
   styleUrl: './meeting-lobby.component.scss',
 })

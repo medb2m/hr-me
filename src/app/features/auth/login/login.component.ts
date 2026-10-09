@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { BackButtonComponent } from '../../../shared/components/back-button/back-button.component';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
@@ -9,7 +10,7 @@ import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent, BackButtonComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css', '../auth-shared.scss'],
 })

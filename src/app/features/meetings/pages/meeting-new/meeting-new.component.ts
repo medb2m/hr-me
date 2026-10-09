@@ -7,7 +7,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
 import { CalendarApiService } from '../../../../core/services/calendar-api.service';
 import type { MeetingParticipantDto } from '../../../../core/models/hr-me-realtime.models';
@@ -15,7 +16,7 @@ import type { MeetingParticipantDto } from '../../../../core/models/hr-me-realti
 @Component({
   selector: 'app-meeting-new',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, BackButtonComponent],
   templateUrl: './meeting-new.component.html',
   styleUrl: './meeting-new.component.scss',
 })

@@ -1,13 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { BackButtonComponent } from '../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
   selector: 'app-verify-email',
-  imports: [CommonModule, RouterLink, AuthVisualComponent],
+  imports: [CommonModule, RouterLink, AuthVisualComponent, BackButtonComponent],
   templateUrl: './verify-email.component.html',
   styleUrls: ['./verify-email.component.css', '../auth-shared.scss'],
 })

@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
 import { ClientCvApiService, ClientCvDto } from '../../services/client-cv-api.service';
 import { createDefaultCvEditorState } from '../../models/cv-editor-state';
@@ -9,7 +10,7 @@ import { createDefaultCvEditorState } from '../../models/cv-editor-state';
 @Component({
   selector: 'app-client-cv-hub',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, BackButtonComponent],
   templateUrl: './client-cv-hub.component.html',
   styleUrl: './client-cv-hub.component.css',
 })

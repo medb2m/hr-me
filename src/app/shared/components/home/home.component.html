@@ -9,7 +9,7 @@
 
   <div class="hero-content">
     <div class="hero-badge">
-      <i class="bi bi-globe2"></i>
+      <svg lucideGlobe [size]="15" aria-hidden="true"></svg>
       Plateforme de recrutement international
     </div>
 
@@ -26,11 +26,11 @@
 
     <div class="hero-actions">
       <a routerLink="/register" class="btn-hero-primary">
-        <i class="bi bi-arrow-right-circle-fill"></i>
+        <svg lucideCircleArrowRight [size]="18" aria-hidden="true"></svg>
         Créer un compte
       </a>
       <a routerLink="/recruitment/interview" class="btn-hero-ghost">
-        <i class="bi bi-play-circle-fill"></i>
+        <svg lucideCirclePlay [size]="18" aria-hidden="true"></svg>
         Découvrir l'entretien IA
       </a>
     </div>
@@ -83,7 +83,7 @@
 
     <div class="stat-card">
       <div class="stat-icon-wrap stat-icon-wrap--yellow">
-        <i class="bi bi-geo-alt-fill"></i>
+        <svg lucideMapPin [size]="22" aria-hidden="true"></svg>
       </div>
       <div class="stat-body">
         <span class="stat-number">6+</span>
@@ -94,7 +94,7 @@
 
     <div class="stat-card">
       <div class="stat-icon-wrap stat-icon-wrap--slate">
-        <i class="bi bi-grid-3x3-gap-fill"></i>
+        <svg lucideLayoutGrid [size]="22" aria-hidden="true"></svg>
       </div>
       <div class="stat-body">
         <span class="stat-number">12</span>
@@ -105,7 +105,7 @@
 
     <div class="stat-card">
       <div class="stat-icon-wrap stat-icon-wrap--anthracite">
-        <i class="bi bi-people-fill"></i>
+        <svg lucideUsers [size]="22" aria-hidden="true"></svg>
       </div>
       <div class="stat-body">
         <span class="stat-number">5</span>
@@ -116,7 +116,7 @@
 
     <div class="stat-card">
       <div class="stat-icon-wrap stat-icon-wrap--emerald">
-        <i class="bi bi-shield-check"></i>
+        <svg lucideShieldCheck [size]="22" aria-hidden="true"></svg>
       </div>
       <div class="stat-body">
         <span class="stat-number">100%</span>
@@ -145,7 +145,7 @@
 
     <div class="feature-card feature-card--gradient">
       <div class="feature-icon-wrap feature-icon-wrap--white">
-        <i class="bi bi-patch-check-fill"></i>
+        <svg lucideBadgeCheck [size]="24" aria-hidden="true"></svg>
       </div>
       <h3 class="feature-title">Talent ID Passport</h3>
       <p class="feature-desc">
@@ -153,13 +153,13 @@
         attestations, diplômes et QR code de contrôle accessible aux recruteurs depuis l'étranger.
       </p>
       <a routerLink="/services" class="feature-link feature-link--dark">
-        En savoir plus <i class="bi bi-arrow-right"></i>
+        En savoir plus <svg lucideArrowRight [size]="15" aria-hidden="true"></svg>
       </a>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon-wrap feature-icon-wrap--yellow">
-        <i class="bi bi-camera-video-fill"></i>
+        <svg lucideVideo [size]="24" aria-hidden="true"></svg>
       </div>
       <h3 class="feature-title">Entretiens en ligne (vidéo + IA)</h3>
       <p class="feature-desc">
@@ -167,13 +167,13 @@
         selon le poste, rapport et évaluation générés automatiquement.
       </p>
       <a routerLink="/recruitment/interview" class="feature-link">
-        Essayer l'entretien <i class="bi bi-arrow-right"></i>
+        Essayer l'entretien <svg lucideArrowRight [size]="15" aria-hidden="true"></svg>
       </a>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon-wrap feature-icon-wrap--slate">
-        <i class="bi bi-person-lines-fill"></i>
+        <svg lucideContact [size]="24" aria-hidden="true"></svg>
       </div>
       <h3 class="feature-title">Gestion des candidats</h3>
       <p class="feature-desc">
@@ -181,13 +181,13 @@
         en temps réel — de la création du dossier jusqu'au placement.
       </p>
       <a routerLink="/list-candidate" class="feature-link">
-        Voir les candidats <i class="bi bi-arrow-right"></i>
+        Voir les candidats <svg lucideArrowRight [size]="15" aria-hidden="true"></svg>
       </a>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon-wrap feature-icon-wrap--anthracite">
-        <i class="bi bi-file-earmark-text-fill"></i>
+        <svg lucideFileText [size]="24" aria-hidden="true"></svg>
       </div>
       <h3 class="feature-title">Génération documentaire</h3>
       <p class="feature-desc">
@@ -195,13 +195,13 @@
         automatiquement avec des templates personnalisés et envoi par e-mail.
       </p>
       <a routerLink="/services" class="feature-link">
-        Nos services <i class="bi bi-arrow-right"></i>
+        Nos services <svg lucideArrowRight [size]="15" aria-hidden="true"></svg>
       </a>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon-wrap feature-icon-wrap--yellow">
-        <i class="bi bi-briefcase-fill"></i>
+        <svg lucideBriefcase [size]="24" aria-hidden="true"></svg>
       </div>
       <h3 class="feature-title">Offres &amp; matching</h3>
       <p class="feature-desc">
@@ -209,13 +209,13 @@
         avec matching automatique entre profils candidats et postes ouverts.
       </p>
       <a routerLink="/jobs" class="feature-link">
-        Voir les offres <i class="bi bi-arrow-right"></i>
+        Voir les offres <svg lucideArrowRight [size]="15" aria-hidden="true"></svg>
       </a>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon-wrap feature-icon-wrap--slate">
-        <i class="bi bi-chat-square-text-fill"></i>
+        <svg lucideMessageSquareText [size]="24" aria-hidden="true"></svg>
       </div>
       <h3 class="feature-title">Suivi &amp; messagerie</h3>
       <p class="feature-desc">
@@ -223,7 +223,7 @@
         et timeline transparente de chaque candidature.
       </p>
       <a routerLink="/register" class="feature-link">
-        Créer un compte <i class="bi bi-arrow-right"></i>
+        Créer un compte <svg lucideArrowRight [size]="15" aria-hidden="true"></svg>
       </a>
     </div>
 
@@ -241,19 +241,19 @@
 
   <div class="quick-grid">
     <a routerLink="/register" class="quick-card">
-      <i class="bi bi-person-plus-fill"></i>
+      <svg lucideUserPlus [size]="28" aria-hidden="true"></svg>
       <span>Créer un compte</span>
     </a>
     <a routerLink="/jobs" class="quick-card">
-      <i class="bi bi-search"></i>
+      <svg lucideSearch [size]="28" aria-hidden="true"></svg>
       <span>Offres d'emploi</span>
     </a>
     <a routerLink="/services" class="quick-card">
-      <i class="bi bi-stars"></i>
+      <svg lucideSparkles [size]="28" aria-hidden="true"></svg>
       <span>Nos services</span>
     </a>
     <a routerLink="/recruitment/interview" class="quick-card quick-card--accent">
-      <i class="bi bi-camera-video-fill"></i>
+      <svg lucideVideo [size]="28" aria-hidden="true"></svg>
       <span>Entretien IA</span>
     </a>
   </div>
@@ -270,7 +270,7 @@
       nord-africains auprès d'employeurs en Europe et dans le monde.
     </p>
     <a routerLink="/register" class="btn-cta">
-      Créer un compte <i class="bi bi-arrow-right-circle-fill"></i>
+      Créer un compte <svg lucideCircleArrowRight [size]="18" aria-hidden="true"></svg>
     </a>
   </div>
 </section>

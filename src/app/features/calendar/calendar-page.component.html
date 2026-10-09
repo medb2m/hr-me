@@ -2,9 +2,9 @@
   <header class="cal-toolbar">
     <h1>Calendrier</h1>
     <div class="cal-nav">
-      <button type="button" (click)="prevMonth()">←</button>
+      <button type="button" (click)="prevMonth()" aria-label="Mois précédent"><svg lucideChevronLeft [size]="16" aria-hidden="true"></svg></button>
       <button type="button" (click)="today()">Aujourd’hui</button>
-      <button type="button" (click)="nextMonth()">→</button>
+      <button type="button" (click)="nextMonth()" aria-label="Mois suivant"><svg lucideChevronRight [size]="16" aria-hidden="true"></svg></button>
     </div>
     <a routerLink="/meetings/new" class="cal-link">Nouvel entretien</a>
   </header>

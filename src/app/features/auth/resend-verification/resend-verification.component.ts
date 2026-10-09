@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { BackButtonComponent } from '../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
   selector: 'app-resend-verification',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent],
+  imports: [CommonModule, ReactiveFormsModule, AuthVisualComponent, BackButtonComponent],
   templateUrl: './resend-verification.component.html',
   styleUrls: ['./resend-verification.component.css', '../auth-shared.scss'],
 })

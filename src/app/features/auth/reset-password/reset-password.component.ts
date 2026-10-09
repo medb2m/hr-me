@@ -2,13 +2,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { BackButtonComponent } from '../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
   selector: 'app-reset-password',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthVisualComponent, BackButtonComponent],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css', '../auth-shared.scss'],
 })

@@ -82,9 +82,8 @@
   align-items: flex-start;
 }
 
-.about-list li i {
+.about-list li svg {
   color: #d4a900;
-  font-size: 1rem;
   margin-top: 2px;
   flex-shrink: 0;
 }
@@ -126,17 +125,4 @@
 
 .about-back {
   text-align: center;
-}
-
-.about-back a {
-  font-size: 0.85rem;
-  color: #64748b;
-  text-decoration: none;
-}
-
-.about-back a:hover {
-  color: #0f172a;
-  text-decoration: underline;
-  text-decoration-color: #ffd300;
-  text-decoration-thickness: 2px;
 }

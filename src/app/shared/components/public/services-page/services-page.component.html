@@ -10,7 +10,7 @@
 <section class="services-grid">
 
   <article class="service-card">
-    <div class="service-icon"><i class="bi bi-globe2"></i></div>
+    <div class="service-icon"><svg lucideGlobe [size]="24" aria-hidden="true"></svg></div>
     <h2>Recrutement international</h2>
     <p>
       Sourcing, sélection et placement de candidats nord-africains (principalement
@@ -20,7 +20,7 @@
   </article>
 
   <article class="service-card service-card--accent">
-    <div class="service-icon"><i class="bi bi-patch-check-fill"></i></div>
+    <div class="service-icon"><svg lucideBadgeCheck [size]="24" aria-hidden="true"></svg></div>
     <h2>Talent ID Passport</h2>
     <p>
       Vérification et certification de l'authenticité des documents candidats :
@@ -30,7 +30,7 @@
   </article>
 
   <article class="service-card">
-    <div class="service-icon"><i class="bi bi-camera-video-fill"></i></div>
+    <div class="service-icon"><svg lucideVideo [size]="24" aria-hidden="true"></svg></div>
     <h2>Entretiens en ligne</h2>
     <p>
       Entretiens vidéo en temps réel ou menés par un agent IA : questions
@@ -40,7 +40,7 @@
   </article>
 
   <article class="service-card">
-    <div class="service-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+    <div class="service-icon"><svg lucideFileText [size]="24" aria-hidden="true"></svg></div>
     <h2>Génération documentaire</h2>
     <p>
       Contrats de travail, promesses d'embauche et lettres d'engagement produits
@@ -50,7 +50,7 @@
   </article>
 
   <article class="service-card">
-    <div class="service-icon"><i class="bi bi-person-badge-fill"></i></div>
+    <div class="service-icon"><svg lucideIdCard [size]="24" aria-hidden="true"></svg></div>
     <h2>Profil &amp; CV assistés par IA</h2>
     <p>
       Création de profil complet, générateur de CV en ligne, amélioration par IA,
@@ -60,7 +60,7 @@
   </article>
 
   <article class="service-card">
-    <div class="service-icon"><i class="bi bi-kanban-fill"></i></div>
+    <div class="service-icon"><svg lucideKanban [size]="24" aria-hidden="true"></svg></div>
     <h2>Suivi &amp; accompagnement</h2>
     <p>
       Tableau de bord candidat avec statut en temps réel, timeline des étapes,
@@ -74,5 +74,5 @@
   <h2>Un recrutement international sans friction</h2>
   <p>Créez votre compte et suivez chaque étape de votre dossier en temps réel.</p>
   <a routerLink="/register" class="btn-cta">Créer un compte</a>
-  <a routerLink="/home" class="link-back">← Retour à l'accueil</a>
+  <app-back-button label="Retour à l'accueil"></app-back-button>
 </section>

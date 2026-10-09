@@ -1,9 +1,12 @@
 <div class="interview-room" *ngIf="!loadError; else loadErr">
   <header class="room-toolbar">
     <div class="toolbar-left">
-      <a routerLink="/recruitment/interview" class="btn btn-link text-light btn-sm px-2 shrink-0">
-        ← Back
-      </a>
+      <app-back-button
+        link="/recruitment/interview"
+        label="Retour"
+        variant="dark"
+        class="shrink-0"
+      ></app-back-button>
       <div class="titles">
         <span class="room-label">AI interview</span>
         <h1 class="room-title mb-0">
@@ -57,7 +60,8 @@
               [attr.aria-pressed]="isListening"
               [attr.aria-label]="isListening ? 'Microphone on, tap to turn off' : 'Microphone off, tap to answer'"
             >
-              <i class="bi" [ngClass]="isListening ? 'bi-mic-mute-fill' : 'bi-mic-fill'"></i>
+              <svg *ngIf="isListening" lucideMicOff [size]="24" aria-hidden="true"></svg>
+              <svg *ngIf="!isListening" lucideMic [size]="24" aria-hidden="true"></svg>
             </button>
             <p class="mic-hint" *ngIf="micInvitationActive">
               Click to answer
@@ -99,7 +103,7 @@
     <aside class="chat-sidebar" aria-label="Conversation with interviewer">
       <header class="chat-header">
         <div class="ai-avatar chat-header-avatar" aria-hidden="true">
-          <i class="bi bi-chat-dots-fill"></i>
+          <svg lucideMessageSquare [size]="20" aria-hidden="true"></svg>
         </div>
         <div class="flex-grow-1 min-w-0">
           <div class="chat-header-title">Conversation</div>
@@ -176,7 +180,7 @@
             title="Send"
             aria-label="Send message"
           >
-            <i class="bi bi-send-fill"></i>
+            <svg lucideSend [size]="18" aria-hidden="true"></svg>
           </button>
         </div>
 

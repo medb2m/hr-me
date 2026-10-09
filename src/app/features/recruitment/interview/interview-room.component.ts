@@ -12,6 +12,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { LucideMic, LucideMicOff, LucideMessageSquare, LucideSend } from '@lucide/angular';
+import { BackButtonComponent } from '../../../shared/components/back-button/back-button.component';
 import { InterviewMessage, InterviewSession } from '../../../models/interview-session';
 import { InterviewService } from '../../../services/interview.service';
 import { environment } from '../../../../environments/environment';
@@ -38,7 +40,16 @@ interface BrowserSpeechRecognitionEvent {
 
 @Component({
   selector: 'app-interview-room',
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    LucideMic,
+    LucideMicOff,
+    LucideMessageSquare,
+    LucideSend,
+    BackButtonComponent,
+  ],
   templateUrl: './interview-room.component.html',
   styleUrl: './interview-room.component.css',
 })

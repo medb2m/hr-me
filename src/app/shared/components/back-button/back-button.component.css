@@ -1,0 +1,44 @@
+:host {
+  display: inline-block;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  padding: 0.3rem 0.55rem;
+  border-radius: 8px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.back-btn:hover {
+  color: #0f172a;
+  background: rgba(255, 211, 0, 0.18);
+}
+
+.back-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 211, 0, 0.6);
+}
+
+.back-btn__icon {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.back-btn:hover .back-btn__icon {
+  transform: translateX(-2px);
+}
+
+.back-btn--dark {
+  color: #94a3b8;
+}
+
+.back-btn--dark:hover {
+  color: #ffd300;
+  background: rgba(255, 211, 0, 0.1);
+}

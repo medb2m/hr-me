@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
 import {
   ClientProfileSections,
@@ -16,7 +17,7 @@ import { ProfilePhotoUploadComponent } from '../../../../shared/components/profi
 
 @Component({
   selector: 'app-client-profile-page',
-  imports: [CommonModule, FormsModule, RouterLink, ProfilePhotoUploadComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ProfilePhotoUploadComponent, BackButtonComponent],
   templateUrl: './client-profile-page.component.html',
   styleUrl: './client-profile-page.component.css',
 })
