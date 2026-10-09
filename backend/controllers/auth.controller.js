@@ -140,7 +140,7 @@ export async function login(req, res) {
     }
 
     const token = signToken(user);
-    if (user.role === 'client') {
+    if (user.role === 'client' || user.role === 'candidate') {
       try {
         await ensureClientProfileForUser(user._id);
       } catch (profileErr) {

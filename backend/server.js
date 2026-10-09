@@ -72,7 +72,7 @@ app.use('/api/users', userRoutes);
 // Admin (JWT + role admin)
 app.use('/api/admin', adminRoutes);
 
-// Espace candidat (JWT + role client) — profil, photo, etc.
+// Dossier de placement (JWT + role client|candidate) — profil, photo, CV
 app.use('/api/client', clientRoutes);
 
 // Real-time stack: notifications, meetings, unified calendar
