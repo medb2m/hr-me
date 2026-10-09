@@ -69,7 +69,7 @@
   background: linear-gradient(135deg, v.$clr-primary, v.$clr-secondary);
   @include m.flex-center;
   font-size: 18px;
-  color: #fff;
+  color: #0f172a;
   flex-shrink: 0;
 }
 
@@ -202,7 +202,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   background: linear-gradient(135deg, v.$clr-primary, v.$clr-secondary);
-  color: #fff;
+  color: #0f172a;
   padding: 2px 7px;
   border-radius: 20px;
   margin-right: 4px;
@@ -313,13 +313,13 @@
   transition: background v.$dur, color v.$dur;
 
   &:hover {
-    color: v.$clr-primary;
-    background: rgba(v.$clr-primary, 0.08);
+    color: v.$clr-primary-dark;
+    background: rgba(v.$clr-primary, 0.25);
   }
 
   &.active {
-    color: v.$clr-primary;
-    background: rgba(v.$clr-primary, 0.12);
+    color: v.$clr-primary-dark;
+    background: rgba(v.$clr-primary, 0.4);
     font-weight: 600;
   }
 }
@@ -385,7 +385,7 @@
   line-height: 1;
 }
 
-.brand-accent { color: v.$clr-primary; }
+.brand-accent { color: v.$clr-secondary; }
 
 // Right section
 .topnav-end {
@@ -424,7 +424,7 @@
   border-radius: 9px;
   font-size: v.$text-sm;
   font-weight: 600;
-  color: #fff;
+  color: #0f172a;
   background: linear-gradient(135deg, v.$clr-primary, v.$clr-secondary);
   text-decoration: none;
   transition: opacity v.$dur, transform v.$dur;
@@ -530,7 +530,7 @@
 .notif-link {
   border: none;
   background: none;
-  color: v.$clr-primary;
+  color: v.$clr-primary-dark;
   font-weight: 600;
   cursor: pointer;
   font-size: 12px;
@@ -604,6 +604,7 @@
   height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, v.$clr-primary, v.$clr-secondary);
+  color: #0f172a;
   @include m.flex-center;
   overflow: hidden;
   flex-shrink: 0;
@@ -679,7 +680,7 @@
 
   &:hover {
     background: v.$clr-surface-2;
-    color: v.$clr-primary;
+    color: v.$clr-primary-dark;
   }
 
   &--danger {

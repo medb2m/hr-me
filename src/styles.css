@@ -2,12 +2,12 @@
    DESIGN SYSTEM — CSS Custom Properties
    ============================================================ */
 :root {
-  /* Brand colors */
-  --clr-primary:        #6366f1;
-  --clr-primary-dark:   #4f46e5;
-  --clr-primary-light:  #a5b4fc;
-  --clr-secondary:      #8b5cf6;
-  --clr-accent:         #f59e0b;
+  /* Brand colors — Al Wassit */
+  --clr-primary:        #0f172a;
+  --clr-primary-dark:   #020617;
+  --clr-primary-light:  #ffd300;
+  --clr-secondary:      #64748b;
+  --clr-accent:         #ffd300;
   --clr-success:        #10b981;
   --clr-warning:        #f59e0b;
   --clr-danger:         #ef4444;
@@ -30,10 +30,10 @@
   /* Sidebar (dark navy) */
   --sidebar-bg:         #0f172a;
   --sidebar-hover:      rgba(255,255,255,.06);
-  --sidebar-active:     rgba(99,102,241,.18);
+  --sidebar-active:     rgba(255,211,0,.16);
   --sidebar-text:       #cbd5e1;
   --sidebar-text-muted: #64748b;
-  --sidebar-icon:       #6366f1;
+  --sidebar-icon:       #ffd300;
 
   /* Layout */
   --navbar-h:           64px;
