@@ -25,19 +25,19 @@
   <!-- Calendrier -->
   <div class="dp-pop" *ngIf="open" role="dialog" aria-label="Choisir une date">
     <div class="dp-head">
-      <button type="button" class="dp-nav" (click)="yearPicker ? prevYears() : prevMonth()" aria-label="Précédent">
+      <button type="button" class="dp-nav" (click)="prevUnit()" aria-label="Précédent">
         <svg lucideChevronLeft [size]="15"></svg>
       </button>
-      <button type="button" class="dp-caption" (click)="toggleYearPicker()">
-        {{ yearPicker ? yearRangeStart + ' – ' + (yearRangeStart + 11) : viewLabel }}
+      <button type="button" class="dp-caption" (click)="cycleCaption()" [attr.aria-label]="'Changer de vue — ' + viewLabel">
+        {{ viewLabel }}
       </button>
-      <button type="button" class="dp-nav" (click)="yearPicker ? nextYears() : nextMonth()" aria-label="Suivant">
+      <button type="button" class="dp-nav" (click)="nextUnit()" aria-label="Suivant">
         <svg lucideChevronRight [size]="15"></svg>
       </button>
     </div>
 
     <!-- Grille années -->
-    <div class="dp-years" *ngIf="yearPicker">
+    <div class="dp-years" *ngIf="pickerView === 'years'">
       <button
         type="button"
         class="dp-year"
@@ -49,8 +49,21 @@
       </button>
     </div>
 
+    <!-- Grille mois -->
+    <div class="dp-months" *ngIf="pickerView === 'months'">
+      <button
+        type="button"
+        class="dp-month"
+        *ngFor="let m of months; let i = index"
+        [class.dp-month--sel]="i === viewMonth"
+        (click)="pickMonth(i)"
+      >
+        {{ m }}
+      </button>
+    </div>
+
     <!-- Grille jours -->
-    <ng-container *ngIf="!yearPicker">
+    <ng-container *ngIf="pickerView === 'days'">
       <div class="dp-week">
         <span class="dp-wd" *ngFor="let w of weekdays">{{ w }}</span>
       </div>

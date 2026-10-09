@@ -79,8 +79,8 @@ export class DatePickerComponent implements ControlValueAccessor {
   viewYear = new Date().getFullYear();
   viewMonth = new Date().getMonth();
 
-  /** Mode sélection d'année (grille rapide). */
-  yearPicker = false;
+  /** Niveau de zoom du calendrier : jours → mois → années. */
+  pickerView: 'days' | 'months' | 'years' = 'days';
   yearRangeStart = this.viewYear - 6;
 
   private onChange: (v: string) => void = () => {};
@@ -133,7 +133,7 @@ export class DatePickerComponent implements ControlValueAccessor {
         this.viewYear = p.y;
         this.viewMonth = p.m;
       }
-      this.yearPicker = false;
+      this.pickerView = 'days';
       this.yearRangeStart = this.viewYear - 6;
     } else {
       this.onTouched();
@@ -147,9 +147,30 @@ export class DatePickerComponent implements ControlValueAccessor {
     }
   }
 
-  // ---------- navigation ----------
+  // ---------- navigation (flèches + caption) ----------
 
-  prevMonth(): void {
+  /** Flèche ‹ : mois précédent, année précédente ou plage d'années selon la vue. */
+  prevUnit(): void {
+    if (this.pickerView === 'years') {
+      this.yearRangeStart -= 12;
+    } else if (this.pickerView === 'months') {
+      this.viewYear--;
+    } else {
+      this.prevMonth();
+    }
+  }
+
+  nextUnit(): void {
+    if (this.pickerView === 'years') {
+      this.yearRangeStart += 12;
+    } else if (this.pickerView === 'months') {
+      this.viewYear++;
+    } else {
+      this.nextMonth();
+    }
+  }
+
+  private prevMonth(): void {
     if (this.viewMonth === 0) {
       this.viewMonth = 11;
       this.viewYear--;
@@ -158,7 +179,7 @@ export class DatePickerComponent implements ControlValueAccessor {
     }
   }
 
-  nextMonth(): void {
+  private nextMonth(): void {
     if (this.viewMonth === 11) {
       this.viewMonth = 0;
       this.viewYear++;
@@ -167,22 +188,28 @@ export class DatePickerComponent implements ControlValueAccessor {
     }
   }
 
-  toggleYearPicker(): void {
-    this.yearPicker = !this.yearPicker;
-    this.yearRangeStart = this.viewYear - 6;
+  /** Clic sur le titre : jours → mois, mois → années, années → jours. */
+  cycleCaption(): void {
+    if (this.pickerView === 'days') {
+      this.pickerView = 'months';
+    } else if (this.pickerView === 'months') {
+      this.pickerView = 'years';
+      this.yearRangeStart = this.viewYear - 6;
+    } else {
+      this.pickerView = 'days';
+    }
   }
 
+  /** Année choisie → on montre les mois de cette année. */
   pickYear(y: number): void {
     this.viewYear = y;
-    this.yearPicker = false;
+    this.pickerView = 'months';
   }
 
-  prevYears(): void {
-    this.yearRangeStart -= 12;
-  }
-
-  nextYears(): void {
-    this.yearRangeStart += 12;
+  /** Mois choisi → on montre les jours de ce mois. */
+  pickMonth(m: number): void {
+    this.viewMonth = m;
+    this.pickerView = 'days';
   }
 
   get yearGrid(): number[] {
@@ -262,6 +289,12 @@ export class DatePickerComponent implements ControlValueAccessor {
   }
 
   get viewLabel(): string {
+    if (this.pickerView === 'years') {
+      return `${this.yearRangeStart} – ${this.yearRangeStart + 11}`;
+    }
+    if (this.pickerView === 'months') {
+      return String(this.viewYear);
+    }
     return `${MONTHS_FR[this.viewMonth]} ${this.viewYear}`;
   }
 }
