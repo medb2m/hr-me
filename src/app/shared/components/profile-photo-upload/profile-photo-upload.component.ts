@@ -49,12 +49,8 @@ export class ProfilePhotoUploadComponent implements OnDestroy {
   readonly pendingFile = signal<File | null>(null);
   readonly previewDisplay = signal<string | null>(null);
   readonly pickHint = signal<string | null>(null);
-  /** Libellé type Europass : fichier choisi ou message par défaut. */
-  readonly chosenFileLabel = computed(() => {
-    const f = this.pendingFile();
-    const n = f?.name?.trim();
-    return n || 'Aucun fichier sélectionné';
-  });
+  /** true pendant qu'un fichier est survolé sur la zone de dépôt. */
+  readonly dragActive = signal(false);
 
   /** Image en cours de recadrage (object URL). */
   readonly cropSourceUrl = signal<string | null>(null);
@@ -147,6 +143,43 @@ export class ProfilePhotoUploadComponent implements OnDestroy {
       ev.preventDefault();
       this.openFilePicker();
     }
+  }
+
+  /** Taille lisible du fichier en attente (« 1,4 Mo »). */
+  readonly pendingSizeLabel = computed(() => {
+    const f = this.pendingFile();
+    if (!f) return '';
+    return f.size >= 1024 * 1024
+      ? `${(f.size / (1024 * 1024)).toFixed(1).replace('.', ',')} Mo`
+      : `${Math.max(1, Math.round(f.size / 1024))} Ko`;
+  });
+
+  // ---------- glisser-déposer ----------
+
+  onDragOver(ev: DragEvent): void {
+    if (this.cropSourceUrl()) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'copy';
+    this.dragActive.set(true);
+  }
+
+  onDragLeave(ev: DragEvent): void {
+    ev.preventDefault();
+    // Ne désactive que si on sort vraiment de la zone (pas un enfant).
+    const zone = ev.currentTarget as HTMLElement;
+    if (!zone.contains(ev.relatedTarget as Node)) {
+      this.dragActive.set(false);
+    }
+  }
+
+  onDrop(ev: DragEvent): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.dragActive.set(false);
+    if (this.cropSourceUrl()) return;
+    const file = ev.dataTransfer?.files?.[0] ?? null;
+    this.applyPickedFile(file);
   }
 
   clearLocalSelection(): void {

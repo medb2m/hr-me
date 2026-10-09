@@ -1,17 +1,17 @@
 <div class="pph" role="group" aria-labelledby="pph-title">
-  <h3 id="pph-title" class="pph__title">Photo de profil</h3>
-  <p class="pph__desc">
-    Enregistrement sur le serveur (JPEG, PNG ou WebP, max 2&nbsp;Mo). Stocké dans votre fiche
-    <span class="pph__code">ClientProfile</span>.
-  </p>
-
-  <p class="pph__fileline" aria-live="polite">
-    <span class="pph__fileline-label">Fichier</span>
-    <span class="pph__fileline-value">{{ chosenFileLabel() }}</span>
-  </p>
-  @if (!pendingFile() && !cropSourceUrl()) {
-    <p class="pph__fileline-tr" translate="no">No file chosen</p>
-  }
+  <div class="pph__head">
+    <span class="pph__head-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="4" />
+        <circle cx="9" cy="9" r="2" />
+        <path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L6 20" />
+      </svg>
+    </span>
+    <div>
+      <h3 id="pph-title" class="pph__title">Photo de profil</h3>
+      <p class="pph__desc">JPEG, PNG ou WebP — 2 Mo max. Enregistrée sur votre dossier.</p>
+    </div>
+  </div>
 
   <input
     #fileInput
@@ -23,32 +23,42 @@
   />
 
   @if (cropSourceUrl(); as cUrl) {
+    <!-- ============ ÉDITEUR DE RECADRAGE ============ -->
     <div class="pph-crop" role="dialog" aria-labelledby="pph-crop-title">
-      <h4 id="pph-crop-title" class="pph-crop__title">Recadrer</h4>
-      <p class="pph-crop__lead">Glissez l’image pour cadrer. Molette sur la zone pour zoomer.</p>
-      <div
-        #cropViewport
-        class="pph-crop__viewport"
-        [style.width.px]="viewportPx"
-        [style.height.px]="viewportPx"
-        (pointerdown)="onCropPointerDown($event)"
-        (wheel)="onCropWheel($event)"
-      >
-        <img
-          #cropImg
-          [src]="cUrl"
-          class="pph-crop__img"
-          draggable="false"
-          [style.width.px]="cropImgDisplayW()"
-          [style.height.px]="cropImgDisplayH()"
-          [style.left.px]="panX()"
-          [style.top.px]="panY()"
-          (load)="onCropImageLoad()"
-          alt=""
-        />
+      <div class="pph-crop__head">
+        <h4 id="pph-crop-title" class="pph-crop__title">Cadrer votre photo</h4>
+        <p class="pph-crop__lead">Glissez l’image · molette ou curseur pour zoomer</p>
       </div>
+
+      <div class="pph-crop__stage">
+        <div
+          #cropViewport
+          class="pph-crop__viewport"
+          [style.width.px]="viewportPx"
+          [style.height.px]="viewportPx"
+          (pointerdown)="onCropPointerDown($event)"
+          (wheel)="onCropWheel($event)"
+        >
+          <img
+            #cropImg
+            [src]="cUrl"
+            class="pph-crop__img"
+            draggable="false"
+            [style.width.px]="cropImgDisplayW()"
+            [style.height.px]="cropImgDisplayH()"
+            [style.left.px]="panX()"
+            [style.top.px]="panY()"
+            (load)="onCropImageLoad()"
+            alt=""
+          />
+          <span class="pph-crop__ring" aria-hidden="true"></span>
+        </div>
+      </div>
+
       <label class="pph-crop__zoom">
-        <span>Zoom</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3M8 11h6M11 8v6" />
+        </svg>
         <input
           type="range"
           min="100"
@@ -56,47 +66,63 @@
           step="2"
           [value]="zoomPercent()"
           (input)="onZoomInput($event)"
+          aria-label="Zoom"
           aria-valuemin="100"
           aria-valuemax="250"
           [attr.aria-valuenow]="zoomPercent()"
         />
+        <span class="pph-crop__zoomval">{{ zoomPercent() }}%</span>
       </label>
+
       <div class="pph-crop__actions">
         <button type="button" class="pph__btn pph__btn--secondary" (click)="cancelCrop()">Annuler</button>
         <button type="button" class="pph__btn pph__btn--primary" [disabled]="!cropReady()" (click)="confirmCrop()">
-          Valider le recadrage
+          Valider
         </button>
       </div>
     </div>
   } @else {
-    <button
-      type="button"
+    <!-- ============ ZONE DE DÉPÔT ============ -->
+    <div
       class="pph__drop"
+      role="button"
+      tabindex="0"
+      [class.pph__drop--drag]="dragActive()"
       (click)="openFilePicker()"
       (keydown)="onDropZoneKeydown($event)"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
       [attr.aria-busy]="uploading"
     >
       @if (previewDisplay(); as src) {
         <span class="pph__preview-wrap">
-          <img [src]="src" alt="Aperçu" class="pph__preview" width="72" height="72" />
+          <img [src]="src" alt="Aperçu de votre photo" class="pph__preview" width="76" height="76" />
+          <span class="pph__preview-check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </span>
         </span>
       } @else {
-        <span class="pph__placeholder" aria-hidden="true">
-          <svg class="pph__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
-            <circle cx="8" cy="8" r="2" />
-            <rect x="3" y="3" width="18" height="18" rx="2" />
+        <span class="pph__cloud" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 13v8" /><path d="m8 17 4-4 4 4" />
+            <path d="M20.4 17.5A5 5 0 0 0 18 8h-1.3A8 8 0 1 0 4 16.3" />
           </svg>
         </span>
       }
-      <span class="pph__hint">
+
+      <span class="pph__drop-text">
         @if (pendingFile(); as f) {
-          {{ f.name }} — prête à envoyer
+          <span class="pph__file-name">{{ f.name }}</span>
+          <span class="pph__file-meta">{{ pendingSizeLabel() }} · prête à envoyer</span>
         } @else {
-          Cliquez pour choisir une image
+          <span class="pph__drop-title">
+            {{ dragActive() ? 'Déposez votre photo ici' : 'Glissez votre photo ici' }}
+          </span>
+          <span class="pph__drop-sub">ou <span class="pph__drop-link">parcourez vos fichiers</span></span>
         }
       </span>
-    </button>
+    </div>
 
     @if (pickHint(); as hint) {
       <p class="pph__hint-err" role="status">{{ hint }}</p>
@@ -104,7 +130,7 @@
 
     <div class="pph__actions">
       <button type="button" class="pph__btn pph__btn--secondary" [disabled]="uploading" (click)="openFilePicker()">
-        Parcourir…
+        Choisir un fichier
       </button>
       <button
         type="button"
@@ -112,15 +138,16 @@
         [disabled]="!pendingFile() || uploading"
         (click)="emitUpload()"
       >
-        {{ uploading ? 'Envoi…' : 'Envoyer la photo' }}
+        {{ uploading ? 'Envoi…' : 'Enregistrer la photo' }}
       </button>
       <button
         type="button"
-        class="pph__btn pph__btn--ghost"
+        class="pph__btn pph__btn--danger"
         [disabled]="uploading || !hasServerPhoto"
         (click)="emitRemoveServer()"
+        title="Supprimer la photo enregistrée"
       >
-        Supprimer (serveur)
+        Supprimer
       </button>
     </div>
   }
