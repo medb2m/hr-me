@@ -13,37 +13,37 @@ export class ClientOverviewComponent {
     {
       title: 'Identité & données',
       desc: 'Informations personnelles, parcours, formations et compétences centralisés.',
-      link: '/client/profile',
+      link: '/candidat/profile',
       tag: 'Profil',
     },
     {
       title: 'Éditeur de CV',
       desc: 'Construisez un CV structuré à partir de votre profil (étapes ou blocs).',
-      link: '/client/editor/cv',
+      link: '/candidat/editor/cv',
       tag: 'CV',
     },
     {
       title: 'Lettre de motivation',
       desc: 'Modèles et éditeur pour adapter chaque candidature.',
-      link: '/client/editor/cl',
+      link: '/candidat/editor/cl',
       tag: 'Lettre',
     },
     {
       title: 'Bibliothèque de documents',
       desc: 'Diplômes, attestations et PDF vérifiés dans votre portefeuille numérique.',
-      link: '/client/library',
+      link: '/candidat/library',
       tag: 'Documents',
     },
     {
       title: 'Auto-évaluation des compétences',
       desc: 'Langues (CEFR), compétences numériques et transversales.',
-      link: '/client/skills',
+      link: '/candidat/skills',
       tag: 'Compétences',
     },
     {
       title: 'Explorer offres & formations',
       desc: 'Vue agrégée pour faire correspondre votre profil aux opportunités.',
-      link: '/client/explore',
+      link: '/candidat/explore',
       tag: 'Explorer',
     },
   ] as const;

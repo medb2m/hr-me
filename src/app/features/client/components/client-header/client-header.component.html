@@ -1,6 +1,6 @@
 <header class="client-header">
   <div class="client-header__brand">
-    <a routerLink="/client/overview" class="client-header__logo" aria-label="Accueil espace candidat">
+    <a routerLink="/candidat/overview" class="client-header__logo" aria-label="Accueil espace candidat">
       <span class="client-header__logo-mark">
         <img src="/assets/img/al-wassit-logo.png" alt="" />
       </span>
@@ -8,8 +8,8 @@
     </a>
   </div>
   <nav class="client-header__nav" aria-label="Raccourcis">
-    <a routerLink="/client/explore" routerLinkActive="is-active">Explorer</a>
-    <a routerLink="/client/profile" routerLinkActive="is-active">Profil</a>
+    <a routerLink="/candidat/explore" routerLinkActive="is-active">Explorer</a>
+    <a routerLink="/candidat/profile" routerLinkActive="is-active">Profil</a>
   </nav>
   <div class="client-header__actions">
     @if (user(); as u) {
@@ -36,10 +36,10 @@
               </div>
             </div>
             <div class="ch-menu__divider"></div>
-            <a routerLink="/client/overview" class="ch-menu__item" role="menuitem" (click)="closeMenu()">
+            <a routerLink="/candidat/overview" class="ch-menu__item" role="menuitem" (click)="closeMenu()">
               <svg lucideLayoutGrid [size]="15" aria-hidden="true"></svg> Tableau de bord
             </a>
-            <a routerLink="/client/profile" class="ch-menu__item" role="menuitem" (click)="closeMenu()">
+            <a routerLink="/candidat/profile" class="ch-menu__item" role="menuitem" (click)="closeMenu()">
               <svg lucideUserRound [size]="15" aria-hidden="true"></svg> Mon profil
             </a>
             <a routerLink="/settings" class="ch-menu__item" role="menuitem" (click)="closeMenu()">

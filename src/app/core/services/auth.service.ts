@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface AuthUser {
@@ -56,7 +57,7 @@ export class AuthService {
       return '/espace/accueil';
     }
     if (role === 'candidate') {
-      return '/client/overview';
+      return '/candidat/overview';
     }
     return '/home';
   }
@@ -67,6 +68,27 @@ export class AuthService {
       localStorage.removeItem('authUser');
     }
     this.userSignal.set(null);
+  }
+
+  /** Recharge le compte depuis l'API (rôle, e-mail vérifié…) — source de vérité fraîche. */
+  refreshMe(): Observable<void> {
+    return this.http
+      .get<{ user: AuthUser }>(`${environment.apiUrl}/users/me`)
+      .pipe(
+        tap((res) => {
+          if (res?.user) {
+            this.updateStoredUser(res.user);
+          }
+        }),
+        map(() => undefined),
+        catchError((err: { status?: number }) => {
+          /** Token expiré/invalide → on purge la session périmée. */
+          if (err?.status === 401 || err?.status === 403) {
+            this.clearSession();
+          }
+          return of(undefined);
+        }),
+      );
   }
 
   /** Merge changes into the stored + in-memory user (e.g. after profile edit). */

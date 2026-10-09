@@ -39,7 +39,7 @@
         <div class="client-sidebar__completion-fill" [style.width.%]="profileState.completionPercent()"></div>
       </div>
       @if (!profileState.isProfileComplete()) {
-        <a routerLink="/client/profile" class="client-sidebar__completion-link">Compléter vers 100 %</a>
+        <a routerLink="/candidat/profile" class="client-sidebar__completion-link">Compléter vers 100 %</a>
       }
     </div>
   </div>
@@ -49,7 +49,7 @@
       <a
         [routerLink]="item.path"
         routerLinkActive="is-active"
-        [routerLinkActiveOptions]="{ exact: item.path === '/client/overview' }"
+        [routerLinkActiveOptions]="{ exact: item.path === '/candidat/overview' }"
         class="client-sidebar__link"
       >
         <span class="client-sidebar__icon" aria-hidden="true">{{ item.icon }}</span>

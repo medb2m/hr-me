@@ -60,7 +60,7 @@ export class ClientCvHubComponent implements OnInit {
       .subscribe({
         next: ({ cv }) => {
           this.newName = '';
-          void this.router.navigate(['/client/editor/cv', cv._id]);
+          void this.router.navigate(['/candidat/editor/cv', cv._id]);
         },
         error: (err: { error?: { message?: string } }) => {
           this.createError = err.error?.message || 'Création impossible.';

@@ -29,7 +29,9 @@ export class AppComponent {
       this.auth.refreshFromStorage();
       const path = this.router.url.split('?')[0];
       const admin = path === '/adminlog' || path === '/admin/auth';
-      const clientArea = path === '/client' || path.startsWith('/client/');
+      const clientArea =
+        path === '/candidat' || path.startsWith('/candidat/') ||
+        path === '/client' || path.startsWith('/client/');
       const espaceArea = path === '/espace' || path.startsWith('/espace/');
       const meetingRoom = /\/meetings\/[^/]+\/room$/.test(path);
       const interviewRoom = path.startsWith('/recruitment/interview/room');
@@ -44,6 +46,11 @@ export class AppComponent {
         return;
       }
       const path = this.router.url.split('?')[0];
+      /** Alias historique : un candidat sur `/client/*` est réécrit vers `/candidat/*`. */
+      if (area === 'candidate' && (path === '/client' || path.startsWith('/client/'))) {
+        void this.router.navigateByUrl(path.replace(/^\/client/, '/candidat'), { replaceUrl: true });
+        return;
+      }
       if (this.isAllowedScopedPath(area, path)) {
         return;
       }
@@ -55,7 +62,7 @@ export class AppComponent {
         }
         const p = this.router.url.split('?')[0];
         if (!this.isAllowedScopedPath(a, p)) {
-          void this.router.navigateByUrl(a === 'client' ? '/espace/accueil' : '/client/overview', {
+          void this.router.navigateByUrl(a === 'client' ? '/espace/accueil' : '/candidat/overview', {
             replaceUrl: true,
           });
         }
@@ -63,6 +70,13 @@ export class AppComponent {
     };
     syncChrome();
     enforceClientScope();
+    /** Rôle/verification peuvent changer côté admin — resynchronise le compte depuis l'API. */
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('authToken')) {
+      this.auth.refreshMe().subscribe(() => {
+        syncChrome();
+        enforceClientScope();
+      });
+    }
     this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe(() => {
       syncChrome();
       enforceClientScope();
@@ -71,7 +85,7 @@ export class AppComponent {
 
   /**
    * Espace dédié par rôle : `client` → `/espace` (compte public),
-   * `candidate` → `/client` (dossier de placement). Retourne null pour les autres rôles.
+   * `candidate` → `/candidat` (dossier de placement). Retourne null pour les autres rôles.
    */
   private scopedAreaUser(): 'client' | 'candidate' | null {
     if (typeof localStorage === 'undefined' || !localStorage.getItem('authToken')) {
@@ -86,7 +100,7 @@ export class AppComponent {
 
   /** Routes autorisées en dehors de l'espace dédié (compte, vérification e-mail…). */
   private isAllowedScopedPath(area: 'client' | 'candidate', path: string): boolean {
-    const home = area === 'client' ? '/espace' : '/client';
+    const home = area === 'client' ? '/espace' : '/candidat';
     if (path === home || path.startsWith(`${home}/`)) {
       return true;
     }

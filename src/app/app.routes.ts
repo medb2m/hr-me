@@ -71,7 +71,13 @@ export const routes: Routes = [
       loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
     },
 
-    /** Espace candidat (layout type Europass) : `/client/overview`, `/client/profile`, etc. */
+    /** Espace candidat (layout type Europass) : `/candidat/overview`, `/candidat/profile`, etc. */
+    {
+      path: 'candidat',
+      canActivate: [authRequiredGuard],
+      loadChildren: () => import('./features/client/client.routes').then((m) => m.CLIENT_ROUTES),
+    },
+    /** Alias historique `/client/*` — le garde-fou de rôle réécrit vers `/candidat/*`. */
     {
       path: 'client',
       canActivate: [authRequiredGuard],

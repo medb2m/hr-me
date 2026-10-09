@@ -38,7 +38,7 @@
     <ul class="cv-hub__list">
       @for (cv of cvs; track cv._id) {
         <li class="cv-hub__item">
-          <a [routerLink]="['/client/editor/cv', cv._id]" class="cv-hub__link">{{ cv.name }}</a>
+          <a [routerLink]="['/candidat/editor/cv', cv._id]" class="cv-hub__link">{{ cv.name }}</a>
           <span class="cv-hub__meta">Modifié {{ cv.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
           <button type="button" class="cv-hub__btn-del" (click)="deleteCv($event, cv)">Supprimer</button>
         </li>
@@ -46,5 +46,5 @@
     </ul>
   }
 
-  <app-back-button link="/client/overview" label="Tableau de bord" class="cv-hub__back"></app-back-button>
+  <app-back-button link="/candidat/overview" label="Tableau de bord" class="cv-hub__back"></app-back-button>
 </div>

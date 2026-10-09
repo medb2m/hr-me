@@ -33,6 +33,6 @@ export class ClientShellComponent implements OnInit {
   }
 
   goToProfile(): void {
-    void this.router.navigateByUrl('/client/profile');
+    void this.router.navigateByUrl('/candidat/profile');
   }
 }

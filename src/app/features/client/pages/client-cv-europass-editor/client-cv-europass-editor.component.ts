@@ -61,7 +61,7 @@ export class ClientCvEuropassEditorComponent implements OnInit {
     this.route.paramMap.subscribe((pm) => {
       const id = pm.get('cvId')?.trim();
       if (!id) {
-        void this.router.navigate(['/client/editor/cv']);
+        void this.router.navigate(['/candidat/editor/cv']);
         return;
       }
       this.cvId = id;
@@ -77,7 +77,7 @@ export class ClientCvEuropassEditorComponent implements OnInit {
     })
       .pipe(
         catchError(() => {
-          void this.router.navigate(['/client/editor/cv']);
+          void this.router.navigate(['/candidat/editor/cv']);
           return of(null);
         }),
         finalize(() => (this.loading = false)),
@@ -288,7 +288,7 @@ export class ClientCvEuropassEditorComponent implements OnInit {
       return;
     }
     this.cvApi.deleteCv(this.cvId).subscribe({
-      next: () => void this.router.navigate(['/client/editor/cv']),
+      next: () => void this.router.navigate(['/candidat/editor/cv']),
       error: () => {
         this.saveMessage = 'Suppression impossible.';
       },

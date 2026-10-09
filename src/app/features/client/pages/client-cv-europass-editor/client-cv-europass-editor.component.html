@@ -2,7 +2,7 @@
   <p class="ep-muted">Chargement du CV…</p>
 } @else if (cv) {
   <div class="ep-toolbar">
-    <app-back-button link="/client/editor/cv" label="Mes CV" class="ep-toolbar__back"></app-back-button>
+    <app-back-button link="/candidat/editor/cv" label="Mes CV" class="ep-toolbar__back"></app-back-button>
     <div class="ep-toolbar__actions">
       <button type="button" class="ep-btn ep-btn--ghost" (click)="deleteCv()">Supprimer</button>
       <button type="button" class="ep-btn ep-btn--primary" [disabled]="saving" (click)="save()">

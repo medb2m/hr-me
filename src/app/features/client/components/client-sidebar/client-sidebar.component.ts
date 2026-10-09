@@ -44,13 +44,13 @@ export class ClientSidebarComponent {
   }
 
   readonly nav = [
-    { path: '/client/overview', label: 'Tableau de bord', icon: '◆' },
-    { path: '/client/profile', label: 'Identité & profil', icon: '◇' },
-    { path: '/client/editor/cv', label: 'Éditeur CV', icon: '▣' },
-    { path: '/client/editor/cl', label: 'Lettre de motivation', icon: '▤' },
-    { path: '/client/library', label: 'Documents & diplômes', icon: '▦' },
-    { path: '/client/skills', label: 'Compétences & langues', icon: '○' },
-    { path: '/client/explore', label: 'Offres & formations', icon: '▸' },
+    { path: '/candidat/overview', label: 'Tableau de bord', icon: '◆' },
+    { path: '/candidat/profile', label: 'Identité & profil', icon: '◇' },
+    { path: '/candidat/editor/cv', label: 'Éditeur CV', icon: '▣' },
+    { path: '/candidat/editor/cl', label: 'Lettre de motivation', icon: '▤' },
+    { path: '/candidat/library', label: 'Documents & diplômes', icon: '▦' },
+    { path: '/candidat/skills', label: 'Compétences & langues', icon: '○' },
+    { path: '/candidat/explore', label: 'Offres & formations', icon: '▸' },
     { path: '/settings', label: 'Mon compte', icon: '⚙' },
   ] as const;
 }
