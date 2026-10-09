@@ -1,0 +1,152 @@
+<div class="settings-page">
+  <app-back-button link="/home" label="Accueil" class="page-back"></app-back-button>
+
+  <header class="page-head">
+    <div class="head-icon" aria-hidden="true"><svg lucideSettings [size]="26"></svg></div>
+    <div>
+      <h1>Paramètres du compte</h1>
+      <p class="head-sub">Gérez vos informations personnelles et la sécurité de votre compte.</p>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="state-card">Chargement de votre compte…</div>
+  <div *ngIf="loadError" class="state-card state-card--error">{{ loadError }}</div>
+
+  <ng-container *ngIf="account && !loading">
+    <!-- Identity strip -->
+    <section class="identity-card">
+      <div class="avatar" aria-hidden="true">{{ initials }}</div>
+      <div class="identity-info">
+        <div class="identity-name">{{ account.name || 'Sans nom' }}</div>
+        <div class="identity-email">{{ account.email }}</div>
+        <div class="identity-meta">
+          <span class="role-badge">{{ roleLabel }}</span>
+          <span class="verify-badge" [class.verify-badge--ok]="account.emailVerified">
+            <svg lucideBadgeCheck [size]="13" aria-hidden="true"></svg>
+            {{ account.emailVerified ? 'E-mail vérifié' : 'E-mail non vérifié' }}
+          </span>
+          <span class="member-since" *ngIf="memberSince">Membre depuis le {{ memberSince }}</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="cards">
+      <!-- ============ PROFILE ============ -->
+      <section class="card">
+        <h2 class="card-title"><svg lucideUserRound [size]="18" aria-hidden="true"></svg> Informations personnelles</h2>
+
+        <div class="alert alert--error" *ngIf="profileError">{{ profileError }}</div>
+        <div class="alert alert--ok" *ngIf="profileMsg"><svg lucideCircleCheck [size]="15" aria-hidden="true"></svg> {{ profileMsg }}</div>
+
+        <label class="field">
+          <span class="field-label">Nom complet</span>
+          <input type="text" [(ngModel)]="name" maxlength="80" placeholder="Votre nom" autocomplete="name">
+        </label>
+
+        <label class="field">
+          <span class="field-label">Fuseau horaire</span>
+          <select [(ngModel)]="timeZone">
+            <option value="">Automatique (navigateur)</option>
+            <option *ngFor="let tz of timeZones" [value]="tz">{{ tz.replace('_', ' ') }}</option>
+          </select>
+          <span class="field-hint">Utilisé pour l'affichage des rendez-vous et entretiens.</span>
+        </label>
+
+        <button type="button" class="btn-primary" (click)="saveProfile()" [disabled]="savingProfile">
+          {{ savingProfile ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </section>
+
+      <!-- ============ EMAIL ============ -->
+      <section class="card">
+        <h2 class="card-title"><svg lucideMail [size]="18" aria-hidden="true"></svg> Adresse e-mail</h2>
+
+        <div class="alert alert--warn" *ngIf="account.pendingEmail">
+          <svg lucideTriangleAlert [size]="15" aria-hidden="true"></svg>
+          <span>
+            Changement en attente : un lien de confirmation a été envoyé à
+            <strong>{{ account.pendingEmail }}</strong>.
+            <button type="button" class="link-btn" (click)="cancelEmailChange()" [disabled]="emailBusy">Annuler</button>
+          </span>
+        </div>
+        <div class="alert alert--error" *ngIf="emailError">{{ emailError }}</div>
+        <div class="alert alert--ok" *ngIf="emailMsg"><svg lucideCircleCheck [size]="15" aria-hidden="true"></svg> {{ emailMsg }}</div>
+
+        <label class="field">
+          <span class="field-label">E-mail actuel</span>
+          <input type="email" [value]="account.email" disabled>
+        </label>
+
+        <ng-container *ngIf="editingEmail; else emailCta">
+          <label class="field">
+            <span class="field-label">Nouvelle adresse e-mail</span>
+            <input type="email" [(ngModel)]="newEmail" placeholder="nouvelle@adresse.com" autocomplete="email">
+            <span class="field-hint">Un lien de confirmation sera envoyé à cette adresse — votre e-mail actuel reste actif jusqu'à confirmation.</span>
+          </label>
+          <div class="btn-row">
+            <button type="button" class="btn-primary" (click)="requestEmailChange()" [disabled]="emailBusy || !newEmail.trim()">
+              {{ emailBusy ? 'Envoi…' : 'Envoyer le lien de confirmation' }}
+            </button>
+            <button type="button" class="btn-ghost" (click)="editingEmail = false" [disabled]="emailBusy">Annuler</button>
+          </div>
+        </ng-container>
+        <ng-template #emailCta>
+          <button type="button" class="btn-ghost" (click)="startEmailEdit()" [disabled]="emailBusy">
+            Changer d'adresse e-mail
+          </button>
+        </ng-template>
+      </section>
+
+      <!-- ============ PASSWORD ============ -->
+      <section class="card">
+        <h2 class="card-title"><svg lucideKeyRound [size]="18" aria-hidden="true"></svg> Mot de passe</h2>
+
+        <div class="alert alert--error" *ngIf="passwordError">{{ passwordError }}</div>
+        <div class="alert alert--ok" *ngIf="passwordMsg"><svg lucideCircleCheck [size]="15" aria-hidden="true"></svg> {{ passwordMsg }}</div>
+
+        <label class="field">
+          <span class="field-label">Mot de passe actuel</span>
+          <span class="pwd-wrap">
+            <input [type]="showCurrent ? 'text' : 'password'" [(ngModel)]="currentPassword" autocomplete="current-password">
+            <button type="button" class="pwd-eye" (click)="showCurrent = !showCurrent"
+                    [attr.aria-label]="showCurrent ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+              <svg *ngIf="!showCurrent" lucideEye [size]="17" aria-hidden="true"></svg>
+              <svg *ngIf="showCurrent" lucideEyeOff [size]="17" aria-hidden="true"></svg>
+            </button>
+          </span>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Nouveau mot de passe</span>
+          <span class="pwd-wrap">
+            <input [type]="showNew ? 'text' : 'password'" [(ngModel)]="newPassword" autocomplete="new-password">
+            <button type="button" class="pwd-eye" (click)="showNew = !showNew"
+                    [attr.aria-label]="showNew ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+              <svg *ngIf="!showNew" lucideEye [size]="17" aria-hidden="true"></svg>
+              <svg *ngIf="showNew" lucideEyeOff [size]="17" aria-hidden="true"></svg>
+            </button>
+          </span>
+          <span class="field-hint">Au moins 8 caractères.</span>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Confirmer le nouveau mot de passe</span>
+          <span class="pwd-wrap">
+            <input [type]="showConfirm ? 'text' : 'password'" [(ngModel)]="confirmPassword" autocomplete="new-password">
+            <button type="button" class="pwd-eye" (click)="showConfirm = !showConfirm"
+                    [attr.aria-label]="showConfirm ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+              <svg *ngIf="!showConfirm" lucideEye [size]="17" aria-hidden="true"></svg>
+              <svg *ngIf="showConfirm" lucideEyeOff [size]="17" aria-hidden="true"></svg>
+            </button>
+          </span>
+          <span class="field-error" *ngIf="passwordMismatch">Les mots de passe ne correspondent pas.</span>
+        </label>
+
+        <button type="button" class="btn-primary" (click)="changePassword()"
+                [disabled]="passwordBusy || !currentPassword || newPassword.length < 8 || newPassword !== confirmPassword">
+          {{ passwordBusy ? 'Mise à jour…' : 'Mettre à jour le mot de passe' }}
+        </button>
+      </section>
+    </div>
+  </ng-container>
+</div>

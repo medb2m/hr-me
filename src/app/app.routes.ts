@@ -32,6 +32,8 @@ import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-
 import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
 import { VerifyEmailComponent } from './features/auth/verify-email/verify-email.component';
 import { ResendVerificationComponent } from './features/auth/resend-verification/resend-verification.component';
+import { ConfirmEmailChangeComponent } from './features/auth/confirm-email-change/confirm-email-change.component';
+import { SettingsPageComponent } from './features/account/settings/settings-page.component';
 import { guestOnlyGuard } from './core/guards/guest-only.guard';
 import { authRequiredGuard } from './core/guards/auth-required.guard';
 
@@ -50,6 +52,14 @@ export const routes: Routes = [
     { path: 'reset-password', component: ResetPasswordComponent },
     { path: 'verify-email', component: VerifyEmailComponent },
     { path: 'resend-verification', component: ResendVerificationComponent },
+    { path: 'confirm-email-change', component: ConfirmEmailChangeComponent },
+
+    /** Account settings — every authenticated role (client, admin, candidate, recruiter). */
+    {
+      path: 'settings',
+      component: SettingsPageComponent,
+      canActivate: [authRequiredGuard],
+    },
 
     /** Admin area: own layout (loadChildren). Auth at `/admin/auth`, app at `/admin/dashboard`, etc. */
     {

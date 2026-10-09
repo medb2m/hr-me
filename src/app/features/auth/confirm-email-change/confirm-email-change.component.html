@@ -1,0 +1,29 @@
+<div class="auth-layout">
+  <app-auth-visual />
+  <div class="auth-panel">
+    <app-back-button class="auth-back" label="Accueil"></app-back-button>
+    <div class="auth-card">
+      <img src="/assets/img/al-wassit-logo.png" alt="Al Wassit" class="auth-logo" />
+      <h1>Changement d'e-mail</h1>
+
+      @if (missingToken) {
+        <div class="alert alert-error">Lien de confirmation invalide — le jeton est manquant.</div>
+      }
+      @if (loading) {
+        <p class="lead">Confirmation en cours…</p>
+      }
+      @if (errorMsg) {
+        <div class="alert alert-error">{{ errorMsg }}</div>
+      }
+      @if (successMsg) {
+        <div class="alert alert-ok">{{ successMsg }}</div>
+      }
+
+      <div class="links">
+        <a routerLink="/login">Connexion</a>
+        ·
+        <a routerLink="/settings">Paramètres du compte</a>
+      </div>
+    </div>
+  </div>
+</div>

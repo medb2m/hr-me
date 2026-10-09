@@ -20,6 +20,7 @@ import skillRoutes from './routes/skill.routes.js';
 import interviewRoutes from './routes/interview.routes.js';
 import ttsRoutes from './routes/tts.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import clientRoutes from './client/routes/client.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
@@ -64,6 +65,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Auth (register, login, password reset, email verification)
 app.use('/api/auth', authRoutes);
+
+// Account settings (JWT, any role) — profile, email change, password
+app.use('/api/users', userRoutes);
 
 // Admin (JWT + role admin)
 app.use('/api/admin', adminRoutes);

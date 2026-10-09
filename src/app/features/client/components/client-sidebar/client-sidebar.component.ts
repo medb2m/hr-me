@@ -51,5 +51,6 @@ export class ClientSidebarComponent {
     { path: '/client/library', label: 'Documents & diplômes', icon: '▦' },
     { path: '/client/skills', label: 'Compétences & langues', icon: '○' },
     { path: '/client/explore', label: 'Offres & formations', icon: '▸' },
+    { path: '/settings', label: 'Mon compte', icon: '⚙' },
   ] as const;
 }

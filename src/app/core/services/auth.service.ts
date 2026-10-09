@@ -65,6 +65,19 @@ export class AuthService {
     this.userSignal.set(null);
   }
 
+  /** Merge changes into the stored + in-memory user (e.g. after profile edit). */
+  updateStoredUser(partial: Partial<AuthUser>): void {
+    const current = this.userSignal();
+    if (!current) {
+      return;
+    }
+    const next = { ...current, ...partial };
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('authUser', JSON.stringify(next));
+    }
+    this.userSignal.set(next);
+  }
+
   setSession(token: string, user: AuthUser, emailFallback?: string): void {
     const normalized: AuthUser = {
       ...user,
