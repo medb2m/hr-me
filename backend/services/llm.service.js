@@ -4,7 +4,7 @@
  */
 
 const DEFAULT_BASE = 'https://api.groq.com/openai/v1';
-const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
+const DEFAULT_MODEL = 'openai/gpt-oss-120b';
 
 export function assertLlmConfigured() {
   const key = process.env.LLM_API_KEY;
