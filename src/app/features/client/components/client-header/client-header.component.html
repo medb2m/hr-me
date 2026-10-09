@@ -1,7 +1,9 @@
 <header class="client-header">
   <div class="client-header__brand">
     <a routerLink="/client/overview" class="client-header__logo" aria-label="Accueil espace candidat">
-      <span class="client-header__logo-mark">E</span>
+      <span class="client-header__logo-mark">
+        <img src="/assets/img/al-wassit-logo.png" alt="" />
+      </span>
       <span class="client-header__logo-text">Al Wassit <em>Candidat</em></span>
     </a>
   </div>
@@ -11,8 +13,45 @@
   </nav>
   <div class="client-header__actions">
     @if (user(); as u) {
-      <span class="client-header__email">{{ u.email }}</span>
+      <div class="ch-user">
+        <button
+          type="button"
+          class="ch-user__trigger"
+          (click)="toggleMenu()"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="menuOpen"
+        >
+          <span class="ch-avatar" aria-hidden="true">{{ initials() }}</span>
+          <span class="ch-user__email">{{ u.email }}</span>
+          <svg lucideChevronDown [size]="14" class="ch-caret" [class.ch-caret--open]="menuOpen" aria-hidden="true"></svg>
+        </button>
+
+        @if (menuOpen) {
+          <div class="ch-menu" role="menu">
+            <div class="ch-menu__head">
+              <span class="ch-avatar ch-avatar--lg" aria-hidden="true">{{ initials() }}</span>
+              <div class="ch-menu__identity">
+                <span class="ch-menu__name">{{ displayName() }}</span>
+                <span class="ch-menu__email">{{ u.email }}</span>
+              </div>
+            </div>
+            <div class="ch-menu__divider"></div>
+            <a routerLink="/client/overview" class="ch-menu__item" role="menuitem" (click)="closeMenu()">
+              <svg lucideLayoutGrid [size]="15" aria-hidden="true"></svg> Tableau de bord
+            </a>
+            <a routerLink="/client/profile" class="ch-menu__item" role="menuitem" (click)="closeMenu()">
+              <svg lucideUserRound [size]="15" aria-hidden="true"></svg> Mon profil
+            </a>
+            <a routerLink="/settings" class="ch-menu__item" role="menuitem" (click)="closeMenu()">
+              <svg lucideSettings [size]="15" aria-hidden="true"></svg> Paramètres du compte
+            </a>
+            <div class="ch-menu__divider"></div>
+            <button type="button" class="ch-menu__item ch-menu__item--danger" role="menuitem" (click)="logout()">
+              <svg lucideLogOut [size]="15" aria-hidden="true"></svg> Déconnexion
+            </button>
+          </div>
+        }
+      </div>
     }
-    <button type="button" class="client-header__btn-out" (click)="logout()">Déconnexion</button>
   </div>
 </header>
