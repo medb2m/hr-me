@@ -114,9 +114,15 @@ export class DatePickerComponent implements ControlValueAccessor {
 
   @HostListener('document:click', ['$event'])
   onDocClick(ev: Event): void {
-    if (this.open && !this.host.nativeElement.contains(ev.target as Node)) {
-      this.close();
-    }
+    if (!this.open) return;
+    // composedPath() est figé au moment du dispatch : même si le clic détruit
+    // son élément cible (grille années/mois remplacée par *ngIf), le chemin
+    // contient toujours l'hôte → pas de fermeture intempestive.
+    const path = typeof ev.composedPath === 'function' ? ev.composedPath() : [];
+    const inside =
+      path.includes(this.host.nativeElement) ||
+      this.host.nativeElement.contains(ev.target as Node);
+    if (!inside) this.close();
   }
 
   @HostListener('keydown.escape')
