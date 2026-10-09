@@ -1,10 +1,21 @@
-import { Component, DestroyRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnDestroy, OnInit, ViewChild, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
+import {
+  LucideBadgeCheck,
+  LucideCake,
+  LucideCamera,
+  LucideCheck,
+  LucideCrop,
+  LucideHistory,
+  LucideListChecks,
+  LucideTrash2,
+  LucideUserRound,
+} from '@lucide/angular';
 import {
   ClientProfileSections,
   ClientProfileStateService,
@@ -17,7 +28,22 @@ import { ProfilePhotoUploadComponent } from '../../../../shared/components/profi
 
 @Component({
   selector: 'app-client-profile-page',
-  imports: [CommonModule, FormsModule, RouterLink, ProfilePhotoUploadComponent, BackButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    ProfilePhotoUploadComponent,
+    BackButtonComponent,
+    LucideBadgeCheck,
+    LucideCake,
+    LucideCamera,
+    LucideCheck,
+    LucideCrop,
+    LucideHistory,
+    LucideListChecks,
+    LucideTrash2,
+    LucideUserRound,
+  ],
   templateUrl: './client-profile-page.component.html',
   styleUrl: './client-profile-page.component.css',
 })
@@ -49,6 +75,32 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
   birthDateIso = '';
   savingBirth = false;
   birthSaveError = '';
+
+  /** Âge calculé depuis la date enregistrée (affichage contextuel). */
+  readonly age = computed(() => {
+    const iso = this.profileState.birthDate();
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+      return null;
+    }
+    const birth = new Date(`${iso}T00:00:00`);
+    if (Number.isNaN(birth.getTime())) {
+      return null;
+    }
+    const now = new Date();
+    let a = now.getFullYear() - birth.getFullYear();
+    const m = now.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) {
+      a--;
+    }
+    return a >= 0 && a <= 120 ? a : null;
+  });
+
+  /** Pour le cercle de progression SVG (r = 26 → circonférence ≈ 163.4). */
+  readonly progressDash = computed(() => {
+    const c = 2 * Math.PI * 26;
+    const pct = this.profileState.completionPercent();
+    return `${(c * pct) / 100} ${c}`;
+  });
 
   /** Bulle de succès près du pointeur (coordonnées viewport). */
   successAnchor: { x: number; y: number; message: string } | null = null;

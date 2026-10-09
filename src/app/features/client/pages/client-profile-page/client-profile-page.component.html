@@ -11,50 +11,143 @@
 }
 
 <div class="ep">
-  <header class="ep-head">
-    <h1 class="ep-head__title">Identité & profil</h1>
-    <p class="ep-head__lead">
-      Dépôt central des données utilisées par le CV, les lettres et l’explorateur d’opportunités. Les champs manquants
-      sont signalés dans la barre latérale en rouge clair.
-    </p>
-    <div class="ep-cta-bar">
-      <a routerLink="/candidat/editor/cv" class="ep-cta">Mes CV — éditeur Europass</a>
-      <p class="ep-cta__note">
-        Créez plusieurs CV, choisissez les blocs et les données profil ou du texte libre, puis enregistrez chaque
-        version.
+  <!-- ============ HERO + PROGRESSION ============ -->
+  <header class="ep-hero">
+    <div class="ep-hero__text">
+      <span class="ep-eyebrow"><svg lucideUserRound [size]="14" aria-hidden="true"></svg> Dossier candidat</span>
+      <h1>Identité &amp; profil</h1>
+      <p class="ep-hero__lead">
+        Dépôt central des données utilisées par vos CV, lettres et l’explorateur d’opportunités.
+        Complétez les étapes ci-dessous pour atteindre 100&nbsp;%.
       </p>
+      <a routerLink="/candidat/editor/cv" class="ep-cta">Mes CV — éditeur Europass</a>
+    </div>
+    <div class="ep-progress" aria-label="Progression du profil">
+      <svg viewBox="0 0 64 64" class="ep-progress__ring" role="img" aria-hidden="true">
+        <circle cx="32" cy="32" r="26" class="ep-progress__track" />
+        <circle
+          cx="32" cy="32" r="26"
+          class="ep-progress__fill"
+          [attr.stroke-dasharray]="progressDash()"
+          transform="rotate(-90 32 32)"
+        />
+      </svg>
+      <div class="ep-progress__label">
+        <strong>{{ profileState.completionPercent() }} %</strong>
+        <span>complété</span>
+      </div>
     </div>
   </header>
 
-  <div class="ep-panel">
-    <h2 class="ep-panel__h">Sections du profil (démo)</h2>
-    <p class="ep-panel__p">
-      Le pourcentage global inclut aussi le nom sur le compte, la photo et la date de naissance. Cochez les blocs
-      « complétés » et complétez les champs ci-dessous pour atteindre 100 % et masquer la bannière.
-    </p>
-    <ul class="ep-checks">
-      @for (row of sectionRows; track row.key) {
-        <li>
-          <label class="ep-check">
-            <input
-              type="checkbox"
-              [checked]="profileState.sections()[row.key]"
-              (change)="toggleSection(row.key)"
-            />
-            <span>{{ row.label }}</span>
-          </label>
-        </li>
-      }
-    </ul>
-  </div>
+  <!-- ============ ÉTAPE 1 : PHOTO ============ -->
+  <section class="ep-card">
+    <div class="ep-card__head">
+      <span class="ep-step" aria-hidden="true">1</span>
+      <span class="ep-card__icon" aria-hidden="true"><svg lucideCamera [size]="18"></svg></span>
+      <div>
+        <h2>Photo de profil</h2>
+        <p>Une photo professionnelle renforce votre dossier auprès des employeurs partenaires.</p>
+      </div>
+      <span class="ep-state" [class.ep-state--ok]="hasServerProfilePhoto()">
+        <svg lucideBadgeCheck [size]="13" aria-hidden="true"></svg>
+        {{ hasServerProfilePhoto() ? 'Enregistrée' : 'À ajouter' }}
+      </span>
+    </div>
 
-  <div class="ep-panel ep-panel--identity">
-    <div class="ep-panel__col ep-panel__col--birth">
-      <h2 class="ep-panel__h">Date de naissance</h2>
-      <p class="ep-panel__p">
-        Enregistrée sur le serveur (fiche <code>ClientProfile</code>) et affichée dans la barre latérale.
-      </p>
+    <app-profile-photo-upload
+      [uploading]="uploading"
+      [errorMessage]="uploadError"
+      [hasServerPhoto]="hasServerProfilePhoto()"
+      (validFileSelected)="clearPhotoUploadError()"
+      (upload)="onProfilePhotoUpload($event)"
+      (removeServer)="removeServerPhoto()"
+    />
+
+    @if (photoHistory.length > 0) {
+      <section class="ep-history" aria-labelledby="hist-title">
+        <h3 id="hist-title" class="ep-history__title">
+          <svg lucideHistory [size]="15" aria-hidden="true"></svg> Historique des photos
+        </h3>
+        <p class="ep-history__lead">
+          Versions précédemment enregistrées. Réutilisez-en une comme photo de profil (avec ou sans recadrage)
+          ou supprimez-la définitivement.
+        </p>
+        <ul class="ep-history__list">
+          @for (h of photoHistory; track h._id) {
+            <li class="ep-history__item">
+              <div class="ep-history__thumb-wrap">
+                @if (profileApi.resolveMediaUrl(h.url); as src) {
+                  <img [src]="src" alt="" class="ep-history__thumb" width="64" height="64" />
+                }
+              </div>
+              <div class="ep-history__body">
+                <time class="ep-history__time" [attr.datetime]="h.uploadedAt">{{
+                  h.uploadedAt | date: 'dd MMM yyyy · HH:mm'
+                }}</time>
+                <div class="ep-history__actions">
+                  <button
+                    type="button"
+                    class="ep-history__btn ep-history__btn--primary"
+                    [disabled]="historyBusyId !== null || uploading"
+                    (click)="recropHistoryAsProfile(h)"
+                    title="Recadrer puis définir comme photo de profil"
+                  >
+                    <svg lucideCrop [size]="13" aria-hidden="true"></svg> Recadrer &amp; définir
+                  </button>
+                  <button
+                    type="button"
+                    class="ep-history__btn"
+                    [disabled]="historyBusyId !== null || uploading"
+                    (click)="activateHistoryPhoto(h._id)"
+                    title="Définir telle quelle"
+                  >
+                    <svg lucideCheck [size]="13" aria-hidden="true"></svg> Définir
+                  </button>
+                  <button
+                    type="button"
+                    class="ep-history__btn ep-history__btn--danger"
+                    [disabled]="historyBusyId !== null || uploading"
+                    (click)="deleteHistoryPhoto(h)"
+                    title="Supprimer définitivement"
+                    aria-label="Supprimer définitivement cette photo"
+                  >
+                    <svg lucideTrash2 [size]="13" aria-hidden="true"></svg>
+                  </button>
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <details class="ep-demo">
+      <summary>Outils de démo (aperçu local)</summary>
       <div class="ep-row">
+        <button type="button" class="ep-btn ep-btn--ghost" (click)="setDemoPhoto()">Photo test (assets)</button>
+        <button type="button" class="ep-btn ep-btn--ghost" (click)="clearPhoto()">Effacer (aperçu local)</button>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ ÉTAPE 2 : DATE DE NAISSANCE ============ -->
+  <section class="ep-card">
+    <div class="ep-card__head">
+      <span class="ep-step" aria-hidden="true">2</span>
+      <span class="ep-card__icon" aria-hidden="true"><svg lucideCake [size]="18"></svg></span>
+      <div>
+        <h2>Date de naissance</h2>
+        <p>Enregistrée sur votre fiche et utilisée dans les documents générés.</p>
+      </div>
+      <span class="ep-state" [class.ep-state--ok]="!!profileState.birthDate()">
+        <svg lucideBadgeCheck [size]="13" aria-hidden="true"></svg>
+        {{ profileState.birthDate() ? 'Enregistrée' : 'À renseigner' }}
+      </span>
+    </div>
+
+    <div class="ep-birth">
+      <label class="ep-field">
+        <span class="ep-field__label">Votre date de naissance</span>
         <input
           class="ep-input ep-input--date"
           type="date"
@@ -62,92 +155,55 @@
           name="birthDateIso"
           max="9999-12-31"
         />
-        <button type="button" class="ep-btn" [disabled]="savingBirth" (click)="saveBirthDate($event)">
-          {{ savingBirth ? 'Enregistrement…' : 'Enregistrer' }}
-        </button>
-      </div>
-      @if (birthSaveError) {
-        <p class="ep-birth-err">{{ birthSaveError }}</p>
+      </label>
+      @if (age(); as a) {
+        <span class="ep-age">{{ a }} ans</span>
       }
+      <button type="button" class="ep-btn" [disabled]="savingBirth" (click)="saveBirthDate($event)">
+        {{ savingBirth ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
     </div>
+    @if (birthSaveError) {
+      <p class="ep-birth-err">{{ birthSaveError }}</p>
+    }
+  </section>
 
-    <div class="ep-panel__col ep-panel__col--photo">
-      <app-profile-photo-upload
-        [uploading]="uploading"
-        [errorMessage]="uploadError"
-        [hasServerPhoto]="hasServerProfilePhoto()"
-        (validFileSelected)="clearPhotoUploadError()"
-        (upload)="onProfilePhotoUpload($event)"
-        (removeServer)="removeServerPhoto()"
-      />
-
-      @if (photoHistory.length > 0) {
-        <section class="ep-history" aria-labelledby="hist-title">
-          <h3 id="hist-title" class="ep-history__title">Historique des photos</h3>
-          <p class="ep-history__lead">
-            Versions précédemment enregistrées sur le serveur. Vous pouvez en faire votre photo de profil (avec ou
-            sans recadrage) ou les supprimer définitivement.
-          </p>
-          <ul class="ep-history__list">
-            @for (h of photoHistory; track h._id) {
-              <li class="ep-history__item">
-                <div class="ep-history__thumb-wrap">
-                  @if (profileApi.resolveMediaUrl(h.url); as src) {
-                    <img [src]="src" alt="" class="ep-history__thumb" width="72" height="72" />
-                  }
-                </div>
-                <div class="ep-history__body">
-                  <time class="ep-history__time" [attr.datetime]="h.uploadedAt">{{
-                    h.uploadedAt | date: 'dd/MM/yyyy HH:mm'
-                  }}</time>
-                  <div class="ep-history__actions">
-                    <button
-                      type="button"
-                      class="ep-history__btn ep-history__btn--primary"
-                      [disabled]="historyBusyId !== null || uploading"
-                      (click)="recropHistoryAsProfile(h)"
-                    >
-                      Recadrer &amp; définir
-                    </button>
-                    <button
-                      type="button"
-                      class="ep-history__btn"
-                      [disabled]="historyBusyId !== null || uploading"
-                      (click)="activateHistoryPhoto(h._id)"
-                    >
-                      Définir sans recadrer
-                    </button>
-                    <button
-                      type="button"
-                      class="ep-history__btn ep-history__btn--danger"
-                      [disabled]="historyBusyId !== null || uploading"
-                      (click)="deleteHistoryPhoto(h)"
-                    >
-                      Supprimer définitivement
-                    </button>
-                  </div>
-                </div>
-              </li>
-            }
-          </ul>
-        </section>
-      }
-
-      <p class="ep-panel__p ep-panel__p--muted">Démo locale :</p>
-      <div class="ep-row">
-        <button type="button" class="ep-btn ep-btn--ghost" (click)="setDemoPhoto()">Photo test (assets)</button>
-        <button type="button" class="ep-btn ep-btn--ghost" (click)="clearPhoto()">Effacer (aperçu local)</button>
+  <!-- ============ ÉTAPE 3 : SECTIONS ============ -->
+  <section class="ep-card">
+    <div class="ep-card__head">
+      <span class="ep-step" aria-hidden="true">3</span>
+      <span class="ep-card__icon" aria-hidden="true"><svg lucideListChecks [size]="18"></svg></span>
+      <div>
+        <h2>Sections du dossier</h2>
+        <p>Cochez les blocs déjà complétés — chacun compte dans la progression globale.</p>
       </div>
     </div>
-  </div>
+    <ul class="ep-checks">
+      @for (row of sectionRows; track row.key) {
+        <li>
+          <label class="ep-check" [class.ep-check--on]="profileState.sections()[row.key]">
+            <input
+              type="checkbox"
+              [checked]="profileState.sections()[row.key]"
+              (change)="toggleSection(row.key)"
+            />
+            <span class="ep-check__mark" aria-hidden="true"><svg lucideCheck [size]="12"></svg></span>
+            <span class="ep-check__label">{{ row.label }}</span>
+            <span class="ep-check__state">{{ profileState.sections()[row.key] ? 'Complété' : 'À compléter' }}</span>
+          </label>
+        </li>
+      }
+    </ul>
+  </section>
 
   @if (historyError) {
     <p class="ep-history-err" role="alert">{{ historyError }}</p>
   }
 
   <p class="ep-note">
-    Le nom affiché provient du compte (champ <code>name</code> côté auth). S’il est absent, la barre latérale affiche
+    Le nom affiché provient du compte. S’il est absent, la barre latérale affiche
     <span class="ep-miss">À renseigner</span> — comme pour la date de naissance et la photo.
+    Modifiable dans <a routerLink="/settings">Paramètres du compte</a>.
   </p>
 
   <app-back-button link="/candidat/overview" label="Retour au tableau de bord" class="ep-back"></app-back-button>
