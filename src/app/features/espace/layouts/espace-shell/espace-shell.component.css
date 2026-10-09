@@ -98,6 +98,7 @@
 }
 
 .u-avatar {
+  position: relative;
   display: grid;
   place-items: center;
   width: 30px;
@@ -107,6 +108,15 @@
   color: #0f172a;
   font-size: 0.72rem;
   font-weight: 800;
+  overflow: hidden;
+}
+
+.u-avatar__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .u-avatar--lg {

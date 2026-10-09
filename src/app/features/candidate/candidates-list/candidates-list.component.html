@@ -18,7 +18,7 @@
         *ngFor="let candidate of filteredCandidates"
         (click)="viewCandidate(candidate)"
       >
-        <img [src]="candidate.image || 'default-avatar.png'" alt="Candidate Image" />
+        <img [src]="candidate.image || '/assets/img/default-avatar.jpg'" alt="Candidate Image" />
         <div class="candidate-details">
           <h3>{{ candidate.name }}</h3>
           <p>Phone: {{ candidate.phone }}</p>

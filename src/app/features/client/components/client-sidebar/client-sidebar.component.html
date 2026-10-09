@@ -4,7 +4,7 @@
       @if (photoSrc(); as src) {
         <img [src]="src" alt="" class="client-sidebar__photo" width="96" height="96" />
       } @else {
-        <div class="client-sidebar__photo client-sidebar__photo--placeholder" aria-hidden="true"></div>
+        <img src="/assets/img/default-avatar.jpg" alt="" class="client-sidebar__photo" width="96" height="96" />
       }
     </div>
     <p class="client-sidebar__label">Photo de profil</p>

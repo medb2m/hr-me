@@ -308,7 +308,7 @@
         <div class="profile-wrap">
           <button class="profile-trigger" (click)="toggleUserDropdown()">
             <div class="avatar">
-              <img src="assets/img/user.jpg"
+              <img src="assets/img/default-avatar.jpg"
                    alt=""
                    class="avatar-img"
                    onerror="this.style.display='none'">
@@ -321,6 +321,10 @@
           <div class="profile-dropdown" *ngIf="isUserDropdownOpen">
             <div class="pd-header">
               <div class="avatar avatar--md">
+                <img src="assets/img/default-avatar.jpg"
+                     alt=""
+                     class="avatar-img"
+                     onerror="this.style.display='none'">
                 <span class="avatar-initials">{{ userInitials() }}</span>
               </div>
               <div>

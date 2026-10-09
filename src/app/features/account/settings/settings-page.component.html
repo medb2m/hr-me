@@ -15,7 +15,7 @@
   <ng-container *ngIf="account && !loading">
     <!-- Identity strip -->
     <section class="identity-card">
-      <div class="avatar" aria-hidden="true">{{ initials }}</div>
+      <div class="avatar" aria-hidden="true">{{ initials }}<img src="/assets/img/default-avatar.jpg" alt="" class="avatar__img" /></div>
       <div class="identity-info">
         <div class="identity-name">{{ account.name || 'Sans nom' }}</div>
         <div class="identity-email">{{ account.email }}</div>

@@ -21,7 +21,7 @@
           aria-haspopup="menu"
           [attr.aria-expanded]="menuOpen"
         >
-          <span class="ch-avatar" aria-hidden="true">{{ initials() }}</span>
+          <span class="ch-avatar" aria-hidden="true">{{ initials() }}<img src="/assets/img/default-avatar.jpg" alt="" class="ch-avatar__img" /></span>
           <span class="ch-user__email">{{ u.email }}</span>
           <svg lucideChevronDown [size]="14" class="ch-caret" [class.ch-caret--open]="menuOpen" aria-hidden="true"></svg>
         </button>
@@ -29,7 +29,7 @@
         @if (menuOpen) {
           <div class="ch-menu" role="menu">
             <div class="ch-menu__head">
-              <span class="ch-avatar ch-avatar--lg" aria-hidden="true">{{ initials() }}</span>
+              <span class="ch-avatar ch-avatar--lg" aria-hidden="true">{{ initials() }}<img src="/assets/img/default-avatar.jpg" alt="" class="ch-avatar__img" /></span>
               <div class="ch-menu__identity">
                 <span class="ch-menu__name">{{ displayName() }}</span>
                 <span class="ch-menu__email">{{ u.email }}</span>

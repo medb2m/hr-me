@@ -3,7 +3,7 @@
     <div *ngFor="let candidate of candidates" class="candidate-card">
       <div class="image-container">
         <img
-          [src]="candidate.image || 'assets/img/user.jpg'"
+          [src]="candidate.image || '/assets/img/default-avatar.jpg'"
           alt="{{ candidate.name }}"
           class="candidate-image"
         />

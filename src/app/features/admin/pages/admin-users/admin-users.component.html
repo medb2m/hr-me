@@ -52,7 +52,7 @@
         <tr *ngFor="let u of users; trackBy: trackById" [class.row--self]="isSelf(u)">
           <td>
             <div class="user-cell">
-              <span class="u-avatar" aria-hidden="true">{{ initials(u) }}</span>
+              <span class="u-avatar" aria-hidden="true">{{ initials(u) }}<img src="/assets/img/default-avatar.jpg" alt="" class="u-avatar__img" /></span>
               <div class="u-meta">
                 <span class="u-name">{{ u.name || '—' }}<em *ngIf="isSelf(u)" class="u-self"> (vous)</em></span>
                 <span class="u-email">{{ u.email }}</span>
