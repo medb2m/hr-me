@@ -1,0 +1,57 @@
+<header class="offers-hero">
+  <div class="offers-hero-inner">
+    <div>
+      <span class="eyebrow-light"><svg lucideBriefcase [size]="14" aria-hidden="true"></svg> Offres internationales</span>
+      <h1>Des postes qui vous attendent à l'étranger</h1>
+      <p>Sélection d'offres de nos employeurs partenaires. Devenez candidat pour postuler et suivre votre dossier.</p>
+    </div>
+    <!-- PHOTO : entretien d'embauche / bureau avec vue sur une ville européenne -->
+    <div class="img-ph">
+      <svg lucideImage [size]="26" aria-hidden="true"></svg>
+      <span class="ph-label">PHOTO</span>
+      <span class="ph-desc">Entretien professionnel, fenêtre sur une ville européenne</span>
+    </div>
+  </div>
+</header>
+
+<div class="offers-body">
+  <div class="filters">
+    <button
+      *ngFor="let f of filters"
+      type="button"
+      class="chip"
+      [class.chip--active]="activeFilter === f"
+      (click)="activeFilter = f">
+      {{ f }}
+    </button>
+  </div>
+
+  <div class="offers-grid">
+    <article class="offer-card" *ngFor="let o of filtered()">
+      <span class="offer-flag" aria-hidden="true">{{ o.flag }}</span>
+      <span class="offer-hot" *ngIf="o.hot">Urgent</span>
+      <h2 class="offer-title">{{ o.title }}</h2>
+      <p class="offer-company">
+        <svg lucideBuilding2 [size]="14" aria-hidden="true"></svg> {{ o.company }}
+      </p>
+      <p class="offer-loc">
+        <svg lucideMapPin [size]="14" aria-hidden="true"></svg> {{ o.city }}, {{ o.country }}
+      </p>
+      <div class="offer-meta">
+        <span class="meta-pill"><svg lucideClock [size]="13" aria-hidden="true"></svg> {{ o.contract }}</span>
+        <span class="meta-pill meta-pill--salary"><svg lucideBanknote [size]="13" aria-hidden="true"></svg> {{ o.salary }}</span>
+      </div>
+      <div class="offer-tags">
+        <span class="tag" *ngFor="let t of o.tags">{{ t }}</span>
+      </div>
+      <button type="button" class="btn-apply" (click)="apply(o)">
+        <svg lucideLock [size]="14" aria-hidden="true"></svg> Postuler (candidats)
+      </button>
+    </article>
+  </div>
+
+  <p class="offers-note">
+    {{ filtered().length }} offre{{ filtered().length > 1 ? 's' : '' }} affichée{{ filtered().length > 1 ? 's' : '' }}
+    — nouvelles opportunités chaque semaine.
+  </p>
+</div>

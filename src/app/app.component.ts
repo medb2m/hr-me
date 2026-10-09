@@ -30,28 +30,34 @@ export class AppComponent {
       const path = this.router.url.split('?')[0];
       const admin = path === '/adminlog' || path === '/admin/auth';
       const clientArea = path === '/client' || path.startsWith('/client/');
+      const espaceArea = path === '/espace' || path.startsWith('/espace/');
       const meetingRoom = /\/meetings\/[^/]+\/room$/.test(path);
       const interviewRoom = path.startsWith('/recruitment/interview/room');
-      const clientLoggedIn = this.isClientUserInSession();
-      this.showPublicChrome = !admin && !meetingRoom && !interviewRoom && !clientArea && !clientLoggedIn;
+      const scopedUser = this.scopedAreaUser();
+      this.showPublicChrome =
+        !admin && !meetingRoom && !interviewRoom && !clientArea && !espaceArea && !scopedUser;
     };
     const enforceClientScope = () => {
       this.auth.refreshFromStorage();
-      if (!this.isClientUserInSession()) {
+      const area = this.scopedAreaUser();
+      if (!area) {
         return;
       }
       const path = this.router.url.split('?')[0];
-      if (path === '/client' || path.startsWith('/client/')) {
+      if (this.isAllowedScopedPath(area, path)) {
         return;
       }
       queueMicrotask(() => {
         this.auth.refreshFromStorage();
-        if (!this.isClientUserInSession()) {
+        const a = this.scopedAreaUser();
+        if (!a) {
           return;
         }
         const p = this.router.url.split('?')[0];
-        if (p !== '/client' && !p.startsWith('/client/')) {
-          void this.router.navigateByUrl('/client/overview', { replaceUrl: true });
+        if (!this.isAllowedScopedPath(a, p)) {
+          void this.router.navigateByUrl(a === 'client' ? '/espace/accueil' : '/client/overview', {
+            replaceUrl: true,
+          });
         }
       });
     };
@@ -63,12 +69,29 @@ export class AppComponent {
     });
   }
 
-  /** Compte candidat connecté (JWT + rôle `client`). */
-  private isClientUserInSession(): boolean {
+  /**
+   * Espace dédié par rôle : `client` → `/espace` (compte public),
+   * `candidate` → `/client` (dossier de placement). Retourne null pour les autres rôles.
+   */
+  private scopedAreaUser(): 'client' | 'candidate' | null {
     if (typeof localStorage === 'undefined' || !localStorage.getItem('authToken')) {
-      return false;
+      return null;
     }
-    return this.auth.isLoggedIn() && this.auth.user()?.role === 'client';
+    if (!this.auth.isLoggedIn()) {
+      return null;
+    }
+    const role = this.auth.user()?.role;
+    return role === 'client' || role === 'candidate' ? role : null;
+  }
+
+  /** Routes autorisées en dehors de l'espace dédié (compte, vérification e-mail…). */
+  private isAllowedScopedPath(area: 'client' | 'candidate', path: string): boolean {
+    const home = area === 'client' ? '/espace' : '/client';
+    if (path === home || path.startsWith(`${home}/`)) {
+      return true;
+    }
+    const shared = ['/settings', '/logout', '/verify-email', '/confirm-email-change', '/resend-verification'];
+    return shared.some((p) => path === p || path.startsWith(`${p}/`));
   }
 
   switchLanguage(language: string) {

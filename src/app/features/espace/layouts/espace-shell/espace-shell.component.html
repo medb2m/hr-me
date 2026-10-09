@@ -1,0 +1,60 @@
+<header class="espace-topbar">
+  <a class="brand" routerLink="/espace/accueil">
+    <img src="/assets/img/al-wassit-logo.png" alt="Al Wassit" />
+    <span class="brand-tag">Espace client</span>
+  </a>
+
+  <nav class="nav-links" [class.nav-links--open]="mobileOpen">
+    <a routerLink="/espace/accueil" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="mobileOpen = false">
+      <svg lucideHome [size]="16" aria-hidden="true"></svg> Accueil
+    </a>
+    <a routerLink="/espace/offres" routerLinkActive="active" (click)="mobileOpen = false">
+      <svg lucideBriefcase [size]="16" aria-hidden="true"></svg> Offres
+    </a>
+    <a routerLink="/espace/profil" routerLinkActive="active" (click)="mobileOpen = false">
+      <svg lucideUserCircle [size]="16" aria-hidden="true"></svg> Profil
+    </a>
+    <a routerLink="/espace/profil" class="nav-upgrade" (click)="mobileOpen = false">
+      <svg lucideCrown [size]="16" aria-hidden="true"></svg> Devenir candidat
+    </a>
+  </nav>
+
+  <div class="user-area">
+    <button type="button" class="user-trigger" (click)="dropdownOpen = !dropdownOpen"
+            aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen">
+      <span class="u-avatar" aria-hidden="true">{{ initials() }}</span>
+      <span class="u-name">{{ displayName() }}</span>
+      <svg lucideChevronDown [size]="14" class="caret" [class.caret--open]="dropdownOpen" aria-hidden="true"></svg>
+    </button>
+    <div class="u-dropdown" *ngIf="dropdownOpen" role="menu">
+      <div class="u-head">
+        <span class="u-avatar u-avatar--lg" aria-hidden="true">{{ initials() }}</span>
+        <div>
+          <p class="u-fullname">{{ displayName() }}</p>
+          <p class="u-mail">{{ auth.user()?.email }}</p>
+          <span class="u-role">Compte client</span>
+        </div>
+      </div>
+      <div class="u-sep"></div>
+      <a class="u-item" routerLink="/espace/profil" (click)="dropdownOpen = false">
+        <svg lucideUserCircle [size]="15" aria-hidden="true"></svg> Mon profil
+      </a>
+      <a class="u-item" routerLink="/settings" (click)="dropdownOpen = false">
+        <svg lucideSettings [size]="15" aria-hidden="true"></svg> Paramètres du compte
+      </a>
+      <div class="u-sep"></div>
+      <button type="button" class="u-item u-item--danger" (click)="logout()">
+        <svg lucideLogOut [size]="15" aria-hidden="true"></svg> Déconnexion
+      </button>
+    </div>
+  </div>
+
+  <button type="button" class="burger" (click)="mobileOpen = !mobileOpen" aria-label="Menu">
+    <svg *ngIf="!mobileOpen" lucideMenu [size]="22"></svg>
+    <svg *ngIf="mobileOpen" lucideX [size]="22"></svg>
+  </button>
+</header>
+
+<main class="espace-main">
+  <router-outlet></router-outlet>
+</main>

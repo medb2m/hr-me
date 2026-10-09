@@ -1,0 +1,128 @@
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <span class="hero-eyebrow"><svg lucideGlobe2 [size]="14" aria-hidden="true"></svg> Al Wassit — Agence de recrutement international</span>
+      <h1>Connecter les talents du monde entier</h1>
+      <p class="hero-sub">Un pont entre les opportunités, d'un continent à l'autre. Votre carrière internationale commence ici.</p>
+      <div class="hero-cta">
+        <a class="btn-yellow" routerLink="/espace/offres">
+          Explorer les offres <svg lucideArrowRight [size]="16" aria-hidden="true"></svg>
+        </a>
+        <a class="btn-outline" routerLink="/espace/profil">Devenir candidat</a>
+      </div>
+      <div class="hero-dest">
+        <svg lucideMapPin [size]="14" aria-hidden="true"></svg>
+        <span *ngFor="let d of destinations; let last = last">{{ d }}<span *ngIf="!last"> · </span></span>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <!-- PHOTO : skyline / réseau mondial lumineux — ambiance "global reach" -->
+      <div class="img-ph img-ph--hero">
+        <svg lucideImage [size]="30" aria-hidden="true"></svg>
+        <span class="ph-label">PHOTO</span>
+        <span class="ph-desc">Skyline moderne avec réseau lumineux mondial — esprit « global reach »</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="stats-band">
+  <div class="stat" *ngFor="let s of stats">
+    <span class="stat-value">{{ s.value }}</span>
+    <span class="stat-label">{{ s.label }}</span>
+  </div>
+</section>
+
+<!-- ============ À PROPOS ============ -->
+<section class="section about">
+  <div class="about-grid">
+    <div>
+      <span class="eyebrow">À propos de nous</span>
+      <h2>Basée en Tunisie, tournée vers le monde</h2>
+      <p>
+        Al Wassit est une agence de recrutement international dédiée à connecter des talents
+        exceptionnels avec des employeurs de premier plan à travers le monde. Notre réseau global
+        et notre expertise spécialisée nous permettent de proposer des solutions de recrutement
+        sur mesure, tous secteurs et toutes frontières confondus.
+      </p>
+      <p>
+        De la sélection du candidat à la signature du contrat, nous accompagnons chaque étape :
+        qualification du dossier, entretiens en ligne, génération des documents et suivi
+        post-placement.
+      </p>
+    </div>
+    <!-- PHOTO : équipe de recrutement en réunion, bureau lumineux -->
+    <div class="img-ph">
+      <svg lucideImage [size]="30" aria-hidden="true"></svg>
+      <span class="ph-label">PHOTO</span>
+      <span class="ph-desc">Équipe de recruteurs en réunion, bureau moderne et lumineux</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESSUS ============ -->
+<section class="section process">
+  <span class="eyebrow">Notre processus de recrutement</span>
+  <h2>Quatre étapes vers votre placement</h2>
+  <div class="steps-grid">
+    <div class="step-card" *ngFor="let s of steps; let i = index">
+      <span class="step-num">{{ i + 1 }}</span>
+      <span class="step-icon">
+        <svg *ngIf="i === 0" lucideSearch [size]="20" aria-hidden="true"></svg>
+        <svg *ngIf="i === 1" lucideTarget [size]="20" aria-hidden="true"></svg>
+        <svg *ngIf="i === 2" lucideUsers [size]="20" aria-hidden="true"></svg>
+        <svg *ngIf="i === 3" lucideRocket [size]="20" aria-hidden="true"></svg>
+      </span>
+      <h3>{{ s.title }}</h3>
+      <p>{{ s.desc }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLACEMENT / SERVICES ============ -->
+<section class="section placement">
+  <div class="place-grid">
+    <!-- PHOTO : candidat signant un contrat / poignée de main professionnelle -->
+    <div class="img-ph img-ph--tall">
+      <svg lucideImage [size]="30" aria-hidden="true"></svg>
+      <span class="ph-label">PHOTO</span>
+      <span class="ph-desc">Signature de contrat international / poignée de main professionnelle</span>
+    </div>
+    <div>
+      <span class="eyebrow">Placement international</span>
+      <h2>Nous plaçons, vous progressez</h2>
+      <ul class="place-list">
+        <li>
+          <svg lucideAward [size]="18" aria-hidden="true"></svg>
+          <div><strong>Postes vérifiés</strong> — chaque offre provient d'un employeur partenaire validé par nos équipes.</div>
+        </li>
+        <li>
+          <svg lucideFileCheck [size]="18" aria-hidden="true"></svg>
+          <div><strong>Dossier complet</strong> — documents de placement, visa et contrat générés pour vous.</div>
+        </li>
+        <li>
+          <svg lucideHandshake [size]="18" aria-hidden="true"></svg>
+          <div><strong>Accompagnement continu</strong> — avant, pendant et après votre arrivée à destination.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA CANDIDAT ============ -->
+<section class="cta-band">
+  <div class="cta-inner">
+    <div>
+      <h2>Prêt à décrocher le poste que vous méritez ?</h2>
+      <p>
+        Passez de <strong>client</strong> à <strong>candidat</strong> : accédez au suivi de candidature,
+        aux entretiens en ligne et à la génération automatique de vos documents.
+      </p>
+    </div>
+    <a class="btn-yellow btn-yellow--lg" routerLink="/espace/profil">
+      Demander ma qualification <svg lucideArrowRight [size]="16" aria-hidden="true"></svg>
+    </a>
+  </div>
+</section>

@@ -8,6 +8,7 @@ export interface AuthUser {
   email: string;
   name?: string;
   role: string;
+  emailVerified?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,7 +45,7 @@ export class AuthService {
 
   /**
    * Cible après connexion réussie, ou si un utilisateur déjà connecté ouvre `/login` / `/register`.
-   * Les comptes `client` sont envoyés vers l’espace candidat.
+   * `client` → espace client public ; `candidate` → espace candidat (dossier de placement).
    */
   postLoginRedirectPath(): string {
     const role = this.user()?.role;
@@ -52,6 +53,9 @@ export class AuthService {
       return '/admin/dashboard';
     }
     if (role === 'client') {
+      return '/espace/accueil';
+    }
+    if (role === 'candidate') {
       return '/client/overview';
     }
     return '/home';

@@ -78,6 +78,13 @@ export const routes: Routes = [
       loadChildren: () => import('./features/client/client.routes').then((m) => m.CLIENT_ROUTES),
     },
 
+    /** Espace client (compte public) : accueil, offres statiques, profil + demande de qualification. */
+    {
+      path: 'espace',
+      canActivate: [authRequiredGuard],
+      loadChildren: () => import('./features/espace/espace.routes').then((m) => m.ESPACE_ROUTES),
+    },
+
     {
       path: 'meetings',
       loadChildren: () => import('./features/meetings/meetings.routes').then((m) => m.default),

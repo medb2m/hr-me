@@ -1,0 +1,90 @@
+<div class="profile-page">
+  <header class="profile-hero">
+    <div class="ph-avatar" aria-hidden="true">{{ initials() }}</div>
+    <div class="ph-text">
+      <h1>{{ displayName() }}</h1>
+      <p class="ph-mail"><svg lucideMail [size]="14" aria-hidden="true"></svg> {{ auth.user()?.email }}</p>
+      <div class="ph-badges">
+        <span class="badge badge--role">Compte client</span>
+        <span class="badge" [class.badge--ok]="auth.user()?.emailVerified">
+          <svg lucideBadgeCheck [size]="12" aria-hidden="true"></svg>
+          {{ auth.user()?.emailVerified ? 'E-mail vérifié' : 'E-mail non vérifié' }}
+        </span>
+      </div>
+    </div>
+    <a class="btn-ghost" routerLink="/settings">Modifier mes informations</a>
+  </header>
+
+  <!-- ============ QUALIFICATION CANDIDAT ============ -->
+  <section class="qualify-card" id="qualification">
+    <div class="qc-head">
+      <span class="qc-icon" aria-hidden="true"><svg lucideCrown [size]="24"></svg></span>
+      <div>
+        <h2>Passez au statut Candidat</h2>
+        <p>Débloquez toutes les fonctionnalités de placement international.</p>
+      </div>
+      <span class="badge badge--sent" *ngIf="requestSent">
+        <svg lucideSend [size]="12" aria-hidden="true"></svg> Demande envoyée
+      </span>
+    </div>
+
+    <div class="qc-grid">
+      <div class="qc-perk" *ngFor="let p of perks; let i = index">
+        <ng-container [ngSwitch]="i">
+          <svg *ngSwitchCase="0" lucideBadgeCheck [size]="20" aria-hidden="true"></svg>
+          <svg *ngSwitchCase="1" lucideVideo [size]="20" aria-hidden="true"></svg>
+          <svg *ngSwitchCase="2" lucideFileCheck [size]="20" aria-hidden="true"></svg>
+          <svg *ngSwitchCase="3" lucideShieldCheck [size]="20" aria-hidden="true"></svg>
+        </ng-container>
+        <div>
+          <strong>{{ p.label }}</strong>
+          <span>{{ p.desc }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="qc-steps">
+      <h3>Comment ça marche ?</h3>
+      <ol>
+        <li>Vous envoyez votre demande de qualification.</li>
+        <li>Un agent Al Wassit étudie votre profil et vous contacte.</li>
+        <li>Après validation (frais de dossier / engagement), votre compte devient <strong>Candidat</strong>.</li>
+      </ol>
+    </div>
+
+    <button
+      type="button"
+      class="btn-qualify"
+      [disabled]="requestSent"
+      (click)="sendQualificationRequest()">
+      <svg lucideSend [size]="16" aria-hidden="true"></svg>
+      {{ requestSent ? 'Demande en cours de traitement' : 'Envoyer ma demande de qualification' }}
+    </button>
+    <p class="qc-note" *ngIf="requestSent">
+      Notre équipe vous contactera par e-mail. Vous pouvez continuer à explorer les offres publiques.
+    </p>
+  </section>
+
+  <!-- ============ INFOS COMPTE ============ -->
+  <section class="info-card">
+    <h2>Informations du compte</h2>
+    <dl class="info-list">
+      <div class="info-row">
+        <dt><svg lucideUserCircle [size]="15" aria-hidden="true"></svg> Nom</dt>
+        <dd>{{ auth.user()?.name || '—' }}</dd>
+      </div>
+      <div class="info-row">
+        <dt><svg lucideMail [size]="15" aria-hidden="true"></svg> E-mail</dt>
+        <dd>{{ auth.user()?.email }}</dd>
+      </div>
+      <div class="info-row">
+        <dt><svg lucideCalendar [size]="15" aria-hidden="true"></svg> Rôle</dt>
+        <dd>Client — accès aux offres et services publics</dd>
+      </div>
+    </dl>
+    <p class="info-hint">
+      Le statut <strong>Candidat</strong> est attribué par l'agence après qualification —
+      c'est la distinction entre un compte public et un dossier de placement actif.
+    </p>
+  </section>
+</div>

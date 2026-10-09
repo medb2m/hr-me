@@ -1,0 +1,256 @@
+.espace-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 20px;
+  height: 62px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.35);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.brand img {
+  height: 36px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.brand-tag {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #0f172a;
+  background: #ffd300;
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.nav-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-links a:hover {
+  background: rgba(255, 211, 0, 0.12);
+  color: #ffd300;
+}
+
+.nav-links a.active {
+  background: rgba(255, 211, 0, 0.18);
+  color: #ffd300;
+}
+
+.nav-upgrade {
+  background: linear-gradient(135deg, #ffd300, #e6b800) !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.nav-upgrade:hover {
+  filter: brightness(1.05);
+}
+
+/* ---------- user dropdown ---------- */
+
+.user-area {
+  position: relative;
+}
+
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(255, 211, 0, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 5px 12px 5px 5px;
+  cursor: pointer;
+  color: #f8fafc;
+}
+
+.user-trigger:hover {
+  background: rgba(255, 211, 0, 0.1);
+}
+
+.u-avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd300, #e6b800);
+  color: #0f172a;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.u-avatar--lg {
+  width: 44px;
+  height: 44px;
+  font-size: 0.95rem;
+}
+
+.u-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caret {
+  color: #94a3b8;
+  transition: transform 0.2s;
+}
+
+.caret--open {
+  transform: rotate(180deg);
+}
+
+.u-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 264px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+  padding: 10px;
+  z-index: 70;
+}
+
+.u-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+}
+
+.u-fullname {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.u-mail {
+  margin: 1px 0 4px;
+  font-size: 0.75rem;
+  color: #64748b;
+  word-break: break-all;
+}
+
+.u-role {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #0f172a;
+  background: rgba(255, 211, 0, 0.35);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.u-sep {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 8px 4px;
+}
+
+.u-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #0f172a;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.u-item:hover {
+  background: rgba(255, 211, 0, 0.15);
+}
+
+.u-item--danger {
+  color: #b91c1c;
+}
+
+.u-item--danger:hover {
+  background: #fef2f2;
+}
+
+.burger {
+  display: none;
+  border: none;
+  background: transparent;
+  color: #ffd300;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.espace-main {
+  min-height: calc(100vh - 62px);
+  background: #f1f5f9;
+}
+
+@media (max-width: 760px) {
+  .burger {
+    display: block;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 62px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    background: #0f172a;
+    padding: 12px;
+    gap: 6px;
+    display: none;
+  }
+
+  .nav-links--open {
+    display: flex;
+  }
+
+  .u-name {
+    display: none;
+  }
+}
