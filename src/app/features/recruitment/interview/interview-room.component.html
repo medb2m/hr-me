@@ -105,9 +105,9 @@
           <div class="chat-header-title">Conversation</div>
           <div class="chat-header-sub">Messages with the AI interviewer</div>
           <div class="ai-status d-flex flex-wrap gap-1 mt-1">
-            <span *ngIf="streamingAiText" class="badge rounded-pill text-bg-primary">Typing…</span>
+            <span *ngIf="streamingAiText" class="badge rounded-pill text-bg-warning text-dark">Typing…</span>
             <span *ngIf="aiSpeaking" class="badge rounded-pill text-bg-info">Speaking</span>
-            <span *ngIf="sending && !streamingAiText" class="badge rounded-pill text-bg-warning text-dark">Thinking…</span>
+            <span *ngIf="sending && !streamingAiText" class="badge rounded-pill border border-warning text-warning">Thinking…</span>
             <span *ngIf="isListening" class="badge rounded-pill text-bg-success">Mic on</span>
             <span
               *ngIf="!aiSpeaking && !sending && !isListening && !isComplete && !streamingAiText"

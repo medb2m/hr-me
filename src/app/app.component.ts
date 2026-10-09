@@ -30,8 +30,9 @@ export class AppComponent {
       const admin = path === '/admin' || path.startsWith('/admin/');
       const clientArea = path === '/client' || path.startsWith('/client/');
       const meetingRoom = /\/meetings\/[^/]+\/room$/.test(path);
+      const interviewRoom = path.startsWith('/recruitment/interview/room');
       const clientLoggedIn = this.isClientUserInSession();
-      this.showPublicChrome = !admin && !meetingRoom && !clientArea && !clientLoggedIn;
+      this.showPublicChrome = !admin && !meetingRoom && !interviewRoom && !clientArea && !clientLoggedIn;
     };
     const enforceClientScope = () => {
       this.auth.refreshFromStorage();
