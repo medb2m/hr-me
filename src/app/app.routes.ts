@@ -34,6 +34,7 @@ import { VerifyEmailComponent } from './features/auth/verify-email/verify-email.
 import { ResendVerificationComponent } from './features/auth/resend-verification/resend-verification.component';
 import { ConfirmEmailChangeComponent } from './features/auth/confirm-email-change/confirm-email-change.component';
 import { SettingsPageComponent } from './features/account/settings/settings-page.component';
+import { AdminAuthPageComponent } from './features/admin/pages/admin-auth-page/admin-auth-page.component';
 import { guestOnlyGuard } from './core/guards/guest-only.guard';
 import { authRequiredGuard } from './core/guards/auth-required.guard';
 
@@ -54,6 +55,9 @@ export const routes: Routes = [
     { path: 'resend-verification', component: ResendVerificationComponent },
     { path: 'confirm-email-change', component: ConfirmEmailChangeComponent },
 
+    /** Connexion administrateur — page dédiée hors espace /admin. */
+    { path: 'adminlog', component: AdminAuthPageComponent },
+
     /** Account settings — every authenticated role (client, admin, candidate, recruiter). */
     {
       path: 'settings',
@@ -61,7 +65,7 @@ export const routes: Routes = [
       canActivate: [authRequiredGuard],
     },
 
-    /** Admin area: own layout (loadChildren). Auth at `/admin/auth`, app at `/admin/dashboard`, etc. */
+    /** Espace admin (login sur `/adminlog`) — dashboard, gestion des utilisateurs, etc. */
     {
       path: 'admin',
       loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),

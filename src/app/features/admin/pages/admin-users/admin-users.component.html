@@ -1,0 +1,175 @@
+<div class="users-page">
+  <header class="page-head">
+    <div class="head-icon" aria-hidden="true"><svg lucideUsers [size]="26"></svg></div>
+    <div class="head-text">
+      <h1>Gestion des utilisateurs</h1>
+      <p>Comptes de la plateforme — tous rôles (client, candidat, agent, directeur, recruteur, admin).</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="openCreate()">
+      <svg lucidePlus [size]="16" aria-hidden="true"></svg> Nouvel utilisateur
+    </button>
+  </header>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <label class="search-box">
+      <svg lucideSearch [size]="16" aria-hidden="true"></svg>
+      <input type="search" [(ngModel)]="search" (ngModelChange)="onSearchInput()" placeholder="Rechercher un nom ou un e-mail…">
+    </label>
+    <select [(ngModel)]="roleFilter" (ngModelChange)="onRoleFilter()" aria-label="Filtrer par rôle">
+      <option value="">Tous les rôles</option>
+      <option *ngFor="let r of roleOptions" [value]="r.value">{{ r.label }}</option>
+    </select>
+    <select [(ngModel)]="limit" (ngModelChange)="onLimitChange()" aria-label="Lignes par page">
+      <option *ngFor="let n of limitOptions" [value]="n">{{ n }} / page</option>
+    </select>
+    <button type="button" class="btn-icon" (click)="load()" [disabled]="loading" aria-label="Rafraîchir">
+      <svg lucideRefreshCw [size]="16" aria-hidden="true"></svg>
+    </button>
+  </div>
+
+  <div class="alert alert--error" *ngIf="tableError">{{ tableError }}</div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Inscription</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="5" class="cell-empty">Chargement…</td>
+        </tr>
+        <tr *ngIf="!loading && users.length === 0">
+          <td colspan="5" class="cell-empty">Aucun utilisateur trouvé.</td>
+        </tr>
+        <tr *ngFor="let u of users; trackBy: trackById" [class.row--self]="isSelf(u)">
+          <td>
+            <div class="user-cell">
+              <span class="u-avatar" aria-hidden="true">{{ initials(u) }}</span>
+              <div class="u-meta">
+                <span class="u-name">{{ u.name || '—' }}<em *ngIf="isSelf(u)" class="u-self"> (vous)</em></span>
+                <span class="u-email">{{ u.email }}</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge" [attr.data-role]="u.role">{{ roleLabel(u.role) }}</span></td>
+          <td>
+            <span class="status" [class.status--ok]="u.emailVerified">
+              <svg lucideBadgeCheck [size]="13" aria-hidden="true"></svg>
+              {{ u.emailVerified ? 'Vérifié' : 'Non vérifié' }}
+            </span>
+          </td>
+          <td class="cell-date">{{ fmtDate(u.createdAt) }}</td>
+          <td class="col-actions">
+            <button type="button" class="btn-icon" (click)="openEdit(u)" aria-label="Modifier" title="Modifier">
+              <svg lucidePencil [size]="15" aria-hidden="true"></svg>
+            </button>
+            <button type="button" class="btn-icon btn-icon--danger" (click)="askDelete(u)"
+                    [disabled]="isSelf(u)" aria-label="Supprimer" title="Supprimer">
+              <svg lucideTrash2 [size]="15" aria-hidden="true"></svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <footer class="pagination">
+      <span class="page-info">{{ total }} utilisateur{{ total > 1 ? 's' : '' }} — page {{ page }} / {{ pages }}</span>
+      <div class="page-btns">
+        <button type="button" class="btn-icon" (click)="prevPage()" [disabled]="page <= 1 || loading" aria-label="Page précédente">
+          <svg lucideChevronLeft [size]="16" aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="btn-icon" (click)="nextPage()" [disabled]="page >= pages || loading" aria-label="Page suivante">
+          <svg lucideChevronRight [size]="16" aria-hidden="true"></svg>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============ CREATE / EDIT PANEL ============ -->
+  <div class="modal-backdrop" *ngIf="formOpen" (click)="closeForm()"></div>
+  <aside class="panel" *ngIf="formOpen" role="dialog" aria-modal="true">
+    <header class="panel-head">
+      <h2>
+        <svg lucideUserCheck [size]="18" aria-hidden="true"></svg>
+        {{ editing ? 'Modifier l’utilisateur' : 'Nouvel utilisateur' }}
+      </h2>
+      <button type="button" class="btn-icon" (click)="closeForm()" aria-label="Fermer">
+        <svg lucideX [size]="16" aria-hidden="true"></svg>
+      </button>
+    </header>
+
+    <div class="panel-body">
+      <div class="alert alert--error" *ngIf="formError">{{ formError }}</div>
+
+      <label class="field">
+        <span class="field-label">Nom complet</span>
+        <input type="text" [(ngModel)]="formName" maxlength="80" placeholder="Ex. Salma Ben Ali" autocomplete="off">
+      </label>
+
+      <label class="field">
+        <span class="field-label">Adresse e-mail *</span>
+        <input type="email" [(ngModel)]="formEmail" placeholder="utilisateur@exemple.com" autocomplete="off">
+      </label>
+
+      <label class="field">
+        <span class="field-label">Rôle *</span>
+        <select [(ngModel)]="formRole" [disabled]="!!editing && isSelf(editing)">
+          <option *ngFor="let r of roleOptions" [value]="r.value">{{ r.label }}</option>
+        </select>
+        <span class="field-hint" *ngIf="editing && isSelf(editing)">Vous ne pouvez pas changer votre propre rôle.</span>
+      </label>
+
+      <label class="field">
+        <span class="field-label">{{ editing ? 'Nouveau mot de passe (laisser vide pour garder)' : 'Mot de passe *' }}</span>
+        <span class="pwd-wrap">
+          <input [type]="showFormPassword ? 'text' : 'password'" [(ngModel)]="formPassword"
+                 [attr.autocomplete]="editing ? 'new-password' : 'new-password'" placeholder="8 caractères minimum">
+          <button type="button" class="pwd-eye" (click)="showFormPassword = !showFormPassword"
+                  [attr.aria-label]="showFormPassword ? 'Masquer' : 'Afficher'">
+            <svg *ngIf="!showFormPassword" lucideEye [size]="16" aria-hidden="true"></svg>
+            <svg *ngIf="showFormPassword" lucideEyeOff [size]="16" aria-hidden="true"></svg>
+          </button>
+        </span>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" [(ngModel)]="formVerified" [disabled]="!!editing && isSelf(editing)">
+        <span>E-mail vérifié <em>(les comptes créés par l’admin sont vérifiés par défaut)</em></span>
+      </label>
+    </div>
+
+    <footer class="panel-foot">
+      <button type="button" class="btn-ghost" (click)="closeForm()" [disabled]="formBusy">Annuler</button>
+      <button type="button" class="btn-primary" (click)="submitForm()"
+              [disabled]="formBusy || !formEmail.trim() || (!editing && formPassword.length < 8)">
+        {{ formBusy ? 'Enregistrement…' : editing ? 'Enregistrer' : 'Créer le compte' }}
+      </button>
+    </footer>
+  </aside>
+
+  <!-- ============ DELETE CONFIRM ============ -->
+  <div class="modal-backdrop" *ngIf="deleting" (click)="cancelDelete()"></div>
+  <div class="confirm" *ngIf="deleting" role="alertdialog" aria-modal="true">
+    <h2>Supprimer ce compte ?</h2>
+    <p>
+      <strong>{{ deleting.name || deleting.email }}</strong> ({{ deleting.email }}) —
+      cette action est définitive.
+    </p>
+    <div class="alert alert--error" *ngIf="deleteError">{{ deleteError }}</div>
+    <div class="confirm-btns">
+      <button type="button" class="btn-ghost" (click)="cancelDelete()" [disabled]="deleteBusy">Annuler</button>
+      <button type="button" class="btn-danger" (click)="confirmDelete()" [disabled]="deleteBusy">
+        {{ deleteBusy ? 'Suppression…' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>

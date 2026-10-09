@@ -1,12 +1,85 @@
-<div class="admin-dash">
-  <header>
-    <h1>Tableau de bord admin</h1>
-    <div class="actions">
-      @if (user(); as u) {
-        <span class="who">{{ u.email }} ({{ u.role }})</span>
-      }
-      <button type="button" class="btn-out" (click)="logout()">Déconnexion</button>
-      <a routerLink="/home">Site public</a>
+<div class="dash-page">
+  <header class="page-head">
+    <div class="head-icon" aria-hidden="true"><svg lucideLayoutGrid [size]="26"></svg></div>
+    <div>
+      <h1>Console administrateur</h1>
+      <p class="head-sub">
+        Supervision de la plateforme — @if (user(); as u) { connecté en tant que <strong>{{ u.email }}</strong> }
+      </p>
     </div>
   </header>
+
+  <!-- Stats -->
+  <section class="stats-grid">
+    <div class="stat-card stat-card--accent">
+      <span class="stat-label">Utilisateurs</span>
+      <span class="stat-value">{{ loadingStats ? '…' : stats?.total ?? '—' }}</span>
+      <span class="stat-note">Tous rôles confondus</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">E-mails vérifiés</span>
+      <span class="stat-value">{{ loadingStats ? '…' : verifiedPercent() + ' %' }}</span>
+      <span class="stat-note">{{ stats?.verified ?? 0 }} / {{ stats?.total ?? 0 }} comptes</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Nouveaux (30 j)</span>
+      <span class="stat-value">{{ loadingStats ? '…' : stats?.recent30d ?? '—' }}</span>
+      <span class="stat-note">Inscriptions récentes</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Non vérifiés</span>
+      <span class="stat-value">{{ loadingStats ? '…' : stats?.unverified ?? '—' }}</span>
+      <span class="stat-note">En attente de vérification</span>
+    </div>
+  </section>
+
+  <div class="alert-error" *ngIf="statsError">{{ statsError }}</div>
+
+  <!-- Répartition par rôle -->
+  <section class="card" *ngIf="stats">
+    <h2 class="card-title">Comptes par rôle</h2>
+    <div class="roles-row">
+      <div class="role-chip" *ngFor="let r of roleLabels">
+        <span class="role-count">{{ stats.byRole[r.value] || 0 }}</span>
+        <span class="role-name">{{ r.label }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Actions rapides -->
+  <section class="card">
+    <h2 class="card-title">Actions rapides</h2>
+    <div class="quick-grid">
+      <a routerLink="/admin/users" class="quick-card">
+        <svg lucideUsers [size]="24" aria-hidden="true"></svg>
+        <span class="quick-title">Utilisateurs</span>
+        <span class="quick-desc">CRUD complet des comptes — rôles, vérification, mots de passe.</span>
+      </a>
+      <a routerLink="/list-candidate" class="quick-card">
+        <svg lucideUserPlus [size]="24" aria-hidden="true"></svg>
+        <span class="quick-title">Candidats</span>
+        <span class="quick-desc">Dossiers candidats et suivi des placements.</span>
+      </a>
+      <a routerLink="/list-offers" class="quick-card">
+        <svg lucideBriefcase [size]="24" aria-hidden="true"></svg>
+        <span class="quick-title">Offres</span>
+        <span class="quick-desc">Offres d'emploi et matching candidats.</span>
+      </a>
+      <a routerLink="/meetings" class="quick-card">
+        <svg lucideVideo [size]="24" aria-hidden="true"></svg>
+        <span class="quick-title">Entretiens</span>
+        <span class="quick-desc">Entretiens vidéo et sessions IA.</span>
+      </a>
+      <a routerLink="/calendar" class="quick-card">
+        <svg lucideCalendar [size]="24" aria-hidden="true"></svg>
+        <span class="quick-title">Calendrier</span>
+        <span class="quick-desc">Rendez-vous et planification.</span>
+      </a>
+      <a routerLink="/list-ticket" class="quick-card">
+        <svg lucideTicket [size]="24" aria-hidden="true"></svg>
+        <span class="quick-title">Tickets</span>
+        <span class="quick-desc">Support et demandes internes.</span>
+      </a>
+    </div>
+  </section>
 </div>

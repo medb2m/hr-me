@@ -27,7 +27,7 @@ export class AppComponent {
     const syncChrome = () => {
       this.auth.refreshFromStorage();
       const path = this.router.url.split('?')[0];
-      const admin = path === '/admin' || path.startsWith('/admin/');
+      const admin = path === '/adminlog' || path === '/admin/auth';
       const clientArea = path === '/client' || path.startsWith('/client/');
       const meetingRoom = /\/meetings\/[^/]+\/room$/.test(path);
       const interviewRoom = path.startsWith('/recruitment/interview/room');

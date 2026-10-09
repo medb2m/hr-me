@@ -1,15 +1,20 @@
 import { Routes } from '@angular/router';
-import { AdminAuthPageComponent } from './pages/admin-auth-page/admin-auth-page.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
+import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { adminRequiredGuard } from '../../core/guards/admin-required.guard';
 
-/** Auth dédiée `/admin/auth` ; espace admin (hors `/home` marketing) sur `/admin/dashboard`. */
+/** Espace admin : login dédié sur `/adminlog` ; l'espace (`/admin/*`) utilise le chrome du site. */
 export const ADMIN_ROUTES: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'auth' },
-  { path: 'auth', component: AdminAuthPageComponent },
+  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+  { path: 'auth', redirectTo: '/adminlog' },
   {
     path: 'dashboard',
     component: AdminDashboardComponent,
+    canActivate: [adminRequiredGuard],
+  },
+  {
+    path: 'users',
+    component: AdminUsersComponent,
     canActivate: [adminRequiredGuard],
   },
 ];

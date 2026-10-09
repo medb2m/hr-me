@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
     name: { type: String, trim: true, default: '' },
     role: {
       type: String,
-      enum: ['client', 'admin', 'candidate', 'recruiter'],
+      enum: ['client', 'admin', 'candidate', 'recruiter', 'agent', 'director'],
       default: 'client',
     },
     emailVerified: { type: Boolean, default: false },

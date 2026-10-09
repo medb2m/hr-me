@@ -33,6 +33,7 @@ import {
   LucideCalendar,
   LucideMic2,
   LucideShield,
+  LucideUserCog,
   LucideUserCircle,
 } from '@lucide/angular';
 
@@ -45,7 +46,7 @@ import {
     LucideList, LucideBot, LucideVideo, LucidePlaySquare,
     LucideNetwork, LucideTicket, LucidePlusCircle, LucideSparkles,
     LucideLogOut, LucideLogIn, LucideBell, LucideSettings, LucideX,
-    LucideCalendar, LucideMic2, LucideShield, LucideUserCircle,
+    LucideCalendar, LucideMic2, LucideShield, LucideUserCog, LucideUserCircle,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'

@@ -68,6 +68,16 @@
             <span class="nav-label">Admin console</span>
           </a>
         </li>
+        <li>
+          <a
+            class="nav-item"
+            routerLink="/admin/users"
+            routerLinkActive="active"
+            (click)="navigateAndCloseSidebar()">
+            <span class="nav-icon"><svg lucideUserCog class="lc-icon"></svg></span>
+            <span class="nav-label">Utilisateurs</span>
+          </a>
+        </li>
       </ul>
     }
 
@@ -325,6 +335,9 @@
             @if (auth.user()?.role === 'admin') {
               <a class="pd-item" routerLink="/admin/dashboard" (click)="isUserDropdownOpen = false">
                 <svg lucideShield class="lc-icon lc-icon--sm"></svg> Admin console
+              </a>
+              <a class="pd-item" routerLink="/admin/users" (click)="isUserDropdownOpen = false">
+                <svg lucideUserCog class="lc-icon lc-icon--sm"></svg> Utilisateurs
               </a>
             }
             <a class="pd-item" routerLink="/client/overview" (click)="isUserDropdownOpen = false">

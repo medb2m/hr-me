@@ -13,7 +13,7 @@ export const adminRequiredGuard: CanActivateFn = () => {
     auth.isLoggedIn() &&
     auth.user()?.role === 'admin';
   if (!ok) {
-    void router.navigateByUrl('/admin/auth');
+    void router.navigateByUrl('/adminlog');
     return false;
   }
   return true;
