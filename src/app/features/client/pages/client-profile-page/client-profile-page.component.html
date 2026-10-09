@@ -148,12 +148,11 @@
     <div class="ep-birth">
       <label class="ep-field">
         <span class="ep-field__label">Votre date de naissance</span>
-        <input
-          class="ep-input ep-input--date"
-          type="date"
+        <app-date-picker
           [(ngModel)]="birthDateIso"
           name="birthDateIso"
-          max="9999-12-31"
+          [max]="todayIso"
+          placeholder="JJ mois AAAA"
         />
       </label>
       @if (age(); as a) {

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import { finalize } from 'rxjs/operators';
 import {
   LucideBadgeCheck,
@@ -34,6 +35,7 @@ import { ProfilePhotoUploadComponent } from '../../../../shared/components/profi
     RouterLink,
     ProfilePhotoUploadComponent,
     BackButtonComponent,
+    DatePickerComponent,
     LucideBadgeCheck,
     LucideCake,
     LucideCamera,
@@ -71,10 +73,13 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
     { key: 'digitalSkills', label: 'Compétences numériques' },
   ];
 
-  /** Valeur du champ `type="date"` (YYYY-MM-DD), synchronisée avec le serveur. */
+  /** Valeur du date picker (YYYY-MM-DD), synchronisée avec le serveur. */
   birthDateIso = '';
   savingBirth = false;
   birthSaveError = '';
+
+  /** Une naissance ne peut pas être dans le futur. */
+  readonly todayIso = new Date().toISOString().slice(0, 10);
 
   /** Âge calculé depuis la date enregistrée (affichage contextuel). */
   readonly age = computed(() => {

@@ -1,0 +1,267 @@
+:host {
+  display: inline-block;
+  min-width: 220px;
+}
+
+.dp {
+  position: relative;
+}
+
+/* ---------- trigger ---------- */
+
+.dp-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.92rem;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: left;
+}
+
+.dp-trigger:hover:not(:disabled) {
+  border-color: #ffd300;
+}
+
+.dp--open .dp-trigger,
+.dp-trigger:focus-visible {
+  outline: none;
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.35);
+}
+
+.dp-trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f8fafc;
+}
+
+.dp-ico {
+  color: #a16207;
+  flex-shrink: 0;
+}
+
+.dp-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.dp-value--ph {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.dp-clear {
+  color: #b91c1c;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.dp-clear:hover {
+  color: #dc2626;
+}
+
+/* ---------- popup ---------- */
+
+.dp-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 120;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 16px 44px rgba(15, 23, 42, 0.22);
+  padding: 14px;
+  animation: dp-in 0.16s ease-out;
+}
+
+@keyframes dp-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dp-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.dp-nav {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dp-nav:hover {
+  border-color: #ffd300;
+  background: rgba(255, 211, 0, 0.12);
+  color: #0f172a;
+}
+
+.dp-caption {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 8px;
+  text-transform: capitalize;
+}
+
+.dp-caption:hover {
+  background: rgba(255, 211, 0, 0.15);
+}
+
+/* ---------- grille jours ---------- */
+
+.dp-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.dp-wd {
+  text-align: center;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  padding: 4px 0;
+}
+
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dp-day {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.dp-day:hover:not(:disabled) {
+  background: rgba(255, 211, 0, 0.2);
+}
+
+.dp-day--out {
+  visibility: hidden;
+}
+
+.dp-day--today {
+  border: 1.5px solid #ffd300;
+}
+
+.dp-day--sel {
+  background: #ffd300 !important;
+  color: #0f172a;
+  font-weight: 800;
+  box-shadow: 0 3px 10px rgba(255, 211, 0, 0.4);
+}
+
+.dp-day:disabled {
+  color: #cbd5e1;
+  cursor: default;
+}
+
+/* ---------- années ---------- */
+
+.dp-years {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.dp-year {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  padding: 9px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.dp-year:hover {
+  border-color: #ffd300;
+  background: rgba(255, 211, 0, 0.12);
+}
+
+.dp-year--sel {
+  background: #ffd300;
+  border-color: #e6b800;
+  font-weight: 800;
+}
+
+/* ---------- footer ---------- */
+
+.dp-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dp-foot__btn {
+  border: none;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a16207;
+  cursor: pointer;
+  padding: 5px 8px;
+  border-radius: 7px;
+}
+
+.dp-foot__btn:hover {
+  background: rgba(255, 211, 0, 0.15);
+}
+
+.dp-foot__btn--clear {
+  color: #b91c1c;
+}
+
+.dp-foot__btn--clear:hover {
+  background: #fef2f2;
+}

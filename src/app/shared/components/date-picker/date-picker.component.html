@@ -1,0 +1,80 @@
+<div class="dp" [class.dp--open]="open" [class.dp--disabled]="disabled">
+  <!-- Champ -->
+  <button
+    type="button"
+    class="dp-trigger"
+    (click)="toggle()"
+    [disabled]="disabled"
+    aria-haspopup="dialog"
+    [attr.aria-expanded]="open"
+  >
+    <svg lucideCalendar [size]="15" class="dp-ico" aria-hidden="true"></svg>
+    <span class="dp-value" [class.dp-value--ph]="!displayValue">
+      {{ displayValue || placeholder }}
+    </span>
+    <svg
+      *ngIf="clearable && displayValue"
+      lucideX
+      [size]="13"
+      class="dp-clear"
+      aria-hidden="true"
+      (click)="$event.stopPropagation(); clear()"
+    ></svg>
+  </button>
+
+  <!-- Calendrier -->
+  <div class="dp-pop" *ngIf="open" role="dialog" aria-label="Choisir une date">
+    <div class="dp-head">
+      <button type="button" class="dp-nav" (click)="yearPicker ? prevYears() : prevMonth()" aria-label="Précédent">
+        <svg lucideChevronLeft [size]="15"></svg>
+      </button>
+      <button type="button" class="dp-caption" (click)="toggleYearPicker()">
+        {{ yearPicker ? yearRangeStart + ' – ' + (yearRangeStart + 11) : viewLabel }}
+      </button>
+      <button type="button" class="dp-nav" (click)="yearPicker ? nextYears() : nextMonth()" aria-label="Suivant">
+        <svg lucideChevronRight [size]="15"></svg>
+      </button>
+    </div>
+
+    <!-- Grille années -->
+    <div class="dp-years" *ngIf="yearPicker">
+      <button
+        type="button"
+        class="dp-year"
+        *ngFor="let y of yearGrid"
+        [class.dp-year--sel]="y === viewYear"
+        (click)="pickYear(y)"
+      >
+        {{ y }}
+      </button>
+    </div>
+
+    <!-- Grille jours -->
+    <ng-container *ngIf="!yearPicker">
+      <div class="dp-week">
+        <span class="dp-wd" *ngFor="let w of weekdays">{{ w }}</span>
+      </div>
+      <div class="dp-grid">
+        <button
+          type="button"
+          class="dp-day"
+          *ngFor="let c of grid; trackBy: trackCell"
+          [class.dp-day--out]="!c.inMonth"
+          [class.dp-day--today]="c.isToday"
+          [class.dp-day--sel]="c.isSelected"
+          [disabled]="c.disabled || !c.inMonth"
+          (click)="pick(c)"
+        >
+          {{ c.label }}
+        </button>
+      </div>
+    </ng-container>
+
+    <div class="dp-foot">
+      <button type="button" class="dp-foot__btn" (click)="pickToday()">Aujourd'hui</button>
+      <button type="button" class="dp-foot__btn dp-foot__btn--clear" *ngIf="clearable" (click)="clear()">
+        Effacer
+      </button>
+    </div>
+  </div>
+</div>
