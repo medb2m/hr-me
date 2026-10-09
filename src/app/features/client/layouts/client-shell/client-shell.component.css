@@ -7,7 +7,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #eef3f8;
+  background: #f1f5f9;
 }
 
 .client-shell__alert {
@@ -36,7 +36,7 @@
 .client-shell__alert-btn {
   padding: 0.45rem 1rem;
   border-radius: 6px;
-  background: #003978;
+  background: #0f172a;
   color: #fff;
   font-weight: 600;
   font-size: 0.85rem;
@@ -45,7 +45,7 @@
 }
 
 .client-shell__alert-btn:hover {
-  background: #005a9c;
+  background: #334155;
 }
 
 .client-shell__body {

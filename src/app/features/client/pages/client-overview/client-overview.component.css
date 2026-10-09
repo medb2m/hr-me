@@ -11,7 +11,7 @@
   margin: 0 0 0.5rem;
   font-size: 1.65rem;
   font-weight: 700;
-  color: #003978;
+  color: #0f172a;
   letter-spacing: -0.02em;
 }
 
@@ -19,7 +19,7 @@
   margin: 0;
   max-width: 52rem;
   font-size: 1rem;
-  color: #334e6c;
+  color: #64748b;
   line-height: 1.55;
 }
 
@@ -33,18 +33,18 @@
   display: flex;
   flex-direction: column;
   background: #fff;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 1.15rem 1.2rem 1.25rem;
-  box-shadow: 0 2px 8px rgba(0, 57, 120, 0.06);
+  box-shadow: 0 2px 8px rgba(255, 211, 0, 0.06);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   color: inherit;
   min-height: 170px;
 }
 
 .ep-card:hover {
-  border-color: #0b84c8;
-  box-shadow: 0 6px 20px rgba(0, 90, 156, 0.12);
+  border-color: #e6b800;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.12);
 }
 
 .ep-card__tag {
@@ -52,14 +52,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #005a9c;
+  color: #334155;
   margin-bottom: 0.5rem;
 }
 
 .ep-card__title {
   margin: 0 0 0.45rem;
   font-size: 1.05rem;
-  color: #003978;
+  color: #0f172a;
 }
 
 .ep-card__desc {
@@ -74,5 +74,5 @@
   margin-top: 0.85rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #005a9c;
+  color: #334155;
 }

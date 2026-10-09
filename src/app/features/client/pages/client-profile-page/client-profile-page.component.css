@@ -6,14 +6,14 @@
 .ep-head {
   margin-bottom: 1.5rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid #c8d4e6;
+  border-bottom: 1px solid #cbd5e1;
 }
 
 .ep-head__title {
   margin: 0 0 0.5rem;
   font-size: 1.65rem;
   font-weight: 700;
-  color: #003978;
+  color: #0f172a;
   letter-spacing: -0.02em;
 }
 
@@ -29,25 +29,26 @@
   margin-top: 1.25rem;
   padding: 1rem 1.2rem;
   border-radius: 10px;
-  background: linear-gradient(118deg, #003978 0%, #0a5cab 55%, #1276c9 100%);
+  background: linear-gradient(118deg, #0f172a 0%, #1e293b 55%, #334155 100%);
   color: #fff;
-  box-shadow: 0 6px 24px rgba(0, 57, 120, 0.18);
+  box-shadow: 0 6px 24px rgba(255, 211, 0, 0.18);
 }
 
 .ep-cta {
   display: inline-block;
   padding: 0.55rem 1.15rem;
   border-radius: 8px;
-  background: #fff;
-  color: #003978;
+  background: linear-gradient(135deg, #ffd300, #e6b800);
+  color: #0f172a;
   font-weight: 700;
   font-size: 0.9rem;
   text-decoration: none;
-  transition: background 0.15s ease, transform 0.12s ease;
+  transition: transform 0.12s ease, box-shadow 0.15s ease;
 }
 
 .ep-cta:hover {
-  background: #eff6ff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 211, 0, 0.35);
 }
 
 .ep-cta__note {
@@ -60,11 +61,11 @@
 
 .ep-panel {
   background: #fff;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 1.25rem 1.35rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 57, 120, 0.05);
+  box-shadow: 0 2px 8px rgba(255, 211, 0, 0.05);
 }
 
 .ep-panel--identity {
@@ -103,7 +104,7 @@
   margin: 0 0 0.4rem;
   font-size: 0.98rem;
   font-weight: 700;
-  color: #003978;
+  color: #0f172a;
 }
 
 .ep-history__lead {
@@ -138,7 +139,7 @@
   height: 72px;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   background: #fff;
 }
 
@@ -173,14 +174,14 @@
   border-radius: 6px;
   font-size: 0.72rem;
   font-weight: 600;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   background: #fff;
-  color: #003978;
+  color: #0f172a;
   cursor: pointer;
 }
 
 .ep-history__btn:hover:not(:disabled) {
-  background: #eff6ff;
+  background: #fef9c3;
 }
 
 .ep-history__btn:disabled {
@@ -189,14 +190,14 @@
 }
 
 .ep-history__btn--primary {
-  background: #003978;
+  background: #0f172a;
   color: #fff;
-  border-color: #003978;
+  border-color: #0f172a;
 }
 
 .ep-history__btn--primary:hover:not(:disabled) {
-  background: #005a9c;
-  border-color: #005a9c;
+  background: #334155;
+  border-color: #334155;
 }
 
 .ep-history__btn--danger {
@@ -218,7 +219,7 @@
 .ep-panel__h {
   margin: 0 0 0.35rem;
   font-size: 1.05rem;
-  color: #003978;
+  color: #0f172a;
 }
 
 .ep-panel__p {
@@ -258,7 +259,7 @@
 
 .ep-input {
   padding: 0.45rem 0.65rem;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-size: 0.9rem;
   min-width: 160px;
@@ -307,7 +308,7 @@
 .ep-btn {
   padding: 0.45rem 0.85rem;
   border-radius: 6px;
-  background: #003978;
+  background: #0f172a;
   color: #fff;
   font-weight: 600;
   font-size: 0.85rem;
@@ -315,13 +316,13 @@
 }
 
 .ep-btn:hover {
-  background: #005a9c;
+  background: #334155;
 }
 
 .ep-btn--ghost {
   background: #fff;
-  color: #003978;
-  border: 1px solid #c8d4e6;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
 }
 
 .ep-note {
@@ -343,5 +344,5 @@
   margin-top: 0.5rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #005a9c;
+  color: #334155;
 }

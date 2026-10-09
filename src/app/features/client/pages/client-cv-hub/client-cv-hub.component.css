@@ -10,7 +10,7 @@
 .cv-hub__title {
   margin: 0 0 0.35rem;
   font-size: 1.5rem;
-  color: #003978;
+  color: #0f172a;
 }
 
 .cv-hub__lead {
@@ -22,17 +22,17 @@
 
 .cv-hub__create {
   background: #fff;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 1.1rem 1.2rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 57, 120, 0.05);
+  box-shadow: 0 2px 8px rgba(255, 211, 0, 0.05);
 }
 
 .cv-hub__h2 {
   margin: 0 0 0.65rem;
   font-size: 1rem;
-  color: #003978;
+  color: #0f172a;
 }
 
 .cv-hub__row {
@@ -46,7 +46,7 @@
   flex: 1 1 200px;
   min-width: 180px;
   padding: 0.5rem 0.65rem;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 0.9rem;
 }
@@ -56,16 +56,16 @@
   border-radius: 8px;
   font-size: 0.88rem;
   font-weight: 600;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   background: #fff;
-  color: #003978;
+  color: #0f172a;
   cursor: pointer;
 }
 
 .cv-hub__btn--primary {
-  background: #003978;
+  background: #0f172a;
   color: #fff;
-  border-color: #003978;
+  border-color: #0f172a;
 }
 
 .cv-hub__btn--primary:disabled {
@@ -90,7 +90,7 @@
 
 .cv-hub__link {
   font-weight: 600;
-  color: #005a9c;
+  color: #334155;
   font-size: 1rem;
 }
 
@@ -128,6 +128,6 @@
   display: inline-block;
   margin-top: 1.25rem;
   font-weight: 600;
-  color: #005a9c;
+  color: #334155;
   font-size: 0.9rem;
 }

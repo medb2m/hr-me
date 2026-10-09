@@ -5,7 +5,7 @@
 .ep-title {
   margin: 0 0 0.5rem;
   font-size: 1.45rem;
-  color: #003978;
+  color: #0f172a;
 }
 
 .ep-lead {
@@ -23,16 +23,16 @@
 
 .ep-card {
   background: #fff;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 1rem 1.1rem;
-  box-shadow: 0 2px 8px rgba(0, 57, 120, 0.05);
+  box-shadow: 0 2px 8px rgba(255, 211, 0, 0.05);
 }
 
 .ep-card h2 {
   margin: 0 0 0.35rem;
   font-size: 1rem;
-  color: #003978;
+  color: #0f172a;
 }
 
 .ep-card p {
@@ -44,7 +44,7 @@
 .ep-link {
   display: inline-block;
   font-weight: 600;
-  color: #005a9c;
+  color: #334155;
 }
 
 .ep-link--block {

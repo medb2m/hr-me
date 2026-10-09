@@ -5,7 +5,7 @@
 .ep-title {
   margin: 0 0 0.5rem;
   font-size: 1.45rem;
-  color: #003978;
+  color: #0f172a;
 }
 
 .ep-lead {
@@ -32,7 +32,7 @@
 .ep-link {
   display: inline-block;
   font-weight: 600;
-  color: #005a9c;
+  color: #334155;
 }
 
 .ep-link--block {

@@ -5,7 +5,7 @@
 .ep-title {
   margin: 0 0 0.5rem;
   font-size: 1.45rem;
-  color: #003978;
+  color: #0f172a;
 }
 
 .ep-lead {
@@ -27,19 +27,19 @@
   font-size: 0.82rem;
   font-weight: 600;
   background: #fff;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   color: #475569;
 }
 
 .ep-chip.is-on {
-  background: #003978;
+  background: #0f172a;
   color: #fff;
-  border-color: #003978;
+  border-color: #0f172a;
 }
 
 .ep-results {
   background: #fff;
-  border: 1px solid #c8d4e6;
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 1.25rem;
   margin-bottom: 1rem;
@@ -54,7 +54,7 @@
 .ep-link {
   display: inline-block;
   font-weight: 600;
-  color: #005a9c;
+  color: #334155;
 }
 
 .ep-link--block {
