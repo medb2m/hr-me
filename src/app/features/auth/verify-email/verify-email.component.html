@@ -6,21 +6,50 @@
       <img src="/assets/img/al-wassit-logo.png" alt="Al Wassit" class="auth-logo" />
       <h1>Vérification de l’e-mail</h1>
 
-    @if (loading) {
+    @if (view === 'loading') {
       <p class="lead">Vérification en cours…</p>
     }
-    @if (errorMsg) {
-      <div class="alert alert-error">{{ errorMsg }}</div>
-    }
-    @if (successMsg) {
-      <div class="alert alert-ok">{{ successMsg }}</div>
+
+    @if (view === 'done') {
+      <div class="alert alert-ok">E-mail vérifié — redirection vers la connexion…</div>
     }
 
-    <div class="links">
-      <a routerLink="/login">Connexion</a>
-      ·
-      <a routerLink="/resend-verification">Renvoyer le lien</a>
-    </div>
+    @if (view === 'form') {
+      @if (justSent) {
+        <div class="alert alert-ok">
+          Compte créé ! Un e-mail contenant un lien <strong>et un code à 6 chiffres</strong> vient d'être envoyé
+          @if (email) { à <strong>{{ email }}</strong> }.
+        </div>
+      } @else {
+        <p class="lead">Saisissez le code à 6 chiffres reçu par e-mail, ou utilisez le lien dans le message.</p>
+      }
+
+      @if (errorMsg) {
+        <div class="alert alert-error">{{ errorMsg }}</div>
+      }
+
+      <form (ngSubmit)="submitCode()">
+        <div class="field">
+          <label for="v-email">E-mail du compte</label>
+          <input id="v-email" type="email" [(ngModel)]="email" name="email" autocomplete="email"
+                 placeholder="vous@exemple.com" required />
+        </div>
+        <div class="field">
+          <label for="v-code">Code de vérification</label>
+          <input id="v-code" class="code-input" type="text" inputmode="numeric" [(ngModel)]="code"
+                 name="code" maxlength="6" placeholder="000000" autocomplete="one-time-code" required />
+        </div>
+        <button class="btn-primary" type="submit" [disabled]="digitsOnly.length !== 6 || !email.trim()">
+          Vérifier mon e-mail
+        </button>
+      </form>
+
+      <div class="links">
+        <a routerLink="/login">Connexion</a>
+        ·
+        <a routerLink="/resend-verification">Renvoyer le code</a>
+      </div>
+    }
     </div>
   </div>
 </div>

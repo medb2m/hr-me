@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { BackButtonComponent } from '../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
 
 @Component({
@@ -40,6 +41,7 @@ export class RegisterComponent {
     private readonly fb: FormBuilder,
     private readonly auth: AuthService,
     private readonly router: Router,
+    private readonly toast: ToastService,
   ) {}
 
   submit(): void {
@@ -59,8 +61,14 @@ export class RegisterComponent {
       .register({ name: v.name?.trim() || undefined, email: v.email.trim(), password: v.password })
       .pipe(finalize(() => (this.submitting = false)))
       .subscribe({
-        next: (res) => {
-          this.successMsg = res.message || 'Compte créé.';
+        next: () => {
+          this.toast.success(
+            'Compte créé',
+            'Vérifiez votre e-mail — un lien et un code à 6 chiffres vous ont été envoyés.',
+          );
+          void this.router.navigate(['/verify-email'], {
+            queryParams: { sent: '1', email: this.form.controls.email.value.trim() },
+          });
         },
         error: (err: { error?: { message?: string }; message?: string }) => {
           this.errorMsg = err.error?.message || err.message || 'Inscription impossible.';

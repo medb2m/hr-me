@@ -11,10 +11,7 @@
       <div class="alert alert-error">{{ errorMsg }}</div>
     }
     @if (successMsg) {
-      <div class="alert alert-ok">
-        {{ successMsg }}
-        <a routerLink="/resend-verification">Renvoyer le lien de vérification</a>
-      </div>
+      <div class="alert alert-ok">{{ successMsg }}</div>
     }
 
     <form [formGroup]="form" (ngSubmit)="submit()">

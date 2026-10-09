@@ -1,20 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Confirm your email — {{appName}}</title>
+  <title>Confirmez votre e-mail — {{appName}}</title>
 </head>
-<body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height: 1.5; color: #0f172a; max-width: 520px; margin: 0 auto; padding: 32px 20px;">
-  <p>Hi {{userName}},</p>
-  <p>Thanks for registering with <strong>{{appName}}</strong>. Please confirm your email address by clicking the button below.</p>
-  <p style="margin: 28px 0;">
-    <a href="{{verifyUrl}}" style="display: inline-block; background: #0f766e; color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 8px; font-weight: 600;">Verify my email</a>
-  </p>
-  <p style="word-break: break-all; font-size: 14px; color: #64748b;">If the button doesn’t work, copy and paste this link into your browser:<br />
-    <a href="{{verifyUrl}}" style="color: #0f766e;">{{verifyUrl}}</a>
-  </p>
-  <p style="font-size: 14px; color: #64748b;">If you did not create an account, you can ignore this message.</p>
-  <p style="margin-top: 32px; font-size: 12px; color: #94a3b8;">— {{appName}} · <a href="mailto:{{supportEmail}}" style="color: #64748b;">{{supportEmail}}</a></p>
+<body style="margin:0; padding:0; background:#f1f5f9; font-family:'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;">
+  <div style="max-width:560px; margin:0 auto; padding:32px 16px;">
+    <!-- Header -->
+    <div style="background:#0f172a; border-radius:16px 16px 0 0; padding:28px 32px; text-align:center;">
+      <img src="{{logoUrl}}" alt="{{appName}}" style="height:56px; max-width:220px; object-fit:contain;" />
+    </div>
+    <div style="height:4px; background:#ffd300;"></div>
+    <!-- Body -->
+    <div style="background:#ffffff; padding:36px 32px; border-radius:0 0 16px 16px; box-shadow:0 4px 16px rgba(15,23,42,.08);">
+      <h1 style="margin:0 0 8px; font-size:22px; color:#0f172a; font-weight:800;">Confirmez votre e-mail</h1>
+      <p style="margin:0 0 20px; font-size:15px; color:#475569; line-height:1.6;">
+        Bonjour {{userName}},<br />
+        Bienvenue sur <strong>{{appName}}</strong>. Cliquez sur le bouton ci-dessous pour vérifier votre adresse e-mail.
+      </p>
+      <p style="text-align:center; margin:28px 0;">
+        <a href="{{verifyUrl}}" style="display:inline-block; background:#ffd300; color:#0f172a; text-decoration:none; padding:14px 34px; border-radius:10px; font-weight:800; font-size:15px;">Vérifier mon e-mail</a>
+      </p>
+      <!-- Code à 6 chiffres -->
+      <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:18px; text-align:center; margin:0 0 24px;">
+        <p style="margin:0 0 8px; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#64748b;">Ou saisissez ce code dans l'application</p>
+        <p style="margin:0; font-size:32px; font-weight:800; letter-spacing:8px; color:#0f172a; font-family:'Courier New', monospace;">{{verifyCode}}</p>
+      </div>
+      <p style="margin:0 0 8px; font-size:13px; color:#64748b; line-height:1.5;">
+        Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br />
+        <a href="{{verifyUrl}}" style="color:#b45309; word-break:break-all;">{{verifyUrl}}</a>
+      </p>
+      <p style="margin:0; font-size:13px; color:#94a3b8;">Si vous n'avez pas créé de compte, ignorez ce message.</p>
+    </div>
+    <!-- Footer -->
+    <p style="text-align:center; font-size:12px; color:#94a3b8; margin:24px 0 0;">
+      — {{appName}} · <a href="{{homeUrl}}" style="color:#64748b;">{{homeUrl}}</a> · <a href="mailto:{{supportEmail}}" style="color:#64748b;">{{supportEmail}}</a>
+    </p>
+  </div>
 </body>
 </html>

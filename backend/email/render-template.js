@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { getFrontendBaseUrl } from '../config/public-url.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const templatesDir = path.join(__dirname, 'templates');
@@ -14,6 +15,9 @@ export function templateDefaults(vars = {}) {
   return {
     appName: process.env.APP_NAME || 'Al Wassit',
     supportEmail: process.env.SUPPORT_EMAIL || 'support@localhost',
+    /** Logo servi par le front — utilisable dans tous les e-mails. */
+    logoUrl: `${getFrontendBaseUrl()}/assets/img/al-wassit-logo.png`,
+    homeUrl: getFrontendBaseUrl(),
     ...vars,
   };
 }

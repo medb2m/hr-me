@@ -198,6 +198,7 @@ export async function updateUser(req, res) {
       user.emailVerified = Boolean(body.emailVerified);
       if (user.emailVerified) {
         user.emailVerifyToken = null;
+        user.emailVerifyCode = null;
         user.emailVerifyExpires = null;
       }
     }

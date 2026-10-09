@@ -30,6 +30,11 @@ function randomToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+/** Code de vérification à 6 chiffres (saisie manuelle dans l'app). */
+function randomVerifyCode() {
+  return String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
+}
+
 export async function register(req, res) {
   try {
     const { name, email, password } = req.body || {};
@@ -48,6 +53,7 @@ export async function register(req, res) {
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const verifyToken = randomToken();
+    const verifyCode = randomVerifyCode();
     const verifyExpires = new Date(Date.now() + EMAIL_VERIFY_HOURS * 60 * 60 * 1000);
 
     const user = await User.create({
@@ -57,6 +63,7 @@ export async function register(req, res) {
       role: 'client',
       emailVerified: false,
       emailVerifyToken: verifyToken,
+      emailVerifyCode: verifyCode,
       emailVerifyExpires: verifyExpires,
     });
 
@@ -77,6 +84,7 @@ export async function register(req, res) {
         to: user.email,
         userName: user.name || user.email.split('@')[0],
         verifyUrl,
+        verifyCode,
       });
     } catch (emailErr) {
       await User.findByIdAndDelete(user._id);
@@ -253,21 +261,39 @@ export async function resetPassword(req, res) {
 
 export async function verifyEmail(req, res) {
   try {
-    const { token, email: emailHint } = req.body || {};
-    if (!token || typeof token !== 'string') {
-      return res.status(400).json({ message: 'Verification token is required.' });
-    }
-
-    const trimmedToken = token.trim();
+    const { token, email: emailHint, code } = req.body || {};
     const normalizedHint =
       typeof emailHint === 'string' && emailHint.trim()
         ? emailHint.trim().toLowerCase()
         : '';
 
-    let user = await User.findOne({
-      emailVerifyToken: trimmedToken,
-      emailVerifyExpires: { $gt: new Date() },
-    });
+    const trimmedToken = typeof token === 'string' ? token.trim() : '';
+    const trimmedCode = typeof code === 'string' ? code.trim() : '';
+
+    if (!trimmedToken && !trimmedCode) {
+      return res
+        .status(400)
+        .json({ message: 'Verification token or 6-digit code is required.' });
+    }
+    if (trimmedCode && (!/^\d{6}$/.test(trimmedCode) || !normalizedHint)) {
+      return res.status(400).json({
+        message: 'A 6-digit code and the account email are required.',
+      });
+    }
+
+    let user;
+    if (trimmedToken) {
+      user = await User.findOne({
+        emailVerifyToken: trimmedToken,
+        emailVerifyExpires: { $gt: new Date() },
+      });
+    } else {
+      user = await User.findOne({
+        email: normalizedHint,
+        emailVerifyCode: trimmedCode,
+        emailVerifyExpires: { $gt: new Date() },
+      });
+    }
 
     // Token missing (e.g. already consumed) but client passes email — recover "already verified" after a partial failure.
     if (!user && normalizedHint) {
@@ -299,6 +325,7 @@ export async function verifyEmail(req, res) {
 
     user.emailVerified = true;
     user.emailVerifyToken = null;
+    user.emailVerifyCode = null;
     user.emailVerifyExpires = null;
     await user.save();
 
@@ -372,7 +399,9 @@ export async function resendVerification(req, res) {
     }
 
     const verifyToken = randomToken();
+    const verifyCode = randomVerifyCode();
     user.emailVerifyToken = verifyToken;
+    user.emailVerifyCode = verifyCode;
     user.emailVerifyExpires = new Date(Date.now() + EMAIL_VERIFY_HOURS * 60 * 60 * 1000);
     await user.save();
 
@@ -384,6 +413,7 @@ export async function resendVerification(req, res) {
         to: user.email,
         userName: user.name || user.email.split('@')[0],
         verifyUrl,
+        verifyCode,
       });
     } catch (emailErr) {
       const payload = smtpErrorPayload(emailErr);

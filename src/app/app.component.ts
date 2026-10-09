@@ -5,11 +5,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
+import { ToastComponent } from './shared/components/toast/toast.component';
 import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterModule, TranslateModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterOutlet, RouterModule, TranslateModule, NavbarComponent, FooterComponent, ToastComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })

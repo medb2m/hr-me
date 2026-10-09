@@ -150,7 +150,7 @@ export class AuthService {
     return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/reset-password`, body);
   }
 
-  verifyEmail(body: { token: string; email?: string }): Observable<{ message: string }> {
+  verifyEmail(body: { token?: string; email?: string; code?: string }): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/verify-email`, body);
   }
 

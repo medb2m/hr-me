@@ -68,9 +68,9 @@ function htmlToPlainSummary(html, linkLabel, url) {
 // --- Transactional helpers (call from auth routes after you add users + tokens) ---
 // Required template vars are filled from env via templateDefaults(); you pass URLs and names.
 
-/** @param {{ to: string, userName: string, verifyUrl: string }} p */
-export async function sendVerifyEmail({ to, userName, verifyUrl }) {
-  const v = templateDefaults({ userName, verifyUrl });
+/** @param {{ to: string, userName: string, verifyUrl: string, verifyCode?: string }} p */
+export async function sendVerifyEmail({ to, userName, verifyUrl, verifyCode }) {
+  const v = templateDefaults({ userName, verifyUrl, verifyCode });
   const html = renderTemplate('verify-email.html', v);
   const text = htmlToPlainSummary(html, 'Verify your email:', verifyUrl);
   return sendMail({

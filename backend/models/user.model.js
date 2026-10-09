@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema(
     },
     emailVerified: { type: Boolean, default: false },
     emailVerifyToken: { type: String, default: null },
+    /** 6-digit code alternative au lien de vérification. */
+    emailVerifyCode: { type: String, default: null },
     emailVerifyExpires: { type: Date, default: null },
     passwordResetToken: { type: String, default: null },
     passwordResetExpires: { type: Date, default: null },
