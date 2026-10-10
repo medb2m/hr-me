@@ -1,3 +1,12 @@
+/* Le sticky doit porter sur l'hôte (enfant direct du shell) : sinon son
+   contexte de collage se limite à sa propre hauteur et il scrolle. */
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
 .client-header {
   display: flex;
   align-items: center;
@@ -7,9 +16,6 @@
   min-height: 52px;
   padding: 0 1.25rem;
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 50;
   background: linear-gradient(90deg, #0f172a 0%, #1e293b 60%, #334155 100%);
   color: #fff;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.3);

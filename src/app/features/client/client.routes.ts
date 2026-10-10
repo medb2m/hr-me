@@ -53,6 +53,11 @@ export const CLIENT_ROUTES: Routes = [
           ),
       },
       {
+        path: 'settings',
+        loadComponent: () =>
+          import('../account/settings/settings-page.component').then((m) => m.SettingsPageComponent),
+      },
+      {
         path: 'explore',
         loadComponent: () =>
           import('./pages/client-explore-page/client-explore-page.component').then(

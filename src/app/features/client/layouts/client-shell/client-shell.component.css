@@ -48,6 +48,30 @@
   background: #334155;
 }
 
+.client-shell__alert-close {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: rgba(185, 28, 28, 0.12);
+  color: #b91c1c;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.client-shell__alert-close svg {
+  width: 12px;
+  height: 12px;
+}
+
+.client-shell__alert-close:hover {
+  background: #b91c1c;
+  color: #fff;
+  transform: scale(1.08);
+}
+
 .client-shell__body {
   display: flex;
   flex: 1;
