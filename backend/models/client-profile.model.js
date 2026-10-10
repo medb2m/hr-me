@@ -11,6 +11,8 @@ const workExperienceSchema = new mongoose.Schema(
     employer: { type: String, trim: true, default: '' },
     startDate: { type: Date, default: null },
     endDate: { type: Date, default: null },
+    /** Poste en cours (« Présent » sur le CV) — endDate ignorée. */
+    current: { type: Boolean, default: false },
     description: { type: String, trim: true, default: '' },
   },
   { _id: true }
@@ -22,6 +24,8 @@ const educationSchema = new mongoose.Schema(
     organization: { type: String, trim: true, default: '' },
     startDate: { type: Date, default: null },
     endDate: { type: Date, default: null },
+    /** Formation en cours. */
+    current: { type: Boolean, default: false },
   },
   { _id: true }
 );

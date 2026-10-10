@@ -158,7 +158,8 @@ export async function patchProfile(req, res) {
           jobTitle: String(w.jobTitle ?? '').trim().slice(0, 120),
           employer: String(w.employer ?? '').trim().slice(0, 120),
           startDate: parseDateOrNull(w.startDate),
-          endDate: parseDateOrNull(w.endDate),
+          endDate: w.current ? null : parseDateOrNull(w.endDate),
+          current: !!w.current,
           description: String(w.description ?? '').trim().slice(0, 3000),
         }))
         .filter((w) => w.jobTitle || w.employer || w.description);
@@ -174,7 +175,8 @@ export async function patchProfile(req, res) {
           title: String(e.title ?? '').trim().slice(0, 120),
           organization: String(e.organization ?? '').trim().slice(0, 120),
           startDate: parseDateOrNull(e.startDate),
-          endDate: parseDateOrNull(e.endDate),
+          endDate: e.current ? null : parseDateOrNull(e.endDate),
+          current: !!e.current,
         }))
         .filter((e) => e.title || e.organization);
     }

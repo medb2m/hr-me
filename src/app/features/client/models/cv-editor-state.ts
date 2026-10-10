@@ -10,6 +10,8 @@ export interface CvFormEntry {
   /** YYYY-MM-DD via le date picker partagé. */
   startDate: string;
   endDate: string;
+  /** « En cours » — l'aperçu affiche « Présent », endDate ignorée. */
+  current: boolean;
   /** Description HTML (éditeur riche). */
   description: string;
 }
@@ -75,6 +77,7 @@ function mergeBlock(base: CvSectionBlock, raw: unknown): CvSectionBlock {
         org: typeof e?.['org'] === 'string' ? e['org'] : '',
         startDate: typeof e?.['startDate'] === 'string' ? e['startDate'] : '',
         endDate: typeof e?.['endDate'] === 'string' ? e['endDate'] : '',
+        current: typeof e?.['current'] === 'boolean' ? e['current'] : false,
         description: typeof e?.['description'] === 'string' ? e['description'] : '',
       }))
     : base.entries;

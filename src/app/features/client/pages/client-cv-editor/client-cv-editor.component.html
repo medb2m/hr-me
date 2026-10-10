@@ -197,8 +197,18 @@
                         <app-date-picker
                           [(ngModel)]="en.endDate"
                           [name]="b.key + '-ed-' + $index"
+                          [disabled]="en.current"
                           placeholder="JJ mois AAAA"
                         />
+                      </label>
+                      <label class="ep-mini ep-mini--check">
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="en.current"
+                          (ngModelChange)="onEntryCurrentToggle(en)"
+                          [name]="b.key + '-cur-' + $index"
+                        />
+                        <span>En cours</span>
                       </label>
                     </div>
                     <app-rich-text-editor
@@ -332,8 +342,8 @@
                     <p class="ep-sheet__etitle">
                       {{ e.title || 'Poste' }}@if (e.org) { — <span class="ep-sheet__eorg">{{ e.org }}</span>}
                     </p>
-                    @if (e.startDate || e.endDate) {
-                      <p class="ep-sheet__edates">{{ e.startDate }} → {{ e.endDate }}</p>
+                    @if (e.startDate || e.endDate || e.current) {
+                      <p class="ep-sheet__edates">{{ rangeText(e.startDate, e.endDate, e.current) }}</p>
                     }
                     @if (e.description) {
                       <div class="ep-sheet__etext" [innerHTML]="e.description"></div>
@@ -369,8 +379,8 @@
                     <p class="ep-sheet__etitle">
                       {{ e.title || 'Formation' }}@if (e.org) { — <span class="ep-sheet__eorg">{{ e.org }}</span>}
                     </p>
-                    @if (e.startDate || e.endDate) {
-                      <p class="ep-sheet__edates">{{ e.startDate }} → {{ e.endDate }}</p>
+                    @if (e.startDate || e.endDate || e.current) {
+                      <p class="ep-sheet__edates">{{ rangeText(e.startDate, e.endDate, e.current) }}</p>
                     }
                   </div>
                 } @empty {

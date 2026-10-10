@@ -106,6 +106,10 @@
   padding-left: 1.35rem;
 }
 
+.rte__area li {
+  color: #1e293b;
+}
+
 .rte__area a {
   color: #a16207;
   text-decoration: underline;

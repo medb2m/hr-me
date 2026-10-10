@@ -106,16 +106,35 @@ export class ClientCvEditorComponent implements OnInit {
     );
   }
 
+  /** « avr. 2023 » — format court lisible sur un CV. */
+  fmtMonth(d: string | null | undefined): string {
+    if (!d) {
+      return '';
+    }
+    const dt = new Date(d);
+    if (Number.isNaN(dt.getTime())) {
+      return String(d).slice(0, 10);
+    }
+    return new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeric' }).format(dt);
+  }
+
+  /** « avr. 2020 → Présent » / « janv. 2019 → déc. 2021 ». */
+  rangeText(start: string | null | undefined, end: string | null | undefined, current?: boolean): string {
+    const s = this.fmtMonth(start);
+    const e = current ? 'Présent' : this.fmtMonth(end);
+    if (s && e) {
+      return `${s} → ${e}`;
+    }
+    return s || e;
+  }
+
   /** Expériences du profil structurées pour l'aperçu. */
   profileWorkEntries(): { title: string; org: string; dates: string; html: string }[] {
     return (this.profileFull?.workExperiences ?? [])
       .map((w) => ({
         title: (w.jobTitle || '').trim() || 'Poste',
         org: (w.employer || '').trim(),
-        dates: [w.startDate, w.endDate]
-          .map((d) => (d ? String(d).slice(0, 10) : ''))
-          .filter(Boolean)
-          .join(' → '),
+        dates: this.rangeText(w.startDate, w.endDate, w.current),
         html: (w.description || '').trim(),
       }))
       .filter((w) => w.title || w.org || w.html);
@@ -126,10 +145,7 @@ export class ClientCvEditorComponent implements OnInit {
       .map((e) => ({
         title: (e.title || '').trim() || 'Formation',
         org: (e.organization || '').trim(),
-        dates: [e.startDate, e.endDate]
-          .map((d) => (d ? String(d).slice(0, 10) : ''))
-          .filter(Boolean)
-          .join(' → '),
+        dates: this.rangeText(e.startDate, e.endDate, e.current),
       }))
       .filter((e) => e.title || e.org);
   }
@@ -140,7 +156,7 @@ export class ClientCvEditorComponent implements OnInit {
     const metiers = (p?.skills ?? []).map((s) => s.trim()).filter(Boolean);
     const digital = (p?.digitalSkills ?? []).map((s) => s.trim()).filter(Boolean);
     const groups: { label: string; items: string[] }[] = [];
-    if (metiers.length) groups.push({ label: 'Compétences', items: metiers });
+    if (metiers.length) groups.push({ label: 'Métiers', items: metiers });
     if (digital.length) groups.push({ label: 'Numériques', items: digital });
     return groups;
   }
@@ -190,7 +206,21 @@ export class ClientCvEditorComponent implements OnInit {
   }
 
   addEntry(key: CvBlockKey): void {
-    this.state[key].entries.push({ title: '', org: '', startDate: '', endDate: '', description: '' });
+    this.state[key].entries.push({
+      title: '',
+      org: '',
+      startDate: '',
+      endDate: '',
+      current: false,
+      description: '',
+    });
+  }
+
+  /** « En cours » coché → la date de fin n'a plus de sens. */
+  onEntryCurrentToggle(e: CvFormEntry): void {
+    if (e.current) {
+      e.endDate = '';
+    }
   }
 
   removeEntry(key: CvBlockKey, i: number): void {
@@ -327,7 +357,7 @@ export class ClientCvEditorComponent implements OnInit {
           .map((w) => {
             const title = (w.jobTitle || '').trim() || 'Poste';
             const emp = (w.employer || '').trim();
-            const dates = [w.startDate, w.endDate].filter(Boolean).join(' → ');
+            const dates = this.rangeText(w.startDate, w.endDate, w.current);
             const desc = (w.description || '').trim();
             const head = emp ? `${title}, ${emp}` : title;
             return [head, dates, desc].filter(Boolean).join('\n');
@@ -343,7 +373,7 @@ export class ClientCvEditorComponent implements OnInit {
           .map((e) => {
             const t = (e.title || '').trim() || 'Formation';
             const org = (e.organization || '').trim();
-            const dates = [e.startDate, e.endDate].filter(Boolean).join(' → ');
+            const dates = this.rangeText(e.startDate, e.endDate, e.current);
             return [org ? `${t} — ${org}` : t, dates].filter(Boolean).join('\n');
           })
           .join('\n\n');
@@ -394,7 +424,7 @@ export class ClientCvEditorComponent implements OnInit {
         .map((e) => {
           const head =
             [e.title.trim(), e.org.trim()].filter(Boolean).join(' — ') || 'Entrée';
-          const dates = [e.startDate, e.endDate].filter(Boolean).join(' → ');
+          const dates = this.rangeText(e.startDate, e.endDate, e.current);
           const parts = [`<strong>${this.esc(head)}</strong>`];
           if (dates) {
             parts.push(`<em class="ep-dates">${this.esc(dates)}</em>`);
@@ -487,7 +517,7 @@ export class ClientCvEditorComponent implements OnInit {
     // Validation des dates des entrées guidées (expérience / formation).
     for (const key of ['experience', 'education'] as CvBlockKey[]) {
       for (const e of this.state[key].entries) {
-        if (e.startDate && e.endDate && e.startDate > e.endDate) {
+        if (!e.current && e.startDate && e.endDate && e.startDate > e.endDate) {
           this.saveMessage = `Dates invalides dans « ${key === 'experience' ? 'Expérience' : 'Formation'} » : la date de début doit être avant la fin.`;
           return;
         }

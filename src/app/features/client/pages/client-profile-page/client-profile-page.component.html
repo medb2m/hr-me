@@ -364,8 +364,18 @@
                 <app-date-picker
                   [(ngModel)]="w.endMonth"
                   [name]="'w-e-' + $index"
+                  [disabled]="w.current"
                   placeholder="JJ mois AAAA"
                 />
+              </label>
+              <label class="ep-mini ep-mini--check">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="w.current"
+                  (ngModelChange)="onCurrentToggle(w)"
+                  [name]="'w-cur-' + $index"
+                />
+                <span>En cours</span>
               </label>
             </div>
             <app-rich-text-editor
@@ -373,14 +383,14 @@
               [name]="'w-desc-' + $index"
               placeholder="Missions, réalisations, bullet points…"
             />
-            @if (datesInvalid(w.startMonth, w.endMonth)) {
+            @if (datesInvalid(w.startMonth, w.endMonth, w.current)) {
               <p class="ep-entry__err">La date de début doit être avant la date de fin.</p>
             }
             <div class="ep-entry__foot">
               <button
                 type="button"
                 class="ep-add ep-add--solid"
-                [disabled]="savingEntryIdx !== -1 || datesInvalid(w.startMonth, w.endMonth)"
+                [disabled]="savingEntryIdx !== -1 || datesInvalid(w.startMonth, w.endMonth, w.current)"
                 (click)="saveWorkEntry($index, $event)"
               >
                 {{ savingEntryIdx === $index ? 'Enregistrement…' : 'Enregistrer cette expérience' }}
@@ -446,11 +456,21 @@
                 <app-date-picker
                   [(ngModel)]="e.endMonth"
                   [name]="'e-e-' + $index"
+                  [disabled]="e.current"
                   placeholder="JJ mois AAAA"
                 />
               </label>
+              <label class="ep-mini ep-mini--check">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="e.current"
+                  (ngModelChange)="onCurrentToggle(e)"
+                  [name]="'e-cur-' + $index"
+                />
+                <span>En cours</span>
+              </label>
             </div>
-            @if (datesInvalid(e.startMonth, e.endMonth)) {
+            @if (datesInvalid(e.startMonth, e.endMonth, e.current)) {
               <p class="ep-entry__err">La date de début doit être avant la date de fin.</p>
             }
             <button

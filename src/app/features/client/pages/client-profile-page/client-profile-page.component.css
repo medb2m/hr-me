@@ -560,6 +560,35 @@
   color: #64748b;
 }
 
+/* Case « En cours » alignée à côté des dates. */
+.ep-mini--check {
+  flex-direction: row;
+  align-items: center;
+  align-self: end;
+  gap: 7px;
+  min-width: 110px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.ep-mini--check input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  accent-color: #0f172a;
+  cursor: pointer;
+}
+
+.ep-mini--check span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #334155;
+}
+
 .ep-entry__del {
   position: absolute;
   top: 0.55rem;

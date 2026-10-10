@@ -24,6 +24,7 @@ export interface ClientProfileDto {
     employer?: string;
     startDate?: string | null;
     endDate?: string | null;
+    current?: boolean;
     description?: string;
   }>;
   educations?: Array<{
@@ -31,6 +32,7 @@ export interface ClientProfileDto {
     organization?: string;
     startDate?: string | null;
     endDate?: string | null;
+    current?: boolean;
   }>;
   skills?: string[];
   languagesSpoken?: Array<{ language?: string; cefrLevel?: string }>;
@@ -58,6 +60,7 @@ export class ClientProfileApiService {
       employer: string;
       startDate?: string | null;
       endDate?: string | null;
+      current?: boolean;
       description?: string;
     }>;
     educations?: Array<{
@@ -65,6 +68,7 @@ export class ClientProfileApiService {
       organization: string;
       startDate?: string | null;
       endDate?: string | null;
+      current?: boolean;
     }>;
     skills?: string[];
     digitalSkills?: string[];

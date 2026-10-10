@@ -104,9 +104,16 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
     employer: string;
     startMonth: string;
     endMonth: string;
+    current: boolean;
     description: string;
   }> = [];
-  educations: Array<{ title: string; organization: string; startMonth: string; endMonth: string }> = [];
+  educations: Array<{
+    title: string;
+    organization: string;
+    startMonth: string;
+    endMonth: string;
+    current: boolean;
+  }> = [];
   skills: string[] = [];
   digitalSkills: string[] = [];
   languagesSpoken: Array<{ language: string; cefrLevel: string }> = [];
@@ -189,6 +196,7 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
       employer: w.employer ?? '',
       startMonth: this.toMonth(w.startDate),
       endMonth: this.toMonth(w.endDate),
+      current: !!w.current,
       description: w.description ?? '',
     }));
     this.educations = (p.educations ?? []).map((e) => ({
@@ -196,6 +204,7 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
       organization: e.organization ?? '',
       startMonth: this.toMonth(e.startDate),
       endMonth: this.toMonth(e.endDate),
+      current: !!e.current,
     }));
     this.skills = [...(p.skills ?? [])];
     this.digitalSkills = [...(p.digitalSkills ?? [])];
@@ -365,7 +374,14 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
 
   addWorkExperience(): void {
     if (this.workExperiences.length < 20) {
-      this.workExperiences.push({ jobTitle: '', employer: '', startMonth: '', endMonth: '', description: '' });
+      this.workExperiences.push({
+        jobTitle: '',
+        employer: '',
+        startMonth: '',
+        endMonth: '',
+        current: false,
+        description: '',
+      });
     }
   }
 
@@ -375,7 +391,7 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
 
   addEducation(): void {
     if (this.educations.length < 20) {
-      this.educations.push({ title: '', organization: '', startMonth: '', endMonth: '' });
+      this.educations.push({ title: '', organization: '', startMonth: '', endMonth: '', current: false });
     }
   }
 
@@ -413,16 +429,23 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
     this.languagesSpoken.splice(i, 1);
   }
 
-  /** début > fin = invalide (les chaînes YYYY-MM[-DD] se comparent directement). */
-  datesInvalid(start: string, end: string): boolean {
-    return !!(start && end && start > end);
+  /** début > fin = invalide (les chaînes YYYY-MM[-DD] se comparent directement ; « En cours » ignore la fin). */
+  datesInvalid(start: string, end: string, current = false): boolean {
+    return !!(start && end && !current && start > end);
+  }
+
+  /** « En cours » coché → la date de fin n'a plus de sens. */
+  onCurrentToggle(entry: { endMonth: string; current: boolean }): void {
+    if (entry.current) {
+      entry.endMonth = '';
+    }
   }
 
   /** Enregistre toutes les expériences (bouton par entrée). */
   saveWorkEntry(i: number, event: MouseEvent): void {
     const w = this.workExperiences[i];
     if (!w) return;
-    if (this.datesInvalid(w.startMonth, w.endMonth)) {
+    if (this.datesInvalid(w.startMonth, w.endMonth, w.current)) {
       this.parcoursError = 'Expérience invalide : la date de début doit être avant la date de fin.';
       return;
     }
@@ -436,7 +459,8 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
           jobTitle: x.jobTitle.trim(),
           employer: x.employer.trim(),
           startDate: x.startMonth || null,
-          endDate: x.endMonth || null,
+          endDate: x.current ? null : x.endMonth || null,
+          current: x.current,
           description: x.description,
         })),
       })
@@ -455,8 +479,8 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
   saveParcours(event: MouseEvent): void {
     const anchorX = event.clientX;
     const anchorY = event.clientY;
-    const badWork = this.workExperiences.some((w) => this.datesInvalid(w.startMonth, w.endMonth));
-    const badEdu = this.educations.some((e) => this.datesInvalid(e.startMonth, e.endMonth));
+    const badWork = this.workExperiences.some((w) => this.datesInvalid(w.startMonth, w.endMonth, w.current));
+    const badEdu = this.educations.some((e) => this.datesInvalid(e.startMonth, e.endMonth, e.current));
     if (badWork || badEdu) {
       this.parcoursError = 'Vérifiez les dates : le début doit précéder la fin (expériences & formations).';
       return;
@@ -470,14 +494,16 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
           jobTitle: w.jobTitle.trim(),
           employer: w.employer.trim(),
           startDate: w.startMonth || null,
-          endDate: w.endMonth || null,
+          endDate: w.current ? null : w.endMonth || null,
+          current: w.current,
           description: w.description,
         })),
         educations: this.educations.map((e) => ({
           title: e.title.trim(),
           organization: e.organization.trim(),
           startDate: e.startMonth || null,
-          endDate: e.endMonth || null,
+          endDate: e.current ? null : e.endMonth || null,
+          current: e.current,
         })),
         skills: this.skills,
         digitalSkills: this.digitalSkills,
