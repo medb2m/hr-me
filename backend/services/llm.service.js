@@ -6,24 +6,43 @@
 const DEFAULT_BASE = 'https://api.groq.com/openai/v1';
 const DEFAULT_MODEL = 'openai/gpt-oss-120b';
 
-export function assertLlmConfigured() {
-  const key = process.env.LLM_API_KEY;
-  if (!key?.trim()) {
+/**
+ * Deux pools de clés Groq pour répartir les quotas :
+ * - 'interview' → LLM_API_KEY (dédiée à l'agent interview vocal)
+ * - 'general'   → GROQ_SECOND_API_KEY (lettres, corrections, suggestions…)
+ *                 avec repli sur LLM_API_KEY si absente.
+ * Aucun repli vers un provider payant : pas de clé → erreur 503.
+ */
+function resolveApiKey(pool = 'general') {
+  const key =
+    pool === 'interview'
+      ? process.env.LLM_API_KEY
+      : process.env.GROQ_SECOND_API_KEY || process.env.LLM_API_KEY;
+  return key?.trim() || '';
+}
+
+function assertLlmConfigured(pool = 'general') {
+  if (!resolveApiKey(pool)) {
     const err = new Error(
-      'LLM_API_KEY is missing. Set it in backend/.env (see LLM setup in Groq or OpenAI dashboard).'
+      `LLM_API_KEY${pool === 'general' ? ' / GROQ_SECOND_API_KEY' : ''} is missing. Set it in backend/.env (see LLM setup in Groq or OpenAI dashboard).`
     );
     err.statusCode = 503;
     throw err;
   }
 }
 
+/** Compat ascendante : l'assert historique vérifie la clé principale. */
+export { assertLlmConfigured };
+
 /**
  * @param {{ role: string; content: string }[]} messages
+ * @param {{ pool?: 'general' | 'interview' }} [opts] — 'interview' = clé dédiée agent vocal
  * @returns {Promise<string>} assistant plain text
  */
-export async function chatCompletion(messages) {
-  assertLlmConfigured();
-  const apiKey = process.env.LLM_API_KEY.trim();
+export async function chatCompletion(messages, opts = {}) {
+  const pool = opts.pool === 'interview' ? 'interview' : 'general';
+  assertLlmConfigured(pool);
+  const apiKey = resolveApiKey(pool);
   const baseUrl = (process.env.LLM_BASE_URL || DEFAULT_BASE).replace(/\/$/, '');
   const model = process.env.LLM_MODEL || DEFAULT_MODEL;
 
@@ -70,11 +89,13 @@ export async function chatCompletion(messages) {
  * Streaming chat (OpenAI-compatible SSE). Invokes onDelta for each content chunk.
  * @param {{ role: string; content: string }[]} messages
  * @param {(chunk: string) => void} onDelta
+ * @param {{ pool?: 'general' | 'interview' }} [opts]
  * @returns {Promise<string>} full assistant text
  */
-export async function chatCompletionStream(messages, onDelta) {
-  assertLlmConfigured();
-  const apiKey = process.env.LLM_API_KEY.trim();
+export async function chatCompletionStream(messages, onDelta, opts = {}) {
+  const pool = opts.pool === 'interview' ? 'interview' : 'general';
+  assertLlmConfigured(pool);
+  const apiKey = resolveApiKey(pool);
   const baseUrl = (process.env.LLM_BASE_URL || DEFAULT_BASE).replace(/\/$/, '');
   const model = process.env.LLM_MODEL || DEFAULT_MODEL;
 

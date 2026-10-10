@@ -54,6 +54,8 @@ router.post(
   multerSingleHandler(uploadClientDocument, 'document'),
   clientDocs.uploadDocument,
 );
+router.patch('/documents/:id', clientDocs.patchDocument);
+router.put('/documents/:id', clientDocs.patchDocument);
 router.delete('/documents/:id', clientDocs.deleteDocument);
 
 router.get('/skill-library', clientSkills.listSkillSuggestions);

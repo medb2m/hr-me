@@ -1,85 +1,248 @@
 <div class="lib">
-  <h1 class="lib-title">Bibliothèque de documents</h1>
-  <p class="lib-lead">
-    Téléverse tes diplômes, certifications et attestations une seule fois —
-    tu pourras ensuite les partager directement quand tu postules à une offre.
-  </p>
-
-  <!-- ======== upload ======== -->
-  <section class="lib-upload">
-    <div class="lib-kind">
-      @for (k of kinds; track k) {
-        <button
-          type="button"
-          class="lib-kind-btn"
-          [class.on]="pickKind === k"
-          (click)="pickKind = k">
-          @if (k === 'diploma') { <svg lucideGraduationCap [size]="15"></svg> }
-          @else if (k === 'certificate') { <svg lucideAward [size]="15"></svg> }
-          @else { <svg lucidePaperclip [size]="15"></svg> }
-          {{ kindLabel(k) }}
-        </button>
-      }
-    </div>
-    <div class="lib-upload-row">
-      <input
-        type="text"
-        class="lib-name"
-        [(ngModel)]="pickName"
-        placeholder="Nom du document (optionnel — ex. Licence 2023)" />
-      <label class="lib-file" [class.has]="!!pickFile">
-        <svg lucideUpload [size]="15"></svg>
-        {{ pickFile ? pickFile.name : 'Choisir un fichier (PDF, DOC, image)' }}
-        <input type="file" hidden accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png,.webp" (change)="onFilePick($event)" />
-      </label>
-      <button type="button" class="lib-send" (click)="submit()" [disabled]="!pickFile || uploading">
-        {{ uploading ? 'Envoi…' : 'Ajouter' }}
-      </button>
-    </div>
-    @if (uploadError) { <p class="lib-error">{{ uploadError }}</p> }
+  <!-- ============ Bannière ============ -->
+  <section class="lib-hero">
+    <span class="lib-hero__eyebrow">Mon dossier</span>
+    <h1 class="lib-hero__title">Documents &amp; diplômes</h1>
+    <p class="lib-hero__lead">
+      Dépose un diplôme, une certification ou une pièce justificative — l'IA le lit,
+      le nomme et extrait les dates automatiquement. Tes documents sont prêts à être
+      joints à tes candidatures.
+    </p>
+    <span class="lib-hero__stat">
+      {{ documents.length }} document{{ documents.length > 1 ? 's' : '' }}
+      <ng-container *ngIf="hasAnalyzing()">· analyse IA en cours…</ng-container>
+    </span>
   </section>
 
-  <!-- ======== liste ======== -->
-  @if (errorMsg) { <p class="lib-error">{{ errorMsg }}</p> }
-
-  <div class="lib-list">
-    @if (loading) {
-      <p class="lib-muted">Chargement…</p>
-    } @else if (!documents.length) {
-      <div class="lib-empty">
-        <svg lucideFileText [size]="30"></svg>
-        <p>Aucun document pour le moment — ajoute ton premier diplôme ou certificat ci-dessus.</p>
-      </div>
-    }
-
-    @for (d of documents; track trackById) {
-      <article class="lib-doc">
-        <span class="lib-doc-icon" [attr.data-kind]="d.kind">
-          @if (d.kind === 'diploma') { <svg lucideGraduationCap [size]="17"></svg> }
-          @else if (d.kind === 'certificate') { <svg lucideAward [size]="17"></svg> }
-          @else { <svg lucidePaperclip [size]="17"></svg> }
-        </span>
-        <div class="lib-doc-main">
-          <a class="lib-doc-name" [href]="d.path" target="_blank">{{ d.name }}</a>
-          <span class="lib-doc-meta">
-            {{ kindLabel(d.kind) }}
-            @if (d.size) { · {{ fmtSize(d.size) }} }
-            @if (d.createdAt) { · ajouté le {{ fmtDate(d.createdAt) }} }
-          </span>
+  <!-- ============ Zone d'upload ============ -->
+  <section
+    class="lib-drop"
+    [class.lib-drop--over]="dragOver"
+    [class.lib-drop--file]="pickFile"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+  >
+    <ng-container *ngIf="!pickFile; else fileReady">
+      <div class="lib-drop__icon"><svg lucideUpload [size]="26" aria-hidden="true"></svg></div>
+      <p class="lib-drop__title">Glisse ton document ici</p>
+      <p class="lib-drop__sub">PDF, DOC, DOCX, ODT, JPG, PNG, WebP — 10 Mo max</p>
+      <label class="lib-drop__btn">
+        <input type="file" [accept]="accept" (change)="onFilePick($event)" hidden />
+        Choisir un fichier
+      </label>
+    </ng-container>
+    <ng-template #fileReady>
+      <div class="lib-drop__file">
+        <div class="lib-drop__icon lib-drop__icon--file">
+          <svg lucideFileText [size]="24" aria-hidden="true"></svg>
         </div>
-        @if (confirmDeleteId === d.id) {
-          <button type="button" class="lib-doc-confirm" [disabled]="deletingId === d.id" (click)="doDelete(d)">
-            {{ deletingId === d.id ? '…' : 'Confirmer ?' }}
-          </button>
-          <button type="button" class="lib-doc-cancel" (click)="askDelete(d)"><svg lucideX [size]="13"></svg></button>
-        } @else {
-          <button type="button" class="lib-doc-del" (click)="askDelete(d)" title="Supprimer">
-            <svg lucideTrash2 [size]="15"></svg>
-          </button>
-        }
-      </article>
-    }
+        <div class="lib-drop__meta">
+          <p class="lib-drop__name">{{ pickFile?.name }}</p>
+          <p class="lib-drop__size">{{ fmtSize(pickFile?.size || 0) }}</p>
+        </div>
+        <select class="lib-select" [(ngModel)]="pickKind" aria-label="Type de document">
+          <option value="other">Type automatique (IA)</option>
+          <option value="diploma">Diplôme</option>
+          <option value="certificate">Certification</option>
+          <option value="other">Autre</option>
+        </select>
+        <button type="button" class="lib-btn" (click)="submit()" [disabled]="uploading">
+          <svg *ngIf="uploading" lucideLoader2 class="lib-spin" [size]="15" aria-hidden="true"></svg>
+          <svg *ngIf="!uploading" lucideSparkles [size]="15" aria-hidden="true"></svg>
+          {{ uploading ? 'Envoi + analyse…' : 'Analyser & ajouter' }}
+        </button>
+        <button type="button" class="lib-ghost" (click)="pickFile = null" aria-label="Annuler">
+          <svg lucideX [size]="16" aria-hidden="true"></svg>
+        </button>
+      </div>
+    </ng-template>
+    <p class="lib-error" *ngIf="uploadError">{{ uploadError }}</p>
+  </section>
+
+  <!-- ============ Toolbar ============ -->
+  <div class="lib-toolbar" *ngIf="!loading && documents.length">
+    <div class="lib-search">
+      <svg lucideSearch [size]="15" aria-hidden="true"></svg>
+      <input
+        type="text"
+        [(ngModel)]="q"
+        placeholder="Rechercher — titre, organisme, mot-clé…"
+        aria-label="Rechercher un document"
+      />
+      <button type="button" *ngIf="q" (click)="q = ''" aria-label="Effacer">
+        <svg lucideX [size]="13" aria-hidden="true"></svg>
+      </button>
+    </div>
+    <div class="lib-filters">
+      <button
+        type="button"
+        class="lib-pill"
+        [class.lib-pill--on]="kindFilter === 'all'"
+        (click)="kindFilter = 'all'"
+      >Tous</button>
+      <button
+        type="button"
+        class="lib-pill"
+        *ngFor="let k of kinds"
+        [class.lib-pill--on]="kindFilter === k"
+        (click)="kindFilter = k"
+      >{{ kindLabel(k) }}s</button>
+    </div>
   </div>
 
-  <app-back-button link="/candidat/overview" label="Tableau de bord" class="lib-back"></app-back-button>
+  <!-- ============ États ============ -->
+  <div class="lib-state" *ngIf="loading">
+    <svg lucideLoader2 class="lib-spin" [size]="22" aria-hidden="true"></svg>
+    <p>Chargement de ta bibliothèque…</p>
+  </div>
+  <div class="lib-state lib-state--error" *ngIf="errorMsg">{{ errorMsg }}</div>
+  <div class="lib-state" *ngIf="!loading && !documents.length && !errorMsg">
+    <p>Aucun document pour l'instant — dépose ton premier diplôme ci-dessus.</p>
+  </div>
+  <div class="lib-state" *ngIf="!loading && documents.length && !filtered().length">
+    <p>Aucun document ne correspond à « {{ q }} ».</p>
+  </div>
+
+  <!-- ============ Grille ============ -->
+  <div class="lib-grid" *ngIf="!loading && filtered().length">
+    <article class="lib-card" *ngFor="let d of filtered(); trackBy: trackById">
+      <!-- Miniature -->
+      <button type="button" class="lib-thumb" (click)="openPreview(d)" [attr.aria-label]="'Aperçu de ' + displayName(d)">
+        <app-doc-thumb [src]="d.path" [mime]="d.mime" [alt]="displayName(d)">
+          <svg lucideFileText [size]="34" aria-hidden="true"></svg>
+        </app-doc-thumb>
+        <span class="lib-thumb__overlay"><svg lucideEye [size]="16" aria-hidden="true"></svg></span>
+        <span class="lib-thumb__badge" *ngIf="aiTypeLabel(d)">{{ aiTypeLabel(d) }}</span>
+        <span class="lib-thumb__scan" *ngIf="d.aiStatus === 'analyzing'">
+          <svg lucideLoader2 class="lib-spin" [size]="14" aria-hidden="true"></svg>
+          Analyse IA…
+        </span>
+      </button>
+
+      <!-- Infos -->
+      <div class="lib-card__body">
+        <h3 class="lib-card__name" [title]="displayName(d)">{{ displayName(d) }}</h3>
+
+        <p class="lib-card__issuer" *ngIf="d.ai?.issuer">
+          <svg lucideBuilding2 [size]="12" aria-hidden="true"></svg>
+          {{ d.ai.issuer }}
+        </p>
+
+        <p class="lib-card__summary" *ngIf="d.ai?.summary">{{ d.ai.summary }}</p>
+
+        <div class="lib-card__dates" *ngIf="hasAiDates(d)">
+          <span *ngIf="d.ai.issueDate">
+            <svg lucideCalendarDays [size]="12" aria-hidden="true"></svg>
+            {{ fmtDate(d.ai.issueDate) }}
+          </span>
+          <span *ngIf="d.ai.expiryDate" class="lib-card__expiry">
+            expire {{ fmtDate(d.ai.expiryDate) }}
+          </span>
+        </div>
+
+        <div class="lib-card__tags" *ngIf="d.ai?.keywords?.length">
+          <span class="lib-tag" *ngFor="let k of d.ai.keywords.slice(0, 3)">{{ k }}</span>
+        </div>
+
+        <p class="lib-card__meta">
+          {{ fmtDate(d.createdAt) }} · {{ fmtSize(d.size) }}
+          <span class="lib-kind" [class.lib-kind--ai]="d.aiStatus === 'done'">{{ kindLabel(d.kind) }}</span>
+        </p>
+        <p class="lib-card__fail" *ngIf="d.aiStatus === 'failed'">
+          Analyse indisponible — renseigne les infos via le crayon.
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <footer class="lib-card__actions">
+        <button type="button" class="lib-act" (click)="openPreview(d)" [disabled]="!isPreviewable(d)" aria-label="Aperçu">
+          <svg lucideEye [size]="15" aria-hidden="true"></svg>
+        </button>
+        <a class="lib-act" [href]="d.path" target="_blank" rel="noopener" [attr.download]="d.name" aria-label="Télécharger">
+          <svg lucideDownload [size]="15" aria-hidden="true"></svg>
+        </a>
+        <button type="button" class="lib-act" (click)="openEdit(d)" aria-label="Modifier">
+          <svg lucidePencil [size]="15" aria-hidden="true"></svg>
+        </button>
+        <button type="button" class="lib-act lib-act--danger" (click)="askDelete(d)" aria-label="Supprimer">
+          <svg lucideTrash2 [size]="15" aria-hidden="true"></svg>
+        </button>
+        <span class="lib-confirm" *ngIf="confirmDeleteId === d.id">
+          Supprimer ?
+          <button type="button" class="lib-confirm__yes" (click)="doDelete(d)" [disabled]="deletingId === d.id">Oui</button>
+          <button type="button" class="lib-confirm__no" (click)="confirmDeleteId = ''">Non</button>
+        </span>
+      </footer>
+    </article>
+  </div>
+
+  <app-back-button link="/candidat/overview" label="Tableau de bord" class="lib-back" />
+
+  <!-- ============ Modal preview ============ -->
+  <div class="lib-modal" *ngIf="previewDoc" (click)="closePreview()">
+    <div class="lib-modal__box" (click)="$event.stopPropagation()">
+      <header class="lib-modal__head">
+        <h3>{{ displayName(previewDoc!) }}</h3>
+        <div class="lib-modal__actions">
+          <a class="lib-act" [href]="previewDoc!.path" target="_blank" rel="noopener" [attr.download]="previewDoc!.name" aria-label="Télécharger">
+            <svg lucideDownload [size]="15" aria-hidden="true"></svg>
+          </a>
+          <button type="button" class="lib-act" (click)="closePreview()" aria-label="Fermer">
+            <svg lucideX [size]="16" aria-hidden="true"></svg>
+          </button>
+        </div>
+      </header>
+      <div class="lib-modal__viewer">
+        <iframe *ngIf="previewDoc!.mime === 'application/pdf'" [src]="previewDoc!.path" title="Aperçu PDF"></iframe>
+        <img *ngIf="previewDoc!.mime.startsWith('image/')" [src]="previewDoc!.path" [alt]="displayName(previewDoc!)" />
+        <div class="lib-modal__no" *ngIf="!isPreviewable(previewDoc!)">
+          <svg lucideFileText [size]="40" aria-hidden="true"></svg>
+          <p>Aperçu indisponible pour ce format — télécharge le fichier pour l'ouvrir.</p>
+          <a class="lib-btn" [href]="previewDoc!.path" target="_blank" rel="noopener" [attr.download]="previewDoc!.name">
+            <svg lucideDownload [size]="15" aria-hidden="true"></svg>
+            Télécharger
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Modal édition ============ -->
+  <div class="lib-modal" *ngIf="editDoc" (click)="closeEdit()">
+    <div class="lib-modal__box lib-modal__box--edit" (click)="$event.stopPropagation()">
+      <header class="lib-modal__head">
+        <h3>Modifier le document</h3>
+        <button type="button" class="lib-act" (click)="closeEdit()" aria-label="Fermer">
+          <svg lucideX [size]="16" aria-hidden="true"></svg>
+        </button>
+      </header>
+      <div class="lib-edit">
+        <label class="lib-field">
+          <span>Nom du document</span>
+          <input type="text" class="lib-input" [(ngModel)]="editName" maxlength="200" />
+        </label>
+        <label class="lib-field">
+          <span>Type</span>
+          <select class="lib-select lib-select--full" [(ngModel)]="editKind">
+            <option value="diploma">Diplôme</option>
+            <option value="certificate">Certification</option>
+            <option value="other">Autre</option>
+          </select>
+        </label>
+        <label class="lib-field">
+          <span>Description</span>
+          <textarea class="lib-input lib-input--area" [(ngModel)]="editDescription" rows="3" maxlength="600" placeholder="Résumé ou note pour toi (pré-rempli par l'IA)"></textarea>
+        </label>
+        <div class="lib-edit__foot">
+          <button type="button" class="lib-ghost" (click)="closeEdit()">Annuler</button>
+          <button type="button" class="lib-btn" (click)="saveEdit()" [disabled]="savingEdit">
+            <svg *ngIf="savingEdit" lucideLoader2 class="lib-spin" [size]="14" aria-hidden="true"></svg>
+            <svg *ngIf="!savingEdit" lucideCheck [size]="14" aria-hidden="true"></svg>
+            {{ savingEdit ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

@@ -42,7 +42,7 @@ Your task: Greet the candidate briefly (use their name if provided). Then ask ex
       assistantText = await chatCompletion([
         { role: 'system', content: INTERVIEW_SYSTEM_PROMPT },
         { role: 'user', content: bootstrapUser },
-      ]);
+      ], { pool: 'interview' });
     } catch (err) {
       const { status, message } = mapLlmError(err);
       await InterviewSession.findByIdAndDelete(session._id);
@@ -149,7 +149,7 @@ export const sendInterviewMessage = async (req, res) => {
       try {
         assistantText = await chatCompletionStream(apiMessages, (delta) => {
           res.write(`data: ${JSON.stringify({ delta })}\n\n`);
-        });
+        }, { pool: 'interview' });
       } catch (err) {
         session.messages.pop();
         await session.save().catch(() => {});
@@ -173,7 +173,7 @@ export const sendInterviewMessage = async (req, res) => {
 
     let assistantText;
     try {
-      assistantText = await chatCompletion(apiMessages);
+      assistantText = await chatCompletion(apiMessages, { pool: 'interview' });
     } catch (err) {
       session.messages.pop();
       const { status, message } = mapLlmError(err);
@@ -223,7 +223,7 @@ export const completeInterviewSession = async (req, res) => {
           role: 'user',
           content: `Interview transcript:\n\n${transcript || '(no messages)'}`,
         },
-      ]);
+      ], { pool: 'interview' });
     } catch {
       recruiterSummary =
         'Automatic summary failed. Recruiters can still read the full transcript below.';
