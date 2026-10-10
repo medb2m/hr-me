@@ -1,0 +1,25 @@
+<div class="legal">
+  <header class="legal__hero">
+    <span class="legal__eyebrow">Al Wassit — Informations légales</span>
+    <h1>{{ doc.title }}</h1>
+    <p>{{ doc.subtitle }}</p>
+  </header>
+
+  <article class="legal__sheet">
+    @for (s of doc.sections; track s.heading) {
+      <section class="legal__section">
+        <h2>{{ s.heading }}</h2>
+        @for (p of s.paragraphs; track $index) {
+          <p>{{ p }}</p>
+        }
+        @if (s.list?.length) {
+          <ul>
+            @for (item of s.list; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  </article>
+</div>

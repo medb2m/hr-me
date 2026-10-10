@@ -1,12 +1,34 @@
 <footer class="site-footer">
   <div class="inner">
-    <span class="brand">Al Wassit</span>
-    <nav>
-      <a routerLink="/home">Accueil</a>
-      <a routerLink="/about">À propos</a>
-      <a routerLink="/services">Services</a>
-      <a routerLink="/jobs">Emplois</a>
-    </nav>
-    <p class="copy">© {{ year }} Al Wassit</p>
+    <div class="cols">
+      <div class="col col--brand">
+        <a routerLink="/home" class="brand">
+          <img src="/assets/img/al-wassit-logo.png" alt="Al Wassit" class="brand__logo" />
+        </a>
+        <p class="brand__tagline">
+          Établissement privé de placement à l'étranger — votre passerelle vers les
+          opportunités internationales.
+        </p>
+      </div>
+
+      <nav class="col col--nav" aria-label="Navigation">
+        <h3>Navigation</h3>
+        <a routerLink="/home">Accueil</a>
+        <a routerLink="/services">Services</a>
+        <a routerLink="/about">À propos</a>
+        <a routerLink="/jobs">Emplois</a>
+      </nav>
+
+      <nav class="col col--nav" aria-label="Informations légales">
+        <h3>Informations légales</h3>
+        <a routerLink="/mentions-legales">Mentions légales</a>
+        <a routerLink="/politique-confidentialite">Politique de confidentialité</a>
+        <a routerLink="/cgu">Conditions générales d'utilisation</a>
+      </nav>
+    </div>
+
+    <div class="bottom">
+      <p class="copy">© {{ year }} Al Wassit — Tous droits réservés.</p>
+    </div>
   </div>
 </footer>
