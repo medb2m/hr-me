@@ -1,4 +1,5 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { AuthService } from '../../../core/services/auth.service';
 
 /** Sections du dossier — chacune est « complétée » uniquement si elle contient de vraies données. */
 export interface ClientProfileSections {
@@ -31,6 +32,8 @@ export interface ProfileChecklistItem {
 
 @Injectable({ providedIn: 'root' })
 export class ClientProfileStateService {
+  private readonly auth = inject(AuthService);
+
   /** URL photo (chemin `/uploads/...` ou `assets/...`) ; null = à compléter. */
   readonly profilePhotoUrl = signal<string | null>(null);
   /** Date de naissance ISO ou affichage court ; null = manquant. */
@@ -164,6 +167,13 @@ export class ClientProfileStateService {
     this.profilePhotoUrl.set(str('profilePhotoUrl'));
     this.prenom.set(str('prenom'));
     this.nom.set(str('nom'));
+
+    // Le nom du compte (sidebar, e-mails) suit « Prénom Nom » du dossier.
+    const p = this.prenom();
+    const n = this.nom();
+    if (p && n) {
+      this.auth.updateStoredUser({ name: `${p} ${n}` });
+    }
 
     if ('birthDate' in d) {
       const bd = d['birthDate'];

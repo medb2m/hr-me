@@ -7,6 +7,22 @@ import {
 import { uploadsPublicPath } from '../../helpers/upload-basics.js';
 import { safeUnlinkUpload } from '../../helpers/upload-fs.js';
 import { cleanPersonNameInput } from '../../helpers/person-name.js';
+import { User } from '../../models/user.model.js';
+
+/**
+ * Le nom du compte (login, sidebar, e-mails) suit toujours « Prénom Nom »
+ * du dossier — dès que les deux sont renseignés, `User.name` est aligné.
+ * Sert aussi à réparer les comptes dont le nom est resté celui du register.
+ */
+async function syncAccountName(userId, profile) {
+  const prenom = String(profile?.prenom || '').trim();
+  const nom = String(profile?.nom || '').trim();
+  if (!prenom || !nom) {
+    return;
+  }
+  const full = `${prenom} ${nom}`;
+  await User.updateOne({ _id: userId, name: { $ne: full } }, { $set: { name: full } });
+}
 
 const CLIENT_UPLOAD_PREFIX = '/uploads/client-profiles/';
 
@@ -34,6 +50,8 @@ function pushPhotoHistory(profile, url) {
 export async function getProfile(req, res) {
   try {
     const profile = await ensureClientProfileForUser(req.user.id);
+    // Auto-répare le nom du compte si le dossier a déjà une identité complète.
+    await syncAccountName(req.user.id, profile);
     return res.json({ profile: profile.toObject() });
   } catch (err) {
     console.error('[client/profile] getProfile', err);
@@ -247,6 +265,7 @@ export async function patchProfile(req, res) {
     // Drapeaux de complétion toujours dérivés des données réelles.
     profile.sectionFlags = deriveSectionFlags(profile);
     await profile.save();
+    await syncAccountName(req.user.id, profile);
     return res.json({ profile: profile.toObject() });
   } catch (err) {
     console.error('[client/profile] patchProfile', err);
