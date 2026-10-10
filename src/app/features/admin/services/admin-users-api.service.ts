@@ -11,6 +11,7 @@ export interface AdminUser {
   emailVerified: boolean;
   pendingEmail: string | null;
   timeZone: string | null;
+  avatarUrl: string;
   createdAt?: string;
   updatedAt?: string;
 }

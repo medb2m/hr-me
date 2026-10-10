@@ -22,13 +22,13 @@
   <div class="user-area">
     <button type="button" class="user-trigger" (click)="dropdownOpen = !dropdownOpen"
             aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen">
-      <span class="u-avatar" aria-hidden="true">{{ initials() }}<img src="/assets/img/default-avatar.jpg" alt="" class="u-avatar__img" /></span>
+      <span class="u-avatar" aria-hidden="true"><img [src]="auth.user()?.avatarUrl || '/assets/img/default-avatar.jpg'" alt="" class="u-avatar__img" /></span>
       <span class="u-name">{{ displayName() }}</span>
       <svg lucideChevronDown [size]="14" class="caret" [class.caret--open]="dropdownOpen" aria-hidden="true"></svg>
     </button>
     <div class="u-dropdown" *ngIf="dropdownOpen" role="menu">
       <div class="u-head">
-        <span class="u-avatar u-avatar--lg" aria-hidden="true">{{ initials() }}<img src="/assets/img/default-avatar.jpg" alt="" class="u-avatar__img" /></span>
+        <span class="u-avatar u-avatar--lg" aria-hidden="true"><img [src]="auth.user()?.avatarUrl || '/assets/img/default-avatar.jpg'" alt="" class="u-avatar__img" /></span>
         <div>
           <p class="u-fullname">{{ displayName() }}</p>
           <p class="u-mail">{{ auth.user()?.email }}</p>

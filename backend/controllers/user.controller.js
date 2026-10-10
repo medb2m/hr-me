@@ -22,6 +22,7 @@ function publicUser(u) {
     emailVerified: Boolean(u.emailVerified),
     pendingEmail: u.pendingEmail || null,
     timeZone: u.timeZone || null,
+    avatarUrl: u.avatarUrl || '',
     createdAt: u.createdAt,
   };
 }
@@ -206,6 +207,68 @@ export async function confirmEmailChange(req, res) {
   } catch (err) {
     console.error('[users] confirmEmailChange', err);
     return res.status(500).json({ message: err.message || 'Confirmation failed.' });
+  }
+}
+
+/**
+ * POST /api/users/me/avatar — multipart `photo` (JPEG/PNG/WebP ≤ 2 Mo).
+ * Enregistre le fichier sous /uploads/avatars et le définit comme photo de compte.
+ */
+export async function uploadAvatar(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Aucune image reçue (champ « photo »).' });
+    }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    user.avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    await user.save();
+    return res.json({ user: publicUser(user) });
+  } catch (err) {
+    console.error('[users/me] uploadAvatar', err);
+    return res.status(500).json({ message: err.message || 'Upload failed.' });
+  }
+}
+
+/**
+ * PUT /api/users/me/avatar — body `{ url }` : réutilise une image déjà
+ * servie par l'app (ex. une photo de l'historique du dossier candidat).
+ * Seuls les chemins internes `/uploads/…` ou `/img/…` sont acceptés.
+ */
+export async function setAvatarFromUrl(req, res) {
+  try {
+    const url = typeof req.body?.url === 'string' ? req.body.url.trim() : '';
+    if (!/^\/(uploads|img)\/[\w\-./]+$/i.test(url) || url.includes('..')) {
+      return res.status(400).json({ message: 'URL de photo invalide.' });
+    }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    user.avatarUrl = url;
+    await user.save();
+    return res.json({ user: publicUser(user) });
+  } catch (err) {
+    console.error('[users/me] setAvatarFromUrl', err);
+    return res.status(500).json({ message: err.message || 'Update failed.' });
+  }
+}
+
+/** DELETE /api/users/me/avatar — revient à la photo par défaut. */
+export async function removeAvatar(req, res) {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    user.avatarUrl = '';
+    await user.save();
+    return res.json({ user: publicUser(user) });
+  } catch (err) {
+    console.error('[users/me] removeAvatar', err);
+    return res.status(500).json({ message: err.message || 'Update failed.' });
   }
 }
 

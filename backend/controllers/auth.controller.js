@@ -154,7 +154,7 @@ export async function login(req, res) {
         email: user.email,
         name: user.name || '',
         role: user.role,
-        emailVerified: Boolean(user.emailVerified),
+                avatarUrl: user.avatarUrl || '',
       },
     });
   } catch (err) {
@@ -503,7 +503,7 @@ export async function bootstrapAdmin(req, res) {
         email: user.email,
         name: user.name || '',
         role: user.role,
-        emailVerified: Boolean(user.emailVerified),
+                avatarUrl: user.avatarUrl || '',
       },
     });
   } catch (err) {
@@ -555,7 +555,7 @@ export async function adminLogin(req, res) {
         email: user.email,
         name: user.name || '',
         role: user.role,
-        emailVerified: Boolean(user.emailVerified),
+                avatarUrl: user.avatarUrl || '',
       },
     });
   } catch (err) {

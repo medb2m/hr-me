@@ -10,6 +10,8 @@ export interface AuthUser {
   name?: string;
   role: string;
   emailVerified?: boolean;
+  /** Photo de compte (chemin `/uploads/…`) — '' si non définie. */
+  avatarUrl?: string;
 }
 
 @Injectable({ providedIn: 'root' })

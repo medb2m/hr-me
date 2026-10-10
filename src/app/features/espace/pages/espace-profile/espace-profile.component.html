@@ -1,6 +1,6 @@
 <div class="profile-page">
   <header class="profile-hero">
-    <div class="ph-avatar" aria-hidden="true">{{ initials() }}<img src="/assets/img/default-avatar.jpg" alt="" class="ph-avatar__img" /></div>
+    <div class="ph-avatar" aria-hidden="true"><img [src]="auth.user()?.avatarUrl || '/assets/img/default-avatar.jpg'" alt="" class="ph-avatar__img" /></div>
     <div class="ph-text">
       <h1>{{ displayName() }}</h1>
       <p class="ph-mail"><svg lucideMail [size]="14" aria-hidden="true"></svg> {{ auth.user()?.email }}</p>

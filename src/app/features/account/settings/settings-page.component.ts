@@ -8,6 +8,7 @@ import {
   LucideCircleCheck,
   LucideEye,
   LucideEyeOff,
+  LucideImage,
   LucideKeyRound,
   LucideMail,
   LucideSettings,
@@ -16,7 +17,11 @@ import {
 } from '@lucide/angular';
 import { AuthService } from '../../../core/services/auth.service';
 import { BackButtonComponent } from '../../../shared/components/back-button/back-button.component';
+import { ProfilePhotoUploadComponent } from '../../../shared/components/profile-photo-upload/profile-photo-upload.component';
+import { ClientProfileApiService } from '../../client/services/client-profile-api.service';
 import { AccountApiService, AccountUser } from '../services/account-api.service';
+
+const DEFAULT_AVATAR = '/assets/img/default-avatar.jpg';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Administrateur',
@@ -60,7 +65,9 @@ const TIMEZONES = [
     LucideSettings,
     LucideTriangleAlert,
     LucideUserRound,
+    LucideImage,
     BackButtonComponent,
+    ProfilePhotoUploadComponent,
   ],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.css',
@@ -68,6 +75,7 @@ const TIMEZONES = [
 export class SettingsPageComponent implements OnInit {
   private readonly api = inject(AccountApiService);
   private readonly auth = inject(AuthService);
+  private readonly clientApi = inject(ClientProfileApiService);
   private readonly destroyRef = inject(DestroyRef);
 
   account: AccountUser | null = null;
@@ -100,6 +108,13 @@ export class SettingsPageComponent implements OnInit {
   passwordMsg = '';
   passwordError = '';
 
+  // Photo du compte
+  avatarBusy = false;
+  avatarMsg = '';
+  avatarError = '';
+  /** Photos déjà uploadées dans le dossier candidat (client/candidate uniquement). */
+  historyPhotos: Array<{ _id: string; url: string }> = [];
+
   ngOnInit(): void {
     this.api
       .getMe()
@@ -108,7 +123,10 @@ export class SettingsPageComponent implements OnInit {
         finalize(() => (this.loading = false)),
       )
       .subscribe({
-        next: ({ user }) => this.applyUser(user),
+        next: ({ user }) => {
+          this.applyUser(user);
+          this.loadHistoryPhotos();
+        },
         error: () => (this.loadError = 'Impossible de charger votre compte.'),
       });
   }
@@ -130,6 +148,85 @@ export class SettingsPageComponent implements OnInit {
     const d = this.account?.createdAt;
     if (!d) return '';
     return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(d));
+  }
+
+  // ---------- Photo du compte ----------
+
+  get avatarSrc(): string {
+    return this.account?.avatarUrl || DEFAULT_AVATAR;
+  }
+
+  get isDossierRole(): boolean {
+    const r = this.account?.role;
+    return r === 'client' || r === 'candidate';
+  }
+
+  media(url: string): string {
+    return this.clientApi.resolveMediaUrl(url) ?? '';
+  }
+
+  trackHistoryId(_i: number, h: { _id: string }): string {
+    return h._id;
+  }
+
+  onAvatarUpload(file: File): void {
+    this.avatarBusy = true;
+    this.avatarMsg = '';
+    this.avatarError = '';
+    this.api
+      .uploadAvatar(file)
+      .pipe(finalize(() => (this.avatarBusy = false)))
+      .subscribe({
+        next: ({ user }) => this.applyAvatar(user, 'Photo de compte enregistrée.'),
+        error: (err) => (this.avatarError = err.error?.message || 'Envoi impossible.'),
+      });
+  }
+
+  onAvatarRemove(): void {
+    this.avatarBusy = true;
+    this.avatarMsg = '';
+    this.avatarError = '';
+    this.api
+      .removeAvatar()
+      .pipe(finalize(() => (this.avatarBusy = false)))
+      .subscribe({
+        next: ({ user }) => this.applyAvatar(user, 'Photo supprimée — photo par défaut restaurée.'),
+        error: (err) => (this.avatarError = err.error?.message || 'Suppression impossible.'),
+      });
+  }
+
+  pickHistoryPhoto(url: string): void {
+    if (this.avatarBusy || this.account?.avatarUrl === url) return;
+    this.avatarBusy = true;
+    this.avatarMsg = '';
+    this.avatarError = '';
+    this.api
+      .setAvatar(url)
+      .pipe(finalize(() => (this.avatarBusy = false)))
+      .subscribe({
+        next: ({ user }) => this.applyAvatar(user, 'Photo de compte enregistrée.'),
+        error: (err) => (this.avatarError = err.error?.message || 'Sélection impossible.'),
+      });
+  }
+
+  private applyAvatar(user: AccountUser, msg: string): void {
+    this.account = user;
+    this.auth.updateStoredUser({ avatarUrl: user.avatarUrl });
+    this.avatarMsg = msg;
+  }
+
+  private loadHistoryPhotos(): void {
+    if (!this.isDossierRole) return;
+    this.clientApi
+      .getProfile()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ profile }) => {
+          const h = profile.profilePhotoHistory ?? [];
+          this.historyPhotos = [...h].reverse();
+        },
+        error: () => {},
+      });
   }
 
   saveProfile(): void {

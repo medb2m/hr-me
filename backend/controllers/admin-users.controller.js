@@ -16,6 +16,7 @@ function publicUser(u) {
     emailVerified: Boolean(u.emailVerified),
     pendingEmail: u.pendingEmail || null,
     timeZone: u.timeZone || null,
+    avatarUrl: u.avatarUrl || '',
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,
   };

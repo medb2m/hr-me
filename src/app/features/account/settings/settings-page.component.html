@@ -15,7 +15,7 @@
   <ng-container *ngIf="account && !loading">
     <!-- Identity strip -->
     <section class="identity-card">
-      <div class="avatar" aria-hidden="true">{{ initials }}<img src="/assets/img/default-avatar.jpg" alt="" class="avatar__img" /></div>
+      <div class="avatar" aria-hidden="true"><img [src]="avatarSrc" alt="" class="avatar__img" /></div>
       <div class="identity-info">
         <div class="identity-name">{{ account.name || 'Sans nom' }}</div>
         <div class="identity-email">{{ account.email }}</div>
@@ -31,6 +31,54 @@
     </section>
 
     <div class="cards">
+      <!-- ============ PHOTO DU COMPTE ============ -->
+      <section class="card">
+        <h2 class="card-title"><svg lucideImage [size]="18" aria-hidden="true"></svg> Photo du compte</h2>
+
+        <div class="alert alert--error" *ngIf="avatarError">{{ avatarError }}</div>
+        <div class="alert alert--ok" *ngIf="avatarMsg"><svg lucideCircleCheck [size]="15" aria-hidden="true"></svg> {{ avatarMsg }}</div>
+
+        <div class="avatar-current">
+          <img [src]="avatarSrc" alt="Votre photo de compte" class="avatar-current__img" />
+          <div class="avatar-current__meta">
+            <strong>{{ account.avatarUrl ? 'Photo personnalisée' : 'Photo par défaut' }}</strong>
+            <p>
+              Affichée dans la barre de navigation et votre espace.
+              {{ account.avatarUrl ? '' : 'Ajoutez la vôtre pour personnaliser votre compte.' }}
+            </p>
+          </div>
+        </div>
+
+        <app-profile-photo-upload
+          [uploading]="avatarBusy"
+          [errorMessage]="''"
+          [hasServerPhoto]="!!account.avatarUrl"
+          (upload)="onAvatarUpload($event)"
+          (removeServer)="onAvatarRemove()"
+          (validFileSelected)="avatarError = ''"
+        />
+
+        <div class="avatar-history" *ngIf="historyPhotos.length">
+          <p class="avatar-history__label">Ou choisir parmi les photos de votre dossier :</p>
+          <div class="avatar-history__grid">
+            <button
+              type="button"
+              class="avatar-history__item"
+              *ngFor="let h of historyPhotos; trackBy: trackHistoryId"
+              [class.is-active]="account.avatarUrl === h.url"
+              [disabled]="avatarBusy"
+              (click)="pickHistoryPhoto(h.url)"
+              [attr.aria-label]="'Définir cette photo comme photo de compte'"
+            >
+              <img [src]="media(h.url)" alt="" loading="lazy" />
+              <span class="avatar-history__check" *ngIf="account.avatarUrl === h.url" aria-hidden="true">
+                <svg lucideBadgeCheck [size]="14"></svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- ============ PROFILE ============ -->
       <section class="card">
         <h2 class="card-title"><svg lucideUserRound [size]="18" aria-hidden="true"></svg> Informations personnelles</h2>

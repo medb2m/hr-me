@@ -11,6 +11,7 @@ export interface AccountUser {
   emailVerified: boolean;
   pendingEmail: string | null;
   timeZone: string | null;
+  avatarUrl: string;
   createdAt?: string;
 }
 
@@ -46,6 +47,22 @@ export class AccountApiService {
       `${this.base}/me/password`,
       body,
     );
+  }
+
+  /** Photo de compte — upload d'un nouveau fichier (multipart `photo`). */
+  uploadAvatar(file: File): Observable<{ user: AccountUser }> {
+    const body = new FormData();
+    body.append('photo', file);
+    return this.http.post<{ user: AccountUser }>(`${this.base}/me/avatar`, body);
+  }
+
+  /** Photo de compte — réutilise une image déjà servie (`/uploads/…`, ex. historique CV). */
+  setAvatar(url: string): Observable<{ user: AccountUser }> {
+    return this.http.put<{ user: AccountUser }>(`${this.base}/me/avatar`, { url });
+  }
+
+  removeAvatar(): Observable<{ user: AccountUser }> {
+    return this.http.delete<{ user: AccountUser }>(`${this.base}/me/avatar`);
   }
 
   confirmEmailChange(token: string): Observable<{ user: AccountUser; message: string }> {

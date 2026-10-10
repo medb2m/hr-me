@@ -34,6 +34,8 @@ const userSchema = new mongoose.Schema(
     emailChangeExpires: { type: Date, default: null },
     /** IANA zone for calendar / meeting display (e.g. Africa/Tunis). */
     timeZone: { type: String, trim: true, default: null },
+    /** Photo de compte — chemin servi sous `/uploads/…` (upload ou issue de l'historique CV). */
+    avatarUrl: { type: String, trim: true, default: '' },
   },
   { timestamps: true }
 );
