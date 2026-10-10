@@ -76,4 +76,59 @@ router.post('/generate-letter', requireAuth, async (req, res) => {
   }
 });
 
+const PROFILE_SKILLS_SYSTEM = `Tu es un expert en recrutement international.
+À partir du profil d'un candidat (accroche, métiers exercés, compétences déjà listées),
+propose de 8 à 12 compétences clés pertinentes qui ne figurent PAS déjà dans la liste.
+Réponds UNIQUEMENT avec un tableau JSON de chaînes courtes (2 à 5 mots), ex.
+["Soudure TIG","Lecture de plan","Hygiène hospitalière"]. Pas de texte autour.`;
+
+/**
+ * POST /api/ai/suggest-profile-skills — suggestions IA de compétences pour un profil.
+ * Body: { headline?, jobs[]?, existing[]?, kind? } → { skills: string[] }.
+ */
+router.post('/suggest-profile-skills', requireAuth, async (req, res) => {
+  try {
+    const headline = String(req.body?.headline || '').trim().slice(0, 1000);
+    const jobs = (Array.isArray(req.body?.jobs) ? req.body.jobs : [])
+      .map((j) => String(j || '').trim().slice(0, 80))
+      .filter(Boolean)
+      .slice(0, 10);
+    const existing = (Array.isArray(req.body?.existing) ? req.body.existing : [])
+      .map((s) => String(s || '').trim().slice(0, 60))
+      .filter(Boolean)
+      .slice(0, 40);
+    const kind = req.body?.kind === 'digital' ? 'digital' : 'skill';
+    if (!headline && !jobs.length && !existing.length) {
+      return res.status(400).json({ message: 'Ajoutez quelques informations au profil d’abord.' });
+    }
+    const ctx = [
+      kind === 'digital'
+        ? 'Type de compétences à proposer : NUMÉRIQUES (logiciels, outils, bureautique).'
+        : 'Type de compétences à proposer : MÉTIER (hard skills, savoir-faire).',
+      headline ? `Accroche du candidat : ${headline}` : '',
+      jobs.length ? `Métiers / expériences : ${jobs.join(' · ')}` : '',
+      existing.length ? `Déjà listées (à exclure) : ${existing.join(', ')}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+    const raw = await chatCompletion([
+      { role: 'system', content: PROFILE_SKILLS_SYSTEM },
+      { role: 'user', content: ctx },
+    ]);
+    let skills = [];
+    try {
+      const m = raw.match(/\[[\s\S]*\]/);
+      const arr = m ? JSON.parse(m[0]) : [];
+      skills = arr.map((s) => String(s).trim()).filter(Boolean).slice(0, 15);
+    } catch {
+      skills = [];
+    }
+    return res.json({ skills });
+  } catch (err) {
+    console.error('[ai/suggest-profile-skills]', err);
+    const status = err.statusCode || 500;
+    return res.status(status).json({ message: err.message || 'Suggestion impossible.' });
+  }
+});
+
 export default router;

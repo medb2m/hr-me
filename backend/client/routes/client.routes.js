@@ -9,6 +9,7 @@ import * as clientProfile from '../controllers/client-profile.controller.js';
 import * as clientCv from '../controllers/client-cv.controller.js';
 import * as clientCl from '../controllers/client-cl.controller.js';
 import * as clientDocs from '../controllers/client-documents.controller.js';
+import * as clientSkills from '../controllers/client-skills.controller.js';
 
 const router = Router();
 
@@ -54,5 +55,8 @@ router.post(
   clientDocs.uploadDocument,
 );
 router.delete('/documents/:id', clientDocs.deleteDocument);
+
+router.get('/skill-library', clientSkills.listSkillSuggestions);
+router.post('/skill-library/register', clientSkills.registerSkill);
 
 export default router;

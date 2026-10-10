@@ -1,0 +1,88 @@
+/** Données statiques de la page compétences — langues + libellés de catégories. */
+
+export const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Langue maternelle'];
+
+/** Libellés FR des catégories de la bibliothèque (backend `skills-seed`). */
+export const SKILL_CATEGORY_LABELS: Record<string, string> = {
+  sante: 'Santé',
+  btp: 'BTP',
+  industrie: 'Industrie',
+  it: 'Informatique',
+  hotellerie: 'Hôtellerie',
+  transport: 'Logistique',
+  finance: 'Finance',
+  agriculture: 'Agriculture',
+  commerce: 'Commerce',
+  services: 'Services',
+  soft: 'Savoir-être',
+  digital: 'Numérique',
+  autre: 'Autre',
+};
+
+export interface LanguageOption {
+  code: string;
+  name: string;
+}
+
+/** Langues les plus demandées en mobilité internationale. */
+export const LANGUAGES: LanguageOption[] = [
+  { code: 'fr', name: 'Français' },
+  { code: 'ar', name: 'Arabe' },
+  { code: 'en', name: 'Anglais' },
+  { code: 'es', name: 'Espagnol' },
+  { code: 'de', name: 'Allemand' },
+  { code: 'it', name: 'Italien' },
+  { code: 'pt', name: 'Portugais' },
+  { code: 'nl', name: 'Néerlandais' },
+  { code: 'pl', name: 'Polonais' },
+  { code: 'ro', name: 'Roumain' },
+  { code: 'ru', name: 'Russe' },
+  { code: 'tr', name: 'Turc' },
+  { code: 'zh', name: 'Chinois (mandarin)' },
+  { code: 'uk', name: 'Ukrainien' },
+  { code: 'el', name: 'Grec' },
+  { code: 'sv', name: 'Suédois' },
+  { code: 'no', name: 'Norvégien' },
+  { code: 'da', name: 'Danois' },
+  { code: 'fi', name: 'Finnois' },
+  { code: 'cs', name: 'Tchèque' },
+  { code: 'sk', name: 'Slovaque' },
+  { code: 'hu', name: 'Hongrois' },
+  { code: 'bg', name: 'Bulgare' },
+  { code: 'hr', name: 'Croate' },
+  { code: 'sr', name: 'Serbe' },
+  { code: 'sq', name: 'Albanais' },
+  { code: 'he', name: 'Hébreu' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'ur', name: 'Ourdou' },
+  { code: 'fa', name: 'Persan' },
+  { code: 'sw', name: 'Swahili' },
+  { code: 'am', name: 'Amharique' },
+  { code: 'ja', name: 'Japonais' },
+  { code: 'ko', name: 'Coréen' },
+  { code: 'vi', name: 'Vietnamien' },
+  { code: 'th', name: 'Thaï' },
+  { code: 'id', name: 'Indonésien' },
+  { code: 'ms', name: 'Malais' },
+  { code: 'tl', name: 'Tagalog' },
+  { code: 'ta', name: 'Tamoul' },
+  { code: 'bn', name: 'Bengali' },
+  { code: 'pa', name: 'Pendjabi' },
+  { code: 'ka', name: 'Géorgien' },
+  { code: 'hy', name: 'Arménien' },
+  { code: 'az', name: 'Azéri' },
+  { code: 'kk', name: 'Kazakh' },
+  { code: 'uz', name: 'Ouzbek' },
+  { code: 'lv', name: 'Letton' },
+  { code: 'lt', name: 'Lituanien' },
+  { code: 'et', name: 'Estonien' },
+  { code: 'is', name: 'Islandais' },
+  { code: 'mt', name: 'Maltais' },
+  { code: 'lb', name: 'Luxembourgeois' },
+  { code: 'ga', name: 'Irlandais' },
+  { code: 'ca', name: 'Catalan' },
+  { code: 'eu', name: 'Basque' },
+  { code: 'ber', name: 'Tamazight (berbère)' },
+  { code: 'wo', name: 'Wolof' },
+  { code: 'ha', name: 'Haoussa' },
+];

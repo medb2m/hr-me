@@ -1,18 +1,254 @@
-<div class="ep">
-  <h1 class="ep-title">Compétences & langues</h1>
-  <p class="ep-lead">
-    Auto-évaluation alignée CEFR pour les langues, grille pour les compétences numériques (démo).
-  </p>
-  <div class="ep-grid">
-    <div class="ep-card">
-      <h2>Langues</h2>
-      <p>Ex. Français C2 · Anglais B2 — à renseigner</p>
-    </div>
-    <div class="ep-card">
-      <h2>Numérique</h2>
-      <p>Bureautique, collaboration en ligne, sécurité — à renseigner</p>
-    </div>
+<div class="sk">
+  <!-- ============ Bannière ============ -->
+  <section class="sk-hero">
+    <span class="sk-hero__eyebrow">Mon dossier</span>
+    <h1 class="sk-hero__title">Compétences &amp; langues</h1>
+    <p class="sk-hero__lead">
+      Listez vos savoir-faire et langues parlées — ils alimentent vos CV, lettres et candidatures.
+      Plus votre profil est riche, plus l'agence peut vous proposer les bonnes offres.
+    </p>
+    <span class="sk-hero__stat">
+      {{ totalCount() }} élément{{ totalCount() > 1 ? 's' : '' }} dans votre profil
+    </span>
+  </section>
+
+  <!-- ============ États ============ -->
+  <div class="sk-state" *ngIf="loading">
+    <svg lucideLoader2 class="sk-spin" [size]="22" aria-hidden="true"></svg>
+    <p>Chargement de votre profil…</p>
   </div>
-  <a routerLink="/candidat/explore" class="ep-link">Explorer les offres →</a>
-  <app-back-button link="/candidat/overview" label="Tableau de bord" class="ep-link ep-link--block"></app-back-button>
+  <div class="sk-state sk-state--error" *ngIf="!loading && loadError">
+    <p>{{ loadError }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading && !loadError">
+    <!-- ============ Cartes compétences ============ -->
+    <div class="sk-grid">
+      <section class="sk-card" *ngFor="let sec of sections">
+        <header class="sk-card__head">
+          <span class="sk-card__icon">
+            <svg *ngIf="sec.kind === 'skills'" lucideBriefcase [size]="20" aria-hidden="true"></svg>
+            <svg *ngIf="sec.kind === 'digitalSkills'" lucideMonitor [size]="20" aria-hidden="true"></svg>
+          </span>
+          <div class="sk-card__titles">
+            <h2>{{ sec.title }}</h2>
+            <p>{{ sec.sub }}</p>
+          </div>
+          <span class="sk-card__count">{{ selectedFor(sec.kind).length }}</span>
+        </header>
+
+        <!-- Champ + autocomplétion bibliothèque -->
+        <div class="sk-field">
+          <input
+            type="text"
+            class="sk-input"
+            [placeholder]="sec.placeholder"
+            [(ngModel)]="panels[sec.kind].input"
+            (input)="onSkillInput(sec.kind)"
+            (focus)="onSkillFocus(sec.kind)"
+            (blur)="onSkillBlur(sec.kind)"
+            (keydown)="onSkillKeydown(sec.kind, $event)"
+            role="combobox"
+            [attr.aria-expanded]="panels[sec.kind].open"
+            [attr.aria-label]="'Ajouter une ' + sec.title.toLowerCase()"
+          />
+          <button
+            type="button"
+            class="sk-field-add"
+            (mousedown)="$event.preventDefault(); addSkill(sec.kind, panels[sec.kind].input)"
+            [disabled]="!panels[sec.kind].input.trim()"
+            aria-label="Ajouter"
+          >
+            <svg lucidePlus [size]="16" aria-hidden="true"></svg>
+          </button>
+          <ul
+            class="sk-drop"
+            role="listbox"
+            *ngIf="panels[sec.kind].open && panels[sec.kind].list.length"
+          >
+            <li
+              *ngFor="let s of panels[sec.kind].list; let i = index"
+              role="option"
+              [attr.aria-selected]="i === panels[sec.kind].hi"
+              [class.sk-drop__item--hi]="i === panels[sec.kind].hi"
+              class="sk-drop__item"
+              (mousedown)="$event.preventDefault(); addSkill(sec.kind, s.label)"
+            >
+              <span class="sk-drop__label">{{ s.label }}</span>
+              <span class="sk-drop__cat">{{ categoryLabel(s.category) }}</span>
+            </li>
+          </ul>
+        </div>
+        <p class="sk-hint">Entrée pour ajouter — les nouveautés enrichissent la bibliothèque.</p>
+
+        <!-- Suggestions IA -->
+        <div class="sk-ai">
+          <button
+            type="button"
+            class="sk-ai-btn"
+            (click)="suggestWithAi(sec.kind)"
+            [disabled]="aiBusy[sec.kind]"
+          >
+            <svg *ngIf="aiBusy[sec.kind]" lucideLoader2 class="sk-spin" [size]="15" aria-hidden="true"></svg>
+            <svg *ngIf="!aiBusy[sec.kind]" lucideSparkles [size]="15" aria-hidden="true"></svg>
+            {{ aiBusy[sec.kind] ? 'Réflexion en cours…' : sec.aiTitle }}
+          </button>
+          <div class="sk-ai-list" *ngIf="aiList[sec.kind].length">
+            <button
+              type="button"
+              class="sk-chip sk-chip--ai"
+              *ngFor="let s of aiList[sec.kind]"
+              (click)="acceptAi(sec.kind, s)"
+            >
+              <svg lucideSparkles [size]="12" aria-hidden="true"></svg>
+              {{ s }}
+              <svg lucidePlus [size]="13" aria-hidden="true"></svg>
+            </button>
+          </div>
+          <p class="sk-ai-done" *ngIf="aiDone[sec.kind] && !aiList[sec.kind].length && !aiBusy[sec.kind]">
+            Aucune nouvelle suggestion — tout est déjà dans votre liste.
+          </p>
+        </div>
+
+        <!-- Suggestions populaires -->
+        <div class="sk-pop" *ngIf="popularFor(sec.kind).length">
+          <span class="sk-label">Populaires</span>
+          <div class="sk-pop__row">
+            <button
+              type="button"
+              class="sk-chip sk-chip--ghost"
+              *ngFor="let s of popularFor(sec.kind)"
+              (click)="addSkill(sec.kind, s)"
+            >
+              <svg lucidePlus [size]="13" aria-hidden="true"></svg>
+              {{ s }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Sélection -->
+        <div class="sk-selected" *ngIf="selectedFor(sec.kind).length; else emptySkills">
+          <span class="sk-chip sk-chip--on" *ngFor="let s of selectedFor(sec.kind); let i = index">
+            {{ s }}
+            <button
+              type="button"
+              class="sk-chip__x"
+              (click)="removeSkill(sec.kind, i)"
+              [attr.aria-label]="'Retirer ' + s"
+            >
+              <svg lucideX [size]="13" aria-hidden="true"></svg>
+            </button>
+          </span>
+        </div>
+        <ng-template #emptySkills>
+          <p class="sk-empty">
+            Aucune compétence pour l'instant — tapez ci-dessus, piochez dans les
+            suggestions ou laissez l'IA vous aider.
+          </p>
+        </ng-template>
+      </section>
+
+      <!-- ============ Carte langues ============ -->
+      <section class="sk-card sk-card--langs">
+        <header class="sk-card__head">
+          <span class="sk-card__icon"><svg lucideLanguages [size]="20" aria-hidden="true"></svg></span>
+          <div class="sk-card__titles">
+            <h2>Langues parlées</h2>
+            <p>Niveau auto-évalué selon l'échelle européenne (A1 → C2).</p>
+          </div>
+          <span class="sk-card__count">{{ languages.length }}</span>
+        </header>
+
+        <!-- Ligne d'ajout -->
+        <div class="sk-lang-add">
+          <input
+            type="text"
+            class="sk-input"
+            list="sk-langs"
+            placeholder="Ex. Français, Anglais…"
+            [(ngModel)]="langInput"
+            (keydown.enter)="addLanguage()"
+            aria-label="Langue"
+          />
+          <datalist id="sk-langs">
+            <option *ngFor="let l of languageOptions" [value]="l.name"></option>
+          </datalist>
+          <select class="sk-select" [(ngModel)]="langLevel" aria-label="Niveau CECR">
+            <option *ngFor="let lv of cefrLevels" [value]="lv">{{ lv }}</option>
+          </select>
+          <button
+            type="button"
+            class="sk-field-add"
+            (click)="addLanguage()"
+            [disabled]="!langInput.trim()"
+            aria-label="Ajouter la langue"
+          >
+            <svg lucidePlus [size]="16" aria-hidden="true"></svg>
+          </button>
+        </div>
+
+        <!-- Accès rapide -->
+        <div class="sk-pop" *ngIf="quickLanguages().length">
+          <span class="sk-label">Accès rapide</span>
+          <div class="sk-pop__row">
+            <button
+              type="button"
+              class="sk-chip sk-chip--ghost"
+              *ngFor="let l of quickLanguages()"
+              (click)="addLanguage(l)"
+            >
+              <svg lucidePlus [size]="13" aria-hidden="true"></svg>
+              {{ l }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Liste -->
+        <ul class="sk-lang-list" *ngIf="languages.length; else emptyLangs">
+          <li class="sk-lang-row" *ngFor="let l of languages; let i = index">
+            <span class="sk-lang-row__name">{{ l.language }}</span>
+            <select
+              class="sk-select sk-select--row"
+              [(ngModel)]="l.cefrLevel"
+              [attr.aria-label]="'Niveau de ' + l.language"
+            >
+              <option *ngFor="let lv of cefrLevels" [value]="lv">{{ lv }}</option>
+            </select>
+            <button
+              type="button"
+              class="sk-chip__x"
+              (click)="removeLanguage(i)"
+              [attr.aria-label]="'Retirer ' + l.language"
+            >
+              <svg lucideX [size]="14" aria-hidden="true"></svg>
+            </button>
+          </li>
+        </ul>
+        <ng-template #emptyLangs>
+          <p class="sk-empty">Aucune langue ajoutée — indispensable pour les mobilités internationales.</p>
+        </ng-template>
+      </section>
+    </div>
+
+    <!-- ============ Barre de sauvegarde ============ -->
+    <footer class="sk-save" [class.sk-save--dirty]="isDirty()">
+      <div class="sk-save__info">
+        <span class="sk-dot" [class.sk-dot--on]="isDirty()"></span>
+        <p>
+          {{ isDirty() ? 'Modifications non enregistrées' : savedFlash ? 'Enregistré — profil à jour.' : 'Tout est enregistré' }}
+        </p>
+      </div>
+      <div class="sk-save__actions">
+        <p class="sk-save__error" *ngIf="saveError">{{ saveError }}</p>
+        <a routerLink="/candidat/profile" class="sk-save__link">Identité &amp; profil</a>
+        <button type="button" class="sk-save__btn" (click)="save()" [disabled]="saving || !isDirty()">
+          <svg *ngIf="saving" lucideLoader2 class="sk-spin" [size]="15" aria-hidden="true"></svg>
+          <svg *ngIf="!saving && savedFlash" lucideCheck [size]="15" aria-hidden="true"></svg>
+          {{ saving ? 'Enregistrement…' : savedFlash ? 'Enregistré' : 'Enregistrer' }}
+        </button>
+      </div>
+    </footer>
+  </ng-container>
+
+  <app-back-button link="/candidat/overview" label="Tableau de bord" class="sk-back" />
 </div>

@@ -23,4 +23,14 @@ export class AiTextService {
   }): Observable<{ letter: string }> {
     return this.http.post<{ letter: string }>(`${this.base}/generate-letter`, body);
   }
+
+  /** Suggestions IA de compétences pour un profil candidat (métier ou numérique). */
+  suggestProfileSkills(body: {
+    headline?: string;
+    jobs?: string[];
+    existing?: string[];
+    kind?: 'skill' | 'digital';
+  }): Observable<{ skills: string[] }> {
+    return this.http.post<{ skills: string[] }>(`${this.base}/suggest-profile-skills`, body);
+  }
 }
