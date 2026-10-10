@@ -13,6 +13,7 @@ import {
 import { smtpErrorPayload } from '../email/smtp-errors.js';
 import { getFrontendBaseUrl } from '../config/public-url.js';
 import { getJwtSecret } from '../utils/jwt.js';
+import { emitNotification } from '../services/notification.service.js';
 import { cleanPersonNameInput } from '../helpers/person-name.js';
 
 const BCRYPT_ROUNDS = 10;
@@ -107,6 +108,21 @@ export async function register(req, res) {
     } catch (profileErr) {
       console.error('[auth/register] client profile create failed:', profileErr);
     }
+
+    emitNotification({
+      recipientId: user._id,
+      recipientRole: user.role,
+      type: 'WELCOME',
+      category: 'SYSTEM',
+      priority: 'NORMAL',
+      title: 'Bienvenue sur Al Wassit',
+      body: 'Complète ton profil (prénom, nom, coordonnées) pour débloquer les CV, lettres et candidatures.',
+      actionUrl: '/candidat/profile',
+      actionLabel: 'Compléter mon profil',
+      icon: 'sparkles',
+      sourceModule: 'auth',
+      sourceId: user._id,
+    }).catch((e) => console.error('[notif welcome]', e?.message || e));
 
     return res.status(201).json({
       message: 'Account created. Check your email to verify your address.',

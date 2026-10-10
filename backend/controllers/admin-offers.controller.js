@@ -3,6 +3,7 @@ import { Offer } from '../models/offer.js';
 import { Application } from '../models/application.js';
 import { chatCompletion } from '../services/llm.service.js';
 import { uploadsPublicPath } from '../helpers/upload-basics.js';
+import { notifyRole } from '../services/notification.service.js';
 
 const MODE_VALUES = new Set(['onsite', 'hybrid', 'remote']);
 const STATUS_VALUES = new Set(['draft', 'published', 'closed']);
@@ -53,6 +54,25 @@ function validate(data) {
     return 'La date de fin doit être après la date de publication.';
   }
   return '';
+}
+
+/** Alerte tous les candidats (rôle client) quand une offre est publiée. */
+function notifyOfferPublished(offer) {
+  const country = offer.country?.name || '';
+  notifyRole('client', {
+    type: 'OFFER_PUBLISHED',
+    category: 'OFFER',
+    priority: 'NORMAL',
+    title: `Nouvelle offre — ${offer.name}`,
+    body: `${offer.partner || ''}${country ? ` · ${country}` : ''}${offer.city ? ` (${offer.city})` : ''} — postule dès maintenant.`,
+    actionUrl: `/candidat/offres/${offer._id}`,
+    actionLabel: 'Voir l’offre',
+    icon: 'briefcase',
+    color: '#eab308',
+    sourceModule: 'offers',
+    sourceId: offer._id,
+    groupedKey: `offer-${offer._id}`,
+  }).catch((e) => console.error('[notif offer]', e?.message || e));
 }
 
 /** DTO liste/détail — ajoute isExpired, daysLeft et compteurs de candidatures. */
@@ -243,6 +263,9 @@ export const createOffer = async (req, res) => {
       lastModifiedBy: req.admin.id,
     });
     await offer.save();
+    if (offer.status === 'published') {
+      notifyOfferPublished(offer);
+    }
     res.status(201).json({ offer: toDto(offer.toObject()) });
   } catch (error) {
     console.error('[admin-offers/create]', error);
@@ -259,12 +282,16 @@ export const updateOffer = async (req, res) => {
     const data = pickBody(req.body || {});
     const err = validate(data);
     if (err) return res.status(400).json({ message: err });
+    const prev = await Offer.findById(req.params.id).select('status').lean();
     const offer = await Offer.findByIdAndUpdate(
       req.params.id,
       { ...data, lastModifiedAt: new Date(), lastModifiedBy: req.admin.id },
       { new: true },
     ).lean();
     if (!offer) return res.status(404).json({ message: 'Offre introuvable.' });
+    if (offer.status === 'published' && prev?.status !== 'published') {
+      notifyOfferPublished(offer);
+    }
     res.json({ offer: toDto(offer) });
   } catch (error) {
     console.error('[admin-offers/update]', error);

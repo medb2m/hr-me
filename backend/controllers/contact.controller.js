@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Contact } from '../models/contact.model.js';
 import { sendContactConfirmation } from '../email/mailer.js';
+import { notifyRole } from '../services/notification.service.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_SUBJECTS = [
@@ -61,6 +62,21 @@ export async function submitContact(req, res) {
       subject: subject || 'Question générale',
       message,
     });
+
+    // Alerte équipe — temps réel.
+    notifyRole('admin', {
+      type: 'CONTACT_RECEIVED',
+      category: 'MESSAGE',
+      priority: 'NORMAL',
+      title: `Message de contact — ${name}`,
+      body: `${contact.subject} · ${email}${company ? ` · ${company}` : ''}`,
+      actionUrl: '/admin/contacts',
+      actionLabel: 'Ouvrir les messages',
+      icon: 'mail',
+      color: '#0ea5e9',
+      sourceModule: 'contacts',
+      sourceId: contact._id,
+    }).catch((e) => console.error('[notif contact]', e?.message || e));
 
     // Confirmation au visiteur — n'échoue jamais la requête si SMTP tombe.
     sendContactConfirmation({

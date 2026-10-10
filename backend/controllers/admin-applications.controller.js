@@ -6,6 +6,7 @@ import { ClientCv } from '../models/client-cv.model.js';
 import { ClientCl } from '../models/client-cl.model.js';
 import { User } from '../models/user.model.js';
 import { htmlToPdf } from '../services/pdf.service.js';
+import { emitNotification } from '../services/notification.service.js';
 import { cvPdfDocument, clPdfDocument, pdfFilename } from '../helpers/doc-pdf.js';
 
 const STATUS_VALUES = new Set(['pending', 'review', 'accepted', 'rejected']);
@@ -227,6 +228,37 @@ export const updateApplication = async (req, res) => {
     }
     const a = await Application.findByIdAndUpdate(req.params.id, update, { new: true }).lean();
     if (!a) return res.status(404).json({ message: 'Candidature introuvable.' });
+
+    // Notification au postulant quand le statut change.
+    if (status && a.appliedBy) {
+      const labels = {
+        pending: 'remise en attente',
+        review: 'passée en révision',
+        accepted: 'acceptée',
+        rejected: 'refusée',
+      };
+      const priorities = { accepted: 'HIGH', rejected: 'NORMAL', review: 'NORMAL', pending: 'LOW' };
+      const offer = a.offer ? await Offer.findById(a.offer).select('name').lean() : null;
+      const target =
+        a.source === 'client' ? '/espace/applications' : '/candidat/candidatures';
+      emitNotification({
+        recipientId: a.appliedBy,
+        type: `APPLICATION_${normStatus(status).toUpperCase()}`,
+        category: 'CANDIDATE',
+        priority: priorities[normStatus(status)] || 'NORMAL',
+        title: `Candidature ${labels[normStatus(status)] || status}`,
+        body: offer
+          ? `Ta candidature à « ${offer.name} » a été ${labels[normStatus(status)] || 'mise à jour'}.`
+          : `Ta candidature a été ${labels[normStatus(status)] || 'mise à jour'}.`,
+        actionUrl: target,
+        actionLabel: 'Voir mes candidatures',
+        icon: normStatus(status) === 'accepted' ? 'check-circle' : normStatus(status) === 'rejected' ? 'x-circle' : 'clock',
+        color: normStatus(status) === 'accepted' ? '#15803d' : normStatus(status) === 'rejected' ? '#b91c1c' : '#eab308',
+        sourceModule: 'applications',
+        sourceId: a._id,
+      }).catch((e) => console.error('[notif status]', e?.message || e));
+    }
+
     res.json({ application: appDto(a) });
   } catch (error) {
     console.error('[admin-applications/update]', error);

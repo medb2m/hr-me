@@ -5,6 +5,7 @@ import { ClientCv } from '../models/client-cv.model.js';
 import { ClientCl } from '../models/client-cl.model.js';
 import { ClientDocument } from '../models/client-document.model.js';
 import { uploadsPublicPath } from '../helpers/upload-basics.js';
+import { emitNotification, notifyRole } from '../services/notification.service.js';
 
 const ROLE_TO_SOURCE = {
   candidate: 'candidate',
@@ -131,6 +132,34 @@ export const apply = async (req, res) => {
 
     offer.applications.push(application._id);
     await offer.save();
+
+    // Notifications — accusé au postulant + alerte équipe (temps réel).
+    emitNotification({
+      recipientId: req.user.id,
+      recipientRole: req.user.role,
+      type: 'APPLICATION_SENT',
+      category: 'CANDIDATE',
+      priority: 'NORMAL',
+      title: `Candidature envoyée — « ${offer.name} »`,
+      body: `Ta candidature a bien été transmise à ${offer.partner || 'l’entreprise'}.`,
+      actionUrl: '/candidat/candidatures',
+      actionLabel: 'Suivre ma candidature',
+      icon: 'send',
+      sourceModule: 'applications',
+      sourceId: application._id,
+    }).catch((e) => console.error('[notif apply]', e?.message || e));
+    notifyRole('admin', {
+      type: 'APPLICATION_RECEIVED',
+      category: 'CANDIDATE',
+      priority: 'HIGH',
+      title: `Nouvelle candidature — ${name}`,
+      body: `${name} a postulé à « ${offer.name} » (${offer.partner || ''}).`,
+      actionUrl: `/admin/applications/${application._id}`,
+      actionLabel: 'Ouvrir la candidature',
+      icon: 'user-plus',
+      sourceModule: 'applications',
+      sourceId: application._id,
+    }).catch((e) => console.error('[notif apply admins]', e?.message || e));
 
     res.status(201).json({
       application: {

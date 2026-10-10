@@ -9,6 +9,7 @@ import {
   analyzeDocumentBuffer,
   analyzeDocumentText,
 } from '../../services/gemini.service.js';
+import { emitNotification } from '../../services/notification.service.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_ROOT = join(__dirname, '../../public');
@@ -117,11 +118,40 @@ async function analyzeInBackground(docId) {
         patch.description = result.summary;
       }
       await ClientDocument.updateOne({ _id: docId }, { $set: patch });
+      emitNotification({
+        recipientId: doc.user,
+        type: 'DOC_ANALYZED',
+        category: 'DOCUMENT',
+        priority: 'LOW',
+        title: `Document analysé — ${patch.aiTitle || doc.originalName || doc.filename}`,
+        body: patch.aiSummary
+          ? patch.aiSummary.slice(0, 140)
+          : 'Titre, type et dates extraits automatiquement.',
+        actionUrl: '/candidat/library',
+        actionLabel: 'Ouvrir la bibliothèque',
+        icon: 'file-check',
+        color: '#64748b',
+        sourceModule: 'documents',
+        sourceId: doc._id,
+      }).catch(() => {});
     } else {
       await ClientDocument.updateOne(
         { _id: docId },
         { $set: { aiStatus: 'failed', aiError: 'Contenu illisible par l’IA.' } },
       );
+      emitNotification({
+        recipientId: doc.user,
+        type: 'DOC_ANALYSIS_FAILED',
+        category: 'DOCUMENT',
+        priority: 'LOW',
+        title: 'Analyse IA incomplète',
+        body: `« ${doc.originalName || doc.filename} » n’a pas pu être lu — tu peux renseigner ses infos à la main.`,
+        actionUrl: '/candidat/library',
+        icon: 'file-warning',
+        color: '#b45309',
+        sourceModule: 'documents',
+        sourceId: doc._id,
+      }).catch(() => {});
     }
   } catch (err) {
     console.error('[client/docs] analyse IA', err);

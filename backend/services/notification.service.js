@@ -33,7 +33,7 @@ export async function emitNotification(payload) {
     actionUrl: payload.actionUrl ?? null,
     actionLabel: payload.actionLabel ?? null,
     icon: payload.icon || 'bell',
-    color: payload.color || '#7B1C2E',
+    color: payload.color || '#eab308',
     sourceModule: payload.sourceModule || '',
     sourceId: payload.sourceId || null,
     metadata: payload.metadata || {},
@@ -73,6 +73,20 @@ function serializeNotification(n) {
     snoozeUntil: n.snoozeUntil,
     createdAt: n.createdAt,
   };
+}
+
+/** Envoie une notification à tous les utilisateurs d'un rôle (admins, agents…). */
+export async function notifyRole(role, payload) {
+  const { User } = await import('../models/user.model.js');
+  const users = await User.find({ role }).select('_id').lean();
+  for (const u of users) {
+    try {
+      await emitNotification({ ...payload, recipientId: u._id, recipientRole: role });
+    } catch (err) {
+      console.error(`[notification] notifyRole ${role}:`, err?.message || err);
+    }
+  }
+  return users.length;
 }
 
 export function serializeNotificationDoc(doc) {

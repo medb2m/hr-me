@@ -31,7 +31,7 @@ const notificationSchema = new mongoose.Schema(
     actionUrl: { type: String, default: null },
     actionLabel: { type: String, default: null },
     icon: { type: String, default: 'bell' },
-    color: { type: String, default: '#7B1C2E' },
+    color: { type: String, default: '#eab308' },
     sourceModule: { type: String, default: '' },
     sourceId: { type: mongoose.Schema.Types.ObjectId, default: null },
     metadata: { type: mongoose.Schema.Types.Mixed, default: {} },

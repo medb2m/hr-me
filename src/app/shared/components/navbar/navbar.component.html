@@ -396,9 +396,40 @@
                     class="notif-item"
                     [class.unread]="!n.read"
                     (click)="notifHub.markReadAndGo(n)">
-                    <span class="notif-title">{{ n.title }}</span>
-                    <span class="notif-body">{{ n.body }}</span>
+                    <span class="notif-ico" [attr.data-icon]="n.icon">
+                      @switch (n.icon) {
+                        @case ('send') { <svg lucideSend [size]="15"></svg> }
+                        @case ('user-plus') { <svg lucideUserPlus [size]="15"></svg> }
+                        @case ('check-circle') { <svg lucideCheckCircle [size]="15"></svg> }
+                        @case ('x-circle') { <svg lucideXCircle [size]="15"></svg> }
+                        @case ('clock') { <svg lucideClock [size]="15"></svg> }
+                        @case ('briefcase') { <svg lucideBriefcase [size]="15"></svg> }
+                        @case ('mail') { <svg lucideMail [size]="15"></svg> }
+                        @case ('file-check') { <svg lucideFileCheck [size]="15"></svg> }
+                        @case ('file-warning') { <svg lucideFileWarning [size]="15"></svg> }
+                        @case ('calendar') { <svg lucideCalendar [size]="15"></svg> }
+                        @case ('sparkles') { <svg lucideSparkles [size]="15"></svg> }
+                        @default { <svg lucideBell [size]="15"></svg> }
+                      }
+                    </span>
+                    <span class="notif-txt">
+                      <span class="notif-title">{{ n.title }}</span>
+                      @if (n.body) {
+                        <span class="notif-body">{{ n.body }}</span>
+                      }
+                      <span class="notif-meta">
+                        {{ notifTimeAgo(n.createdAt) }}
+                        @if (n.actionLabel) { · {{ n.actionLabel }} → }
+                      </span>
+                    </span>
+                    @if (!n.read) { <span class="notif-unread-dot" aria-hidden="true"></span> }
                     <button type="button" class="notif-dismiss" (click)="notifHub.dismiss(n, $event)">×</button>
+                  </li>
+                } @empty {
+                  <li class="notif-empty">
+                    <span class="notif-ico notif-ico--ghost"><svg lucideBell [size]="16"></svg></span>
+                    <p>Aucune notification pour l’instant.</p>
+                    <span class="notif-empty-sub">Candidatures, offres et documents apparaîtront ici.</span>
                   </li>
                 }
               </ul>
