@@ -23,7 +23,7 @@
   </button>
 
   <!-- Calendrier -->
-  <div class="dp-pop" *ngIf="open" role="dialog" aria-label="Choisir une date">
+  <div class="dp-pop" *ngIf="open" [ngStyle]="popStyle" role="dialog" aria-label="Choisir une date">
     <div class="dp-head">
       <button type="button" class="dp-nav" (click)="prevUnit()" aria-label="Précédent">
         <svg lucideChevronLeft [size]="15"></svg>

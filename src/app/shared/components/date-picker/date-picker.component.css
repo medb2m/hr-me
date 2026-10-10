@@ -74,9 +74,10 @@
 /* ---------- popup ---------- */
 
 .dp-pop {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
+  /* position fixed + top/left/width injectés par le composant (échappe aux overflow:hidden) */
+  position: fixed;
+  top: 8px;
+  left: 8px;
   z-index: 120;
   width: 300px;
   background: #fff;

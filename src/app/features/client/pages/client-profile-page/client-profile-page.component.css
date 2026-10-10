@@ -524,9 +524,21 @@
 
 .ep-entry__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.5rem;
   margin-bottom: 0.55rem;
+}
+
+.ep-entry__dates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.ep-mini app-date-picker {
+  display: block;
+  width: 100%;
 }
 
 .ep-entry__grid .ep-input {

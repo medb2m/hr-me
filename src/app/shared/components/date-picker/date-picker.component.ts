@@ -4,6 +4,8 @@ import {
   ElementRef,
   HostListener,
   Input,
+  OnDestroy,
+  OnInit,
   forwardRef,
   inject,
 } from '@angular/core';
@@ -59,7 +61,7 @@ function todayIso(): string {
     },
   ],
 })
-export class DatePickerComponent implements ControlValueAccessor {
+export class DatePickerComponent implements ControlValueAccessor, OnInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
 
   @Input() placeholder = 'Choisir une date';
@@ -82,6 +84,15 @@ export class DatePickerComponent implements ControlValueAccessor {
   /** Niveau de zoom du calendrier : jours → mois → années. */
   pickerView: 'days' | 'months' | 'years' = 'days';
   yearRangeStart = this.viewYear - 6;
+
+  /** Position viewport du popup (position: fixed — échappe aux overflow:hidden). */
+  popStyle: Record<string, string> = {};
+
+  private readonly scrollListener = (): void => {
+    if (this.open) {
+      this.positionPop();
+    }
+  };
 
   private onChange: (v: string) => void = () => {};
   private onTouched: () => void = () => {};
@@ -130,6 +141,21 @@ export class DatePickerComponent implements ControlValueAccessor {
     this.close();
   }
 
+  ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      // capture : suit aussi le scroll des conteneurs internes
+      window.addEventListener('scroll', this.scrollListener, { capture: true });
+      window.addEventListener('resize', this.scrollListener);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', this.scrollListener, { capture: true } as EventListenerOptions);
+      window.removeEventListener('resize', this.scrollListener);
+    }
+  }
+
   toggle(): void {
     if (this.disabled) return;
     this.open = !this.open;
@@ -141,9 +167,31 @@ export class DatePickerComponent implements ControlValueAccessor {
       }
       this.pickerView = 'days';
       this.yearRangeStart = this.viewYear - 6;
+      this.positionPop();
     } else {
       this.onTouched();
     }
+  }
+
+  /** Place le popup en `fixed` : sous le champ, au-dessus si l'espace manque. */
+  private positionPop(): void {
+    if (typeof window === 'undefined') return;
+    const rect = this.host.nativeElement.getBoundingClientRect();
+    const popW = Math.min(300, window.innerWidth - 16);
+    const popH = 360;
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - popW - 8));
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    const top =
+      spaceBelow >= popH || spaceBelow >= spaceAbove
+        ? rect.bottom + 8
+        : Math.max(8, rect.top - popH - 8);
+    this.popStyle = {
+      position: 'fixed',
+      left: `${Math.round(left)}px`,
+      top: `${Math.round(top)}px`,
+      width: `${Math.round(popW)}px`,
+    };
   }
 
   close(): void {
