@@ -1,6 +1,14 @@
 .client-sidebar {
   width: var(--client-sidebar-w, 260px);
-  min-height: 100%;
+  /* Sticky sous le header : la sidebar reste visible pendant le scroll,
+     avec son propre scroll interne si son contenu dépasse. */
+  position: sticky;
+  top: var(--client-header-h, 52px);
+  align-self: flex-start;
+  max-height: calc(100vh - var(--client-header-h, 52px));
+  max-height: calc(100dvh - var(--client-header-h, 52px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
@@ -178,15 +186,24 @@
 
 @media (max-width: 900px) {
   .client-sidebar {
+    position: static;
     width: 100%;
-    min-height: auto;
+    max-height: none;
+    overflow: visible;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.75rem 0;
+  }
+
+  /* Sur mobile l'identité est déjà dans le header — on ne garde que la nav. */
+  .client-sidebar__identity {
+    display: none;
   }
 
   .client-sidebar__nav {
     flex-direction: row;
     flex-wrap: wrap;
+    padding: 0 0.5rem;
   }
 
   .client-sidebar__link {

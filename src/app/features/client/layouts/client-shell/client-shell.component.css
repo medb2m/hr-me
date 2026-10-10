@@ -1,10 +1,10 @@
 .client-shell {
   --client-sidebar-w: 260px;
-  /* Hauteur viewport : le scroll reste dans __main, header + alert restent visibles */
+  --client-header-h: 52px;
+  /* Le document scrolle naturellement : pas de hauteur figée ni de scroll
+     imbriqué — évite les bandes blanches quand la barre mobile bouge. */
   min-height: 100vh;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: #f1f5f9;
@@ -51,15 +51,13 @@
 .client-shell__body {
   display: flex;
   flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  align-items: stretch;
 }
 
 .client-shell__main {
   flex: 1;
   min-width: 0;
-  padding: 1.5rem 1.5rem 2rem;
-  overflow: auto;
+  padding: 1.5rem 1.5rem 3rem;
 }
 
 @media (max-width: 900px) {
@@ -68,6 +66,6 @@
   }
 
   .client-shell__main {
-    padding: 1rem;
+    padding: 1rem 1rem 2.5rem;
   }
 }
