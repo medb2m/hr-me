@@ -34,8 +34,13 @@ export const CLIENT_ROUTES: Routes = [
       {
         path: 'editor/cl',
         loadComponent: () =>
-          import('./pages/client-cl-editor-page/client-cl-editor-page.component').then(
-            (m) => m.ClientClEditorPageComponent,
+          import('./pages/client-cl-hub/client-cl-hub.component').then((m) => m.ClientClHubComponent),
+      },
+      {
+        path: 'editor/cl/:clId',
+        loadComponent: () =>
+          import('./pages/client-cl-editor/client-cl-editor.component').then(
+            (m) => m.ClientClEditorComponent,
           ),
       },
       {

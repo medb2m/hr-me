@@ -14,6 +14,9 @@ export interface MyApplication {
   sharedProfile?: boolean;
   sharedCvName?: string;
   sharedDocsCount?: number;
+  /** Motivation déposée : message libre ou lettre complète partagée. */
+  letterMode?: 'message' | 'letter';
+  sharedClName?: string;
   createdAt: string;
   offer: {
     id: string;
@@ -49,6 +52,9 @@ export class ApplicationsService {
     shareProfile?: boolean;
     sharedCvId?: string;
     sharedDocIds?: string[];
+    /** Motivation : 'message' (texte libre) ou 'letter' (lettre complète de l'espace). */
+    letterMode?: 'message' | 'letter';
+    sharedClId?: string;
   }): Observable<{ application: { id: string; status: string; createdAt: string } }> {
     const fd = new FormData();
     fd.append('offerId', body.offerId);
@@ -60,6 +66,10 @@ export class ApplicationsService {
     if (body.shareProfile) fd.append('shareProfile', '1');
     if (body.sharedCvId) fd.append('sharedCvId', body.sharedCvId);
     for (const id of body.sharedDocIds || []) fd.append('sharedDocIds', id);
+    if (body.letterMode === 'letter') {
+      fd.append('letterMode', 'letter');
+      if (body.sharedClId) fd.append('sharedClId', body.sharedClId);
+    }
     return this.http.post<{ application: { id: string; status: string; createdAt: string } }>(
       this.base,
       fd,

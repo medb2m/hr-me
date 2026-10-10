@@ -69,7 +69,7 @@
         <!-- fichiers de la candidature -->
         <section class="ap-card">
           <h2><svg lucidePaperclip [size]="15"></svg> Pièces jointes à cette candidature</h2>
-          @if (!app.cv && !app.attachments.length && !app.sharedCv && !app.sharedDocs.length) {
+          @if (!app.cv && !app.attachments.length && !app.sharedCv && !app.sharedDocs.length && !app.sharedCl) {
             <p class="ap-muted">Aucun fichier téléversé.</p>
           }
           <ul class="ap-files">
@@ -80,6 +80,18 @@
                 <em class="ap-tag-shared">CV partagé · plateforme</em>
                 @if (app.sharedCvDoc) {
                   <button type="button" class="ap-cvview" (click)="cvPreviewOpen = true">
+                    <svg lucideEye [size]="13"></svg> Aperçu
+                  </button>
+                }
+              </li>
+            }
+            @if (app.sharedCl) {
+              <li class="ap-file ap-file--shared">
+                <svg lucideMail [size]="15"></svg>
+                <span class="ap-file-name">{{ app.sharedCl.name }}</span>
+                <em class="ap-tag-shared">Lettre de motivation · plateforme</em>
+                @if (app.sharedClDoc) {
+                  <button type="button" class="ap-cvview" (click)="clPreviewOpen = true">
                     <svg lucideEye [size]="13"></svg> Aperçu
                   </button>
                 }
@@ -209,6 +221,14 @@
             <li><em>Soumise par</em>{{ app.user?.name || app.user?.email || '—' }} ({{ app.user?.role || '—' }})</li>
             <li><em>Type</em>{{ sourceLabel(app.source) }}</li>
             <li><em>Partage profil</em>{{ app.sharedProfile ? 'Oui — dossier plateforme partagé' : 'Non' }}</li>
+            <li>
+              <em>Motivation</em>
+              @if (app.letterMode === 'letter') {
+                Lettre complète{{ app.sharedCl ? ' — « ' + app.sharedCl.name + ' »' : '' }}
+              } @else {
+                Message libre
+              }
+            </li>
             @if (app.applicantName && app.applicantName !== app.user?.name) {
               <li><em>Nom déclaré</em>{{ app.applicantName }}</li>
             }
@@ -238,6 +258,31 @@
             [userName]="app.user?.name || app.applicantName || ''"
             [userEmail]="app.user?.email || app.applicantEmail || ''"
             [photoUrl]="sharedCvPhoto()"
+          />
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ======== Aperçu de la lettre partagée ======== -->
+  @if (app && clPreviewOpen && app.sharedClDoc) {
+    <div class="ap-modal" (click)="clPreviewOpen = false" role="dialog" aria-modal="true">
+      <div class="ap-modal__box" (click)="$event.stopPropagation()">
+        <header class="ap-modal__head">
+          <div>
+            <h3 class="ap-modal__title">{{ app.sharedClDoc.name }}</h3>
+            <p class="ap-modal__sub">Aperçu de la lettre telle que partagée par le candidat</p>
+          </div>
+          <button type="button" class="ap-modal__close" (click)="clPreviewOpen = false" aria-label="Fermer">
+            <svg lucideX [size]="16"></svg>
+          </button>
+        </header>
+        <div class="ap-modal__body">
+          <app-cl-preview
+            [state]="sharedClState()"
+            [profile]="app.profile"
+            [userName]="app.user?.name || app.applicantName || ''"
+            [userEmail]="app.user?.email || app.applicantEmail || ''"
           />
         </div>
       </div>

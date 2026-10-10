@@ -695,3 +695,57 @@
 }
 
 .od-doc-view:hover { background: #f1f5f9; color: #a16207; }
+
+/* ——— Choix motivation : message / lettre complète ——— */
+.od-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .od-modes { grid-template-columns: 1fr; }
+}
+
+.od-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  color: #64748b;
+  transition: border-color 0.14s, background 0.14s, box-shadow 0.14s;
+}
+
+.od-mode:hover { border-color: #cbd5e1; }
+
+.od-mode.on {
+  border-color: #ffd300;
+  background: #fffce8;
+  color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.18);
+}
+
+.od-mode > svg { flex-shrink: 0; color: #94a3b8; }
+.od-mode.on > svg { color: #4d3800; }
+
+.od-mode-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.od-mode-main strong { font-size: 0.82rem; font-weight: 800; }
+
+.od-mode-main em {
+  font-size: 0.7rem;
+  font-style: normal;
+  color: #94a3b8;
+  font-weight: 600;
+}

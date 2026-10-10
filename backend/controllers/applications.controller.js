@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Offer } from '../models/offer.js';
 import { Application } from '../models/application.js';
 import { ClientCv } from '../models/client-cv.model.js';
+import { ClientCl } from '../models/client-cl.model.js';
 import { ClientDocument } from '../models/client-document.model.js';
 import { uploadsPublicPath } from '../helpers/upload-basics.js';
 
@@ -69,6 +70,17 @@ export const apply = async (req, res) => {
       if (cvDoc) sharedCv = { id: cvDoc._id, name: cvDoc.name };
     }
 
+    // Motivation : message libre OU lettre complète de l'espace.
+    const letterMode = req.body?.letterMode === 'letter' ? 'letter' : 'message';
+    const sharedClId = String(req.body?.sharedClId || '');
+    let sharedCl = { id: null, name: '' };
+    if (letterMode === 'letter' && mongoose.isValidObjectId(sharedClId)) {
+      const clDoc = await ClientCl.findOne({ _id: sharedClId, user: req.user.id })
+        .select('name')
+        .lean();
+      if (clDoc) sharedCl = { id: clDoc._id, name: clDoc.name };
+    }
+
     let sharedDocIds = req.body?.sharedDocIds;
     if (typeof sharedDocIds === 'string') {
       // multipart : un seul champ = string ; JSON possible aussi
@@ -109,8 +121,10 @@ export const apply = async (req, res) => {
       message,
       cv: cvArr[0] ? fileDto(cvArr[0]) : null,
       attachments: attArr.map(fileDto),
-      sharedProfile: shareProfile || !!sharedCv.id || sharedDocs.length > 0,
+      sharedProfile: shareProfile || !!sharedCv.id || !!sharedCl.id || sharedDocs.length > 0,
       sharedCv,
+      letterMode,
+      sharedCl,
       sharedDocs,
     });
     await application.save();
@@ -151,6 +165,8 @@ export const myApplications = async (req, res) => {
         attachmentsCount: (a.attachments || []).length,
         sharedProfile: !!a.sharedProfile,
         sharedCvName: a.sharedCv?.name || '',
+        letterMode: a.letterMode === 'letter' ? 'letter' : 'message',
+        sharedClName: a.sharedCl?.name || '',
         sharedDocsCount: (a.sharedDocs || []).length,
         createdAt: a.createdAt,
         offer: a.offer

@@ -1,0 +1,206 @@
+@if (loading) {
+  <p class="ep-muted">Chargement de la lettre…</p>
+} @else if (cl) {
+  <div class="ep-toolbar">
+    @if (applyMode) {
+      <span class="ep-applybadge">Personnalisation pour une candidature</span>
+    } @else {
+      <app-back-button link="/candidat/editor/cl" label="Mes lettres" class="ep-toolbar__back"></app-back-button>
+    }
+    <div class="ep-toolbar__actions">
+      @if (!applyMode) {
+        <button type="button" class="ep-btn ep-btn--ghost" (click)="deleteCl()">Supprimer</button>
+      }
+      <button type="button" class="ep-btn ep-btn--primary" [disabled]="saving" (click)="save()">
+        {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+  @if (applySaved) {
+    <p class="ep-msg ep-msg--ok">
+      <svg lucideCircleCheckBig [size]="14" aria-hidden="true"></svg>
+      Lettre enregistrée — cet onglet va se fermer. Sinon, retournez à l&rsquo;onglet de votre
+      candidature : la lettre « {{ cl.name }} » est en haut de la liste.
+      <button type="button" class="ep-linkbtn" (click)="closeTab()">Fermer l&rsquo;onglet</button>
+    </p>
+  } @else if (saveMessage) {
+    <p class="ep-msg">{{ saveMessage }}</p>
+  }
+
+  <div class="ep-grid">
+    <div class="ep-col ep-col--controls">
+      <h1 class="ep-h1">Éditeur de lettre</h1>
+      <p class="ep-lead">
+        Remplissez l&rsquo;en-tête, l&rsquo;objet et le corps — l&rsquo;aperçu à droite montre la lettre
+        telle qu&rsquo;elle sera partagée avec l&rsquo;agence.
+      </p>
+
+      <!-- ============ IDENTIFICATION ============ -->
+      <section class="ep-card">
+        <h2 class="ep-h2">Nom de la lettre</h2>
+        <p class="ep-hint">Nom interne pour la retrouver dans votre liste (non visible par l&rsquo;agence).</p>
+        <label class="ep-field">
+          <span class="ep-label">Nom (unique)</span>
+          <input class="ep-input" type="text" [(ngModel)]="clName" name="clName" maxlength="120" />
+        </label>
+      </section>
+
+      <!-- ============ DESTINATAIRE & CONTEXTE ============ -->
+      <section class="ep-card">
+        <h2 class="ep-h2">Destinataire</h2>
+        <p class="ep-hint">L&rsquo;entreprise à laquelle la lettre s&rsquo;adresse — affichée en haut à droite.</p>
+        <label class="ep-field">
+          <span class="ep-label">Entreprise</span>
+          <input
+            class="ep-input"
+            type="text"
+            [(ngModel)]="state.companyName"
+            name="companyName"
+            maxlength="160"
+            placeholder="ex. Groupe Santé Horizon"
+          />
+        </label>
+        <label class="ep-field">
+          <span class="ep-label">Complément — service, adresse (optionnel)</span>
+          <input
+            class="ep-input"
+            type="text"
+            [(ngModel)]="state.companyDetail"
+            name="companyDetail"
+            maxlength="200"
+            placeholder="ex. Service recrutement, 12 rue de la République, Lyon"
+          />
+        </label>
+      </section>
+
+      <section class="ep-card">
+        <h2 class="ep-h2">Objet, lieu &amp; date</h2>
+        <label class="ep-field">
+          <span class="ep-label">Objet de la lettre</span>
+          <input
+            class="ep-input"
+            type="text"
+            [(ngModel)]="state.object"
+            name="clObject"
+            maxlength="200"
+            placeholder="ex. Candidature au poste d&rsquo;infirmier(ère) diplômé(e)"
+          />
+        </label>
+        <div class="cle-row">
+          <label class="ep-field cle-grow">
+            <span class="ep-label">Lieu de rédaction</span>
+            <input
+              class="ep-input"
+              type="text"
+              [(ngModel)]="state.place"
+              name="clPlace"
+              maxlength="120"
+              placeholder="ex. Tunis"
+            />
+          </label>
+          <label class="ep-field">
+            <span class="ep-label">Date de la lettre</span>
+            <app-date-picker [(ngModel)]="state.date" name="clDate" placeholder="JJ mois AAAA" />
+          </label>
+        </div>
+        <label class="ep-field">
+          <span class="ep-label">Formule d&rsquo;appel</span>
+          <input
+            class="ep-input"
+            type="text"
+            [(ngModel)]="state.salutation"
+            name="clSalutation"
+            maxlength="120"
+            placeholder="Madame, Monsieur,"
+          />
+        </label>
+      </section>
+
+      <!-- ============ CORPS ============ -->
+      <section class="ep-card">
+        <div class="cle-card-head">
+          <h2 class="ep-h2">Corps de la lettre</h2>
+          <button type="button" class="ep-btn ep-btn--sm cle-ai-btn" (click)="aiOpen = !aiOpen">
+            <svg lucideSparkles [size]="13" aria-hidden="true"></svg>
+            Générer avec l&rsquo;IA
+          </button>
+        </div>
+        @if (aiOpen) {
+          <div class="cle-ai">
+            <p class="ep-hint">
+              Décrivez ce que la lettre doit dire — poste, expérience à mettre en avant, ton…
+              Le contexte (entreprise, objet) est repris automatiquement.
+            </p>
+            <textarea
+              class="ep-textarea"
+              [(ngModel)]="aiPrompt"
+              name="aiPrompt"
+              rows="3"
+              maxlength="2000"
+              placeholder="ex. Lettre pour un poste d&rsquo;infirmier en France, mettre en avant 4 ans d&rsquo;expérience en gériatrie et la disponibilité immédiate…"
+            ></textarea>
+            <div class="cle-ai-actions">
+              <button
+                type="button"
+                class="ep-btn ep-btn--primary ep-btn--sm"
+                [disabled]="aiBusy"
+                (click)="generateWithAi()"
+              >
+                @if (aiBusy) {
+                  <svg lucideLoader2 [size]="13" class="cle-spin" aria-hidden="true"></svg>
+                  Génération…
+                } @else {
+                  <svg lucideSparkles [size]="13" aria-hidden="true"></svg>
+                  Générer le corps
+                }
+              </button>
+              @if (aiError) {
+                <span class="cle-ai-err">{{ aiError }}</span>
+              }
+            </div>
+          </div>
+        }
+        <p class="ep-hint">
+          Rédigez votre argumentaire — la barre d&rsquo;outils permet de mettre en forme et de
+          corriger avec l&rsquo;IA.
+        </p>
+        <app-rich-text-editor
+          [(ngModel)]="state.body"
+          name="clBody"
+          [minHeight]="340"
+          placeholder="Madame, Monsieur, — présentez-vous, votre expérience, ce qui vous motive pour ce poste à l&rsquo;international…"
+        />
+      </section>
+
+      <!-- ============ CLÔTURE & SIGNATURE ============ -->
+      <section class="ep-card">
+        <h2 class="ep-h2">Formule de politesse &amp; signature</h2>
+        <label class="ep-field">
+          <span class="ep-label">Formule de politesse</span>
+          <textarea
+            class="ep-textarea"
+            [(ngModel)]="state.closing"
+            name="clClosing"
+            rows="3"
+            maxlength="600"
+          ></textarea>
+        </label>
+        <label class="ep-check">
+          <input type="checkbox" [(ngModel)]="state.includeSignature" name="clSignature" />
+          Signer la lettre avec mon nom ({{ displayName() }})
+        </label>
+      </section>
+    </div>
+
+    <!-- ============ APERÇU EN DIRECT ============ -->
+    <div class="ep-col ep-col--preview">
+      <h2 class="ep-preview-title">Aperçu de la lettre</h2>
+      <app-cl-preview
+        [state]="state"
+        [profile]="profileFull"
+        [userName]="auth.user()?.name || ''"
+        [userEmail]="auth.user()?.email || ''"
+      />
+    </div>
+  </div>
+}

@@ -15,6 +15,7 @@ import {
   LucideFileText,
   LucideGraduationCap,
   LucideLaptop,
+  LucideMail,
   LucideMapPin,
   LucidePaperclip,
   LucidePenLine,
@@ -32,7 +33,9 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { FlagComponent } from '../../../../shared/components/flag/flag.component';
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import { ClientCvApiService, ClientCvDto } from '../../services/client-cv-api.service';
+import { ClientClApiService, ClientClDto } from '../../services/client-cl-api.service';
 import { mergeCvEditorState } from '../../models/cv-editor-state';
+import { mergeClEditorState } from '../../models/cl-editor-state';
 import {
   ClientDocumentDto,
   ClientDocumentsApiService,
@@ -73,6 +76,7 @@ const KIND_LABELS: Record<ClientDocKind, string> = {
     LucideFileText,
     LucideGraduationCap,
     LucideLaptop,
+    LucideMail,
     LucideMapPin,
     LucidePaperclip,
     LucidePenLine,
@@ -93,6 +97,7 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
   private readonly offers = inject(OfferService);
   private readonly apps = inject(ApplicationsService);
   private readonly cvsApi = inject(ClientCvApiService);
+  private readonly clsApi = inject(ClientClApiService);
   private readonly docsApi = inject(ClientDocumentsApiService);
   protected readonly auth = inject(AuthService);
 
@@ -117,12 +122,20 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
   assetsLoaded = false;
   sharedCvId = '';
   sharedDocIds = new Set<string>();
-  // Personnalisation : copie du CV en cours de création / fraîchement créée
+  // Motivation : message libre OU lettre complète de l'espace.
+  letterMode: 'message' | 'letter' = 'message';
+  cls: ClientClDto[] = [];
+  sharedClId = '';
+  // Personnalisation : copie du CV / de la lettre en cours de création
   customizingId = '';
+  customizingClId = '';
   pendingCvId = '';
+  pendingClId = '';
   customizeError = '';
   private readonly cvChannel =
     typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('alwassit-cv') : null;
+  private readonly clChannel =
+    typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('alwassit-cl') : null;
   private readonly onWindowFocus = () => {
     if (this.applyOpen) {
       this.loadAssets(true);
@@ -138,6 +151,13 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
     if (this.cvChannel) {
       this.cvChannel.onmessage = (e: MessageEvent) => {
         if ((e.data as { type?: string })?.type === 'cv-saved') {
+          this.loadAssets(true);
+        }
+      };
+    }
+    if (this.clChannel) {
+      this.clChannel.onmessage = (e: MessageEvent) => {
+        if ((e.data as { type?: string })?.type === 'cl-saved') {
           this.loadAssets(true);
         }
       };
@@ -160,6 +180,7 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.cvChannel?.close();
+    this.clChannel?.close();
     window.removeEventListener('focus', this.onWindowFocus);
   }
 
@@ -167,7 +188,11 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
   loadAssets(force = false): void {
     if (this.assetsLoading || (!force && this.assetsLoaded)) return;
     this.assetsLoading = true;
-    forkJoin({ cvs: this.cvsApi.listCvs(), docs: this.docsApi.list() })
+    forkJoin({
+      cvs: this.cvsApi.listCvs(),
+      cls: this.clsApi.listCls(),
+      docs: this.docsApi.list(),
+    })
       .pipe(
         finalize(() => {
           this.assetsLoading = false;
@@ -175,8 +200,9 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
         }),
       )
       .subscribe({
-        next: ({ cvs, docs }) => {
+        next: ({ cvs, cls, docs }) => {
           this.cvs = cvs.cvs;
+          this.cls = cls.cls;
           this.docs = docs.documents;
           // Un CV personnalisé vient d'être enregistré dans l'autre onglet → sélection auto.
           if (this.pendingCvId && this.cvs.some((c) => c._id === this.pendingCvId)) {
@@ -184,6 +210,13 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
             this.pendingCvId = '';
           } else if (!this.sharedCvId && this.cvs.length === 1) {
             this.sharedCvId = this.cvs[0]._id;
+          }
+          // Idem pour une lettre personnalisée.
+          if (this.pendingClId && this.cls.some((c) => c._id === this.pendingClId)) {
+            this.sharedClId = this.pendingClId;
+            this.pendingClId = '';
+          } else if (!this.sharedClId && this.cls.length === 1) {
+            this.sharedClId = this.cls[0]._id;
           }
         },
       });
@@ -245,6 +278,59 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * « Personnaliser » une lettre : duplique la lettre (`nom — JJ/MM/AAAA HH:mm`) puis ouvre
+   * l'éditeur sur la copie dans un nouvel onglet — identique au flux CV.
+   */
+  customizeCl(cl: ClientClDto): void {
+    if (this.customizingClId) {
+      return;
+    }
+    this.customizingClId = cl._id;
+    this.customizeError = '';
+    this.clsApi
+      .getCl(cl._id)
+      .pipe(
+        switchMap(({ cl: src }) => {
+          const stamp = new Intl.DateTimeFormat('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }).format(new Date());
+          const base = src.name.slice(0, 88);
+          return this.clsApi.createCl({
+            name: `${base} — ${stamp}`,
+            editorState: mergeClEditorState(src.editorState),
+          });
+        }),
+        finalize(() => (this.customizingClId = '')),
+      )
+      .subscribe({
+        next: ({ cl: created }) => {
+          this.pendingClId = created._id;
+          const url = this.router.serializeUrl(
+            this.router.createUrlTree(['/candidat/editor/cl', created._id], {
+              queryParams: { from: 'apply' },
+            }),
+          );
+          window.open(url, '_blank');
+          this.loadAssets(true);
+        },
+        error: () => {
+          this.customizeError = 'Impossible de dupliquer cette lettre — réessaie.';
+        },
+      });
+  }
+
+  setLetterMode(mode: 'message' | 'letter'): void {
+    this.letterMode = mode;
+    if (mode === 'letter' && !this.sharedClId && this.cls.length === 1) {
+      this.sharedClId = this.cls[0]._id;
+    }
+  }
+
   toggleDoc(id: string): void {
     if (this.sharedDocIds.has(id)) this.sharedDocIds.delete(id);
     else this.sharedDocIds.add(id);
@@ -294,7 +380,8 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
   }
 
   get canSubmit(): boolean {
-    return !!this.appName.trim() && !this.sending;
+    if (!this.appName.trim() || this.sending) return false;
+    return this.letterMode !== 'letter' || !!this.sharedClId;
   }
 
   toggleApply(): void {
@@ -316,11 +403,13 @@ export class ClientOfferDetailComponent implements OnInit, OnDestroy {
         offerId: this.offer.id,
         name: this.appName.trim(),
         email: this.appEmail.trim(),
-        message: this.appMessage,
+        message: this.letterMode === 'message' ? this.appMessage : '',
         attachments: this.extraFiles,
         shareProfile: true,
         sharedCvId: this.sharedCvId,
         sharedDocIds: [...this.sharedDocIds],
+        letterMode: this.letterMode,
+        sharedClId: this.letterMode === 'letter' ? this.sharedClId : '',
       })
       .pipe(finalize(() => (this.sending = false)))
       .subscribe({

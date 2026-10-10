@@ -1,0 +1,40 @@
+<div class="clp-sheet">
+  <!-- En-tête : expéditeur à gauche, destinataire à droite -->
+  <div class="clp-head">
+    <div class="clp-sender">
+      <p class="clp-name">{{ displayName() }}</p>
+      @for (l of senderLines(); track $index) {
+        <p class="clp-line">{{ l }}</p>
+      }
+    </div>
+    <div class="clp-recipient">
+      <p class="clp-to">À l&rsquo;attention de</p>
+      <p class="clp-company">{{ state.companyName.trim() || 'Entreprise destinataire' }}</p>
+      @if (state.companyDetail.trim()) {
+        <p class="clp-line">{{ state.companyDetail }}</p>
+      }
+    </div>
+  </div>
+
+  @if (dateLine()) {
+    <p class="clp-date">{{ dateLine() }}</p>
+  }
+
+  @if (state.object.trim()) {
+    <p class="clp-object"><strong>Objet :</strong> {{ state.object }}</p>
+  }
+
+  @if (state.salutation.trim()) {
+    <p class="clp-salutation">{{ state.salutation }}</p>
+  }
+
+  <div class="clp-body" [innerHTML]="bodyHtml()"></div>
+
+  @if (closingText()) {
+    <p class="clp-closing">{{ closingText() }}</p>
+  }
+
+  @if (state.includeSignature) {
+    <p class="clp-signature">{{ displayName() }}</p>
+  }
+</div>

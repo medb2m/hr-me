@@ -98,6 +98,11 @@
                   <svg lucideFileText [size]="12"></svg> {{ a.sharedCv.name }}
                 </span>
             }
+            @if (a.sharedCl) {
+              · <span class="oa-file oa-file--shared" title="Lettre de motivation partagée">
+                  <svg lucideMail [size]="12"></svg> {{ a.sharedCl.name }}
+                </span>
+            }
             @if (a.cv) {
               · <a class="oa-file" [href]="a.cv.path" target="_blank" (click)="$event.stopPropagation()">
                   <svg lucideFileText [size]="12"></svg> {{ a.cv.name || 'CV' }}

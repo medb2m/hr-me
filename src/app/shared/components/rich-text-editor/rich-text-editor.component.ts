@@ -55,6 +55,8 @@ export class RichTextEditorComponent implements ControlValueAccessor {
   @Input() placeholder = 'Saisissez votre texte…';
   /** Affiche le bouton de correction IA. */
   @Input() aiEnabled = true;
+  /** Hauteur minimale de la zone de saisie en px (0 = défaut CSS). */
+  @Input() minHeight = 0;
 
   disabled = false;
   aiBusy = false;

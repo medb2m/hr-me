@@ -47,6 +47,12 @@ const applicationSchema = new mongoose.Schema({
     id: { type: mongoose.Schema.Types.ObjectId, ref: 'ClientCv', default: null },
     name: { type: String, default: '' },
   },
+  // Motivation : message libre OU lettre de motivation complète partagée.
+  letterMode: { type: String, enum: ['message', 'letter'], default: 'message' },
+  sharedCl: {
+    id: { type: mongoose.Schema.Types.ObjectId, ref: 'ClientCl', default: null },
+    name: { type: String, default: '' },
+  },
   // Documents de la bibliothèque candidat copiés dans la candidature (snapshot).
   sharedDocs: { type: [applicationFileSchema], default: [] },
 },

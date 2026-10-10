@@ -1,0 +1,63 @@
+<div class="cl-hub">
+  <header class="cl-hub__head">
+    <h1 class="cl-hub__title">Mes lettres de motivation</h1>
+    <p class="cl-hub__lead">
+      Préparez une lettre par entreprise ou par type de poste — destinataire, objet, date, corps
+      rédigé avec l&rsquo;éditeur riche et l&rsquo;aide de l&rsquo;IA — puis partagez-la quand vous postulez.
+    </p>
+  </header>
+
+  <section class="cl-hub__create" aria-labelledby="cl-new-title">
+    <h2 id="cl-new-title" class="cl-hub__h2">Nouvelle lettre</h2>
+    <div class="cl-hub__row">
+      <input
+        type="text"
+        class="cl-hub__input"
+        [(ngModel)]="newName"
+        name="newClName"
+        maxlength="120"
+        placeholder="Nom de la lettre — ex. Lettre santé France"
+      />
+      <input
+        type="text"
+        class="cl-hub__input"
+        [(ngModel)]="newCompany"
+        name="newClCompany"
+        maxlength="120"
+        placeholder="Entreprise destinataire (optionnel)"
+        (keyup.enter)="createCl()"
+      />
+      <button type="button" class="cl-hub__btn cl-hub__btn--primary" [disabled]="creating" (click)="createCl()">
+        {{ creating ? 'Création…' : 'Créer et ouvrir l’éditeur' }}
+      </button>
+    </div>
+    @if (createError) {
+      <p class="cl-hub__err">{{ createError }}</p>
+    }
+  </section>
+
+  @if (loading) {
+    <p class="cl-hub__muted">Chargement…</p>
+  } @else if (loadError) {
+    <p class="cl-hub__err">{{ loadError }}</p>
+  } @else if (cls.length === 0) {
+    <p class="cl-hub__muted">Aucune lettre pour l&rsquo;instant — créez-en une ci-dessus.</p>
+  } @else {
+    <ul class="cl-hub__list">
+      @for (cl of cls; track cl._id) {
+        <li class="cl-hub__item">
+          <a [routerLink]="['/candidat/editor/cl', cl._id]" class="cl-hub__link">
+            {{ cl.name }}
+            @if (clCompany(cl); as c) {
+              <span class="cl-hub__job">· {{ c }}</span>
+            }
+          </a>
+          <span class="cl-hub__meta">Modifiée {{ cl.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+          <button type="button" class="cl-hub__btn-del" (click)="deleteCl($event, cl)">Supprimer</button>
+        </li>
+      }
+    </ul>
+  }
+
+  <app-back-button link="/candidat/overview" label="Tableau de bord" class="cl-hub__back"></app-back-button>
+</div>

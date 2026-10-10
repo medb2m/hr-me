@@ -1,0 +1,267 @@
+/* ——— Editor layout (mêmes conventions que l’éditeur CV) ——— */
+.ep-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ep-toolbar__actions {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.ep-applybadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #4d3800;
+  background: #fff6d6;
+  border: 1px solid #ffd300;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.ep-linkbtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 800;
+  color: #4d3800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ep-btn {
+  padding: 0.48rem 0.95rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.ep-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ep-btn--ghost {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.ep-btn--primary {
+  background: #ffd300;
+  border-color: #ffd300;
+  color: #0f172a;
+}
+
+.ep-btn--sm {
+  padding: 0.32rem 0.6rem;
+  font-size: 0.72rem;
+  border-radius: 8px;
+}
+
+.ep-msg {
+  font-size: 0.78rem;
+  color: #16a34a;
+  margin: 0 0 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ep-msg--ok {
+  font-weight: 700;
+}
+
+.ep-muted {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.ep-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .ep-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ep-h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.ep-lead {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0 0 1rem;
+  line-height: 1.55;
+}
+
+.ep-card {
+  background: #fff;
+  border: 1px solid #e8edf4;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 0.85rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.ep-h2 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+  color: #0f172a;
+}
+
+.ep-hint {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin: -0.2rem 0 0.65rem;
+  line-height: 1.45;
+}
+
+.ep-field {
+  display: block;
+  margin: 0.45rem 0;
+}
+
+.ep-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 0.25rem;
+}
+
+.ep-input,
+.ep-textarea {
+  width: 100%;
+  padding: 0.52rem 0.7rem;
+  font-size: 0.82rem;
+  font-family: inherit;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.ep-input:focus,
+.ep-textarea:focus {
+  border-color: #ffd300;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.22);
+}
+
+.ep-textarea {
+  min-height: 3.2rem;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.ep-check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 0.4rem 0;
+  cursor: pointer;
+}
+
+.ep-preview-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+  color: #0f172a;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ——— Spécifique lettre ——— */
+.cle-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.cle-grow {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.cle-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.cle-card-head .ep-h2 {
+  margin: 0;
+}
+
+.cle-ai-btn {
+  border-color: #ffd300;
+  color: #4d3800;
+  background: #fffbe6;
+}
+
+.cle-ai {
+  background: #fffbe6;
+  border: 1px dashed #e3b700;
+  border-radius: 10px;
+  padding: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+
+.cle-ai-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cle-ai-err {
+  font-size: 0.72rem;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.cle-spin {
+  animation: cle-rot 0.8s linear infinite;
+}
+
+@keyframes cle-rot {
+  to {
+    transform: rotate(360deg);
+  }
+}

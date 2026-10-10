@@ -12,4 +12,15 @@ export class AiTextService {
   correctText(text: string): Observable<{ corrected: string }> {
     return this.http.post<{ corrected: string }>(`${this.base}/correct-text`, { text });
   }
+
+  /** Génère le corps d'une lettre de motivation (HTML <p>…</p>) avec contexte optionnel. */
+  generateLetter(body: {
+    prompt?: string;
+    jobTitle?: string;
+    companyName?: string;
+    candidateName?: string;
+    userName?: string;
+  }): Observable<{ letter: string }> {
+    return this.http.post<{ letter: string }>(`${this.base}/generate-letter`, body);
+  }
 }

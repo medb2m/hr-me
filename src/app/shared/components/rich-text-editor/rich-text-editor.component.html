@@ -104,6 +104,7 @@
   <div
     #editor
     class="rte__area"
+    [style.min-height.px]="minHeight || null"
     [attr.contenteditable]="disabled ? 'false' : 'true'"
     [attr.data-placeholder]="placeholder"
     role="textbox"

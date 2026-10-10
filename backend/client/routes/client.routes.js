@@ -7,6 +7,7 @@ import { uploadClientCvPhoto } from '../middleware/client-cv-photo.multer.js';
 import { uploadClientDocument } from '../middleware/client-document.multer.js';
 import * as clientProfile from '../controllers/client-profile.controller.js';
 import * as clientCv from '../controllers/client-cv.controller.js';
+import * as clientCl from '../controllers/client-cl.controller.js';
 import * as clientDocs from '../controllers/client-documents.controller.js';
 
 const router = Router();
@@ -38,6 +39,13 @@ router.post(
   multerSingleHandler(uploadClientCvPhoto, 'photo'),
   clientCv.uploadCvPhoto,
 );
+
+router.get('/cls', clientCl.listCls);
+router.post('/cls', clientCl.createCl);
+router.get('/cls/:clId', clientCl.getCl);
+router.patch('/cls/:clId', clientCl.patchCl);
+router.put('/cls/:clId', clientCl.patchCl);
+router.delete('/cls/:clId', clientCl.deleteCl);
 
 router.get('/documents', clientDocs.listDocuments);
 router.post(

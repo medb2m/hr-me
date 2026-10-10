@@ -76,6 +76,9 @@ export interface AdminApplication {
   attachments: AppFile[];
   sharedProfile: boolean;
   sharedCv: { id: string; name: string } | null;
+  /** Motivation : message libre ou lettre complète partagée. */
+  letterMode: 'message' | 'letter';
+  sharedCl: { id: string; name: string } | null;
   sharedDocs: SharedDoc[];
   adminNotes: string;
   createdAt: string;
@@ -89,6 +92,12 @@ export interface AdminApplication {
     editorState: Record<string, unknown>;
     photoSource: string;
     customPhotoUrl: string;
+  } | null;
+  /** Lettre partagée complète — présente sur le détail (`GET /admin/applications/:id`). */
+  sharedClDoc?: {
+    _id: string;
+    name: string;
+    editorState: Record<string, unknown>;
   } | null;
 }
 

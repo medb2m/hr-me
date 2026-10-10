@@ -31,7 +31,9 @@ import {
   AppSource,
 } from '../../services/admin-applications-api.service';
 import { CvPreviewComponent } from '../../../../shared/components/cv-preview/cv-preview.component';
+import { ClPreviewComponent } from '../../../../shared/components/cl-preview/cl-preview.component';
 import { CvEditorState, mergeCvEditorState } from '../../../client/models/cv-editor-state';
+import { ClEditorState, mergeClEditorState } from '../../../client/models/cl-editor-state';
 
 const STATUS_META: Record<AdminAppStatus, { label: string; cls: string }> = {
   pending: { label: 'Envoyée', cls: 'pending' },
@@ -53,6 +55,7 @@ const SOURCE_META: Record<AppSource, string> = {
     RouterLink,
     FormsModule,
     CvPreviewComponent,
+    ClPreviewComponent,
     LucideArrowLeft,
     LucideBriefcase,
     LucideCheckCircle,
@@ -88,6 +91,7 @@ export class AdminApplicantComponent implements OnInit {
   noteSaved = false;
   notes = '';
   cvPreviewOpen = false;
+  clPreviewOpen = false;
 
   /** `editorState` fusionné du CV partagé — pour `app-cv-preview`. */
   sharedCvState(): CvEditorState {
@@ -102,6 +106,11 @@ export class AdminApplicantComponent implements OnInit {
       return doc.customPhotoUrl;
     }
     return this.app?.profile?.photoUrl || this.app?.user?.avatarUrl || null;
+  }
+
+  /** `editorState` fusionné de la lettre partagée — pour `app-cl-preview`. */
+  sharedClState(): ClEditorState {
+    return mergeClEditorState(this.app?.sharedClDoc?.editorState);
   }
 
   ngOnInit(): void {

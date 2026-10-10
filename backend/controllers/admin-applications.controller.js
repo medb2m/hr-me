@@ -3,6 +3,7 @@ import { Application } from '../models/application.js';
 import { Offer } from '../models/offer.js';
 import { ClientProfile } from '../models/client-profile.model.js';
 import { ClientCv } from '../models/client-cv.model.js';
+import { ClientCl } from '../models/client-cl.model.js';
 import { User } from '../models/user.model.js';
 
 const STATUS_VALUES = new Set(['pending', 'review', 'accepted', 'rejected']);
@@ -32,6 +33,8 @@ function appDto(a, profile = null, user = null) {
     attachments: (a.attachments || []).map(fileDto),
     sharedProfile: !!a.sharedProfile,
     sharedCv: a.sharedCv?.id ? { id: a.sharedCv.id, name: a.sharedCv.name || '' } : null,
+    letterMode: a.letterMode === 'letter' ? 'letter' : 'message',
+    sharedCl: a.sharedCl?.id ? { id: a.sharedCl.id, name: a.sharedCl.name || '' } : null,
     sharedDocs: (a.sharedDocs || []).map((f) => ({ ...fileDto(f), kind: f.kind || 'other' })),
     adminNotes: a.adminNotes || '',
     createdAt: a.createdAt,
@@ -142,12 +145,13 @@ export const getApplication = async (req, res) => {
       .lean();
     if (!a) return res.status(404).json({ message: 'Candidature introuvable.' });
 
-    const [user, profile, sharedCvDoc] = await Promise.all([
+    const [user, profile, sharedCvDoc, sharedClDoc] = await Promise.all([
       a.appliedBy
         ? User.findById(a.appliedBy).select('email role name avatarUrl createdAt').lean()
         : null,
       a.appliedBy ? ClientProfile.findOne({ user: a.appliedBy }).lean() : null,
       a.sharedCv?.id ? ClientCv.findById(a.sharedCv.id).lean() : null,
+      a.sharedCl?.id ? ClientCl.findById(a.sharedCl.id).lean() : null,
     ]);
 
     const prof = profile
@@ -184,6 +188,14 @@ export const getApplication = async (req, res) => {
               editorState: sharedCvDoc.editorState || {},
               photoSource: sharedCvDoc.photoSource || 'profile',
               customPhotoUrl: sharedCvDoc.customPhotoUrl || '',
+            }
+          : null,
+        // Lettre de motivation partagée complète — pour l'aperçu admin.
+        sharedClDoc: sharedClDoc
+          ? {
+              _id: sharedClDoc._id,
+              name: sharedClDoc.name || '',
+              editorState: sharedClDoc.editorState || {},
             }
           : null,
       },

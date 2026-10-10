@@ -140,13 +140,88 @@
               </div>
             </div>
 
+            <!-- ======== Motivation : message OU lettre complète ======== -->
             <div class="od-field">
-              <label>Message / lettre de motivation</label>
-              <app-rich-text-editor
-                [(ngModel)]="appMessage"
-                placeholder="Présentez-vous en quelques lignes : expérience, motivation, disponibilité…"
-              />
+              <label>Motivation</label>
+              <div class="od-modes">
+                <button
+                  type="button"
+                  class="od-mode"
+                  [class.on]="letterMode === 'message'"
+                  (click)="setLetterMode('message')"
+                >
+                  <svg lucidePenLine [size]="15"></svg>
+                  <span class="od-mode-main">
+                    <strong>Message de motivation</strong>
+                    <em>Un court texte libre, rédigé ici</em>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="od-mode"
+                  [class.on]="letterMode === 'letter'"
+                  (click)="setLetterMode('letter')"
+                >
+                  <svg lucideMail [size]="15"></svg>
+                  <span class="od-mode-main">
+                    <strong>Lettre de motivation complète</strong>
+                    <em>Une lettre de ton espace, mise en page et datée</em>
+                  </span>
+                </button>
+              </div>
             </div>
+
+            @if (letterMode === 'message') {
+              <div class="od-field">
+                <app-rich-text-editor
+                  [(ngModel)]="appMessage"
+                  placeholder="Présentez-vous en quelques lignes : expérience, motivation, disponibilité…"
+                />
+              </div>
+            } @else {
+              <div class="od-block">
+                <div class="od-block-head">
+                  <h3><svg lucideMail [size]="15"></svg> Lettre à partager</h3>
+                  <a routerLink="/candidat/editor/cl" class="od-block-link" target="_blank">
+                    <svg lucideExternalLink [size]="12"></svg> Mes lettres
+                  </a>
+                </div>
+
+                @if (assetsLoading) {
+                  <p class="od-muted">Chargement de tes lettres…</p>
+                } @else if (!cls.length) {
+                  <p class="od-muted">
+                    Aucune lettre enregistrée —
+                    <a routerLink="/candidat/editor/cl" class="od-inline-link">crée-en une dans l&rsquo;éditeur</a>
+                    pour la partager ici.
+                  </p>
+                } @else {
+                  <div class="od-cvlist">
+                    @for (cl of cls; track cl._id) {
+                      <label class="od-cv" [class.on]="sharedClId === cl._id">
+                        <input type="radio" name="sharedCl" [value]="cl._id" [(ngModel)]="sharedClId" />
+                        <span class="od-cv-main">
+                          <strong>{{ cl.name }}</strong>
+                          <em>modifiée le {{ fmtDate(cl.updatedAt || null) }}</em>
+                        </span>
+                        <button
+                          type="button"
+                          class="od-cv-edit"
+                          [disabled]="customizingClId === cl._id"
+                          (click)="$event.stopPropagation(); customizeCl(cl)"
+                          title="Créer une copie personnalisée de cette lettre (nouvel onglet)">
+                          <svg lucidePenLine [size]="13"></svg>
+                          {{ customizingClId === cl._id ? 'Duplication…' : 'Personnaliser' }}
+                        </button>
+                      </label>
+                    }
+                  </div>
+                  @if (!sharedClId) {
+                    <p class="od-cv-note od-cv-note--err">Choisis une lettre à joindre à ta candidature.</p>
+                  }
+                }
+              </div>
+            }
 
             <!-- ======== CV à partager ======== -->
             <div class="od-block">
