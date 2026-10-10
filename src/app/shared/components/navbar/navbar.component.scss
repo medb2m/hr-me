@@ -705,3 +705,189 @@
   .profile-trigger { padding: 5px; border-radius: 50%; }
   .profile-caret { display: none; }
 }
+
+// ================================================================
+//  CMDBAR — recherche fonctionnalités (admin), style Spotlight
+// ================================================================
+.cmdbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(520px, 100%);
+  height: 40px;
+  padding: 0 10px 0 14px;
+  border-radius: 999px;
+  background: v.$clr-surface-2;
+  border: 1.5px solid v.$clr-border;
+  transition: border-color v.$dur, box-shadow v.$dur, background v.$dur;
+
+  &:focus-within {
+    background: #fff;
+    border-color: v.$clr-primary;
+    box-shadow: 0 0 0 4px rgba(v.$clr-primary, 0.28);
+  }
+}
+
+.cmdbar__icon {
+  width: 16px;
+  height: 16px;
+  color: v.$clr-text-muted;
+  flex-shrink: 0;
+}
+
+.cmdbar__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: v.$text-sm;
+  color: v.$clr-text;
+
+  &::placeholder { color: v.$clr-text-muted; }
+}
+
+.cmdbar__clear {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: v.$clr-border;
+  color: v.$clr-text-2;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover { background: #cbd5e1; }
+}
+
+.cmdbar__kbd {
+  flex-shrink: 0;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: v.$clr-text-muted;
+  background: #fff;
+  border: 1px solid v.$clr-border;
+  border-radius: 6px;
+  padding: 3px 7px;
+  box-shadow: 0 1px 0 v.$clr-border;
+
+  @include m.respond-to(lg) {
+    display: none;
+  }
+}
+
+// ---- panneau de suggestions ----
+.cmd-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 92vw);
+  max-height: 420px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid v.$clr-border;
+  border-radius: 16px;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
+  padding: 6px;
+  z-index: 1200;
+  animation: cmd-in 0.16s ease;
+}
+
+@keyframes cmd-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &.on {
+    background: rgba(v.$clr-primary, 0.22);
+  }
+}
+
+.cmd-item__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: v.$clr-surface-2;
+  border: 1px solid v.$clr-border;
+  flex-shrink: 0;
+  transition: background 0.12s ease, border-color 0.12s ease;
+
+  svg {
+    width: 17px;
+    height: 17px;
+    color: v.$clr-text-2;
+  }
+
+  .cmd-item.on & {
+    background: linear-gradient(135deg, v.$clr-primary, #f4c900);
+    border-color: transparent;
+
+    svg { color: v.$clr-primary-dark; }
+  }
+}
+
+.cmd-item__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.cmd-item__label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: v.$clr-text;
+  line-height: 1.25;
+}
+
+.cmd-item__path {
+  font-size: 0.72rem;
+  color: v.$clr-text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.cmd-item__go {
+  width: 15px;
+  height: 15px;
+  color: #cbd5e1;
+  flex-shrink: 0;
+  transition: color 0.12s ease, transform 0.12s ease;
+
+  .cmd-item.on & {
+    color: v.$clr-primary-dark;
+    transform: translateX(2px);
+  }
+}
+
+.cmd-empty {
+  margin: 0;
+  padding: 1.6rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: v.$clr-text-muted;
+}

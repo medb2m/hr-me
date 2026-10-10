@@ -25,6 +25,13 @@
     <div class="nav-section-label">Website</div>
     <ul class="nav-list">
       <li>
+        <a class="nav-item" routerLink="/home" routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact:true}" (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><svg lucideGauge class="lc-icon"></svg></span>
+          <span class="nav-label">Home</span>
+        </a>
+      </li>
+      <li>
         <a class="nav-item" routerLink="/jobs" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
           <span class="nav-icon"><svg lucideBriefcase class="lc-icon"></svg></span>
           <span class="nav-label">Open jobs</span>
@@ -40,6 +47,12 @@
         <a class="nav-item" routerLink="/about" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
           <span class="nav-icon"><svg lucideInfo class="lc-icon"></svg></span>
           <span class="nav-label">About</span>
+        </a>
+      </li>
+      <li>
+        <a class="nav-item" routerLink="/contact" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
+          <span class="nav-icon"><svg lucideInbox class="lc-icon"></svg></span>
+          <span class="nav-label">Contact</span>
         </a>
       </li>
     </ul>
@@ -263,11 +276,78 @@
     </div>
 
     <nav class="topnav-center" aria-label="Site pages">
-      <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="topnav-link">Home</a>
-      <a routerLink="/jobs" routerLinkActive="active" class="topnav-link">Jobs</a>
-      <a routerLink="/services" routerLinkActive="active" class="topnav-link">Services</a>
-      <a routerLink="/about" routerLinkActive="active" class="topnav-link">About</a>
-      <a routerLink="/contact" routerLinkActive="active" class="topnav-link">Contact</a>
+      @if (isAdmin) {
+        <!-- Barre de recherche fonctionnalités — style Spotlight -->
+        <div class="cmdbar" (keydown)="onSearchKey($event)">
+          <svg lucideSearch class="cmdbar__icon" aria-hidden="true"></svg>
+          <input
+            #cmdInput
+            class="cmdbar__input"
+            type="text"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchInput()"
+            (focus)="openSearch()"
+            placeholder="Rechercher une fonctionnalité…"
+            aria-label="Rechercher une fonctionnalité"
+            autocomplete="off"
+          />
+          @if (searchQuery) {
+            <button type="button" class="cmdbar__clear" (click)="clearSearch()" aria-label="Effacer">×</button>
+          }
+          <kbd class="cmdbar__kbd">Ctrl K</kbd>
+
+          @if (searchOpen) {
+            <div class="cmd-panel" role="listbox" aria-label="Suggestions">
+              @for (it of searchResults(); track it.link; let i = $index) {
+                <button
+                  type="button"
+                  class="cmd-item"
+                  [class.on]="i === searchActive"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="pickResult(it)"
+                  (mouseenter)="searchActive = i"
+                  role="option"
+                  [attr.aria-selected]="i === searchActive"
+                >
+                  <span class="cmd-item__icon" aria-hidden="true">
+                    @switch (it.icon) {
+                      @case ('shield') { <svg lucideShield></svg> }
+                      @case ('usercog') { <svg lucideUserCog></svg> }
+                      @case ('inbox') { <svg lucideInbox></svg> }
+                      @case ('userplus') { <svg lucideUserPlus></svg> }
+                      @case ('users') { <svg lucideUsers></svg> }
+                      @case ('list') { <svg lucideList></svg> }
+                      @case ('pluscircle') { <svg lucidePlusCircle></svg> }
+                      @case ('briefcase') { <svg lucideBriefcase></svg> }
+                      @case ('network') { <svg lucideNetwork></svg> }
+                      @case ('bot') { <svg lucideBot></svg> }
+                      @case ('video') { <svg lucideVideo></svg> }
+                      @case ('ticket') { <svg lucideTicket></svg> }
+                      @case ('sparkles') { <svg lucideSparkles></svg> }
+                      @case ('calendar') { <svg lucideCalendar></svg> }
+                      @case ('usercircle') { <svg lucideUserCircle></svg> }
+                      @case ('settings') { <svg lucideSettings></svg> }
+                    }
+                  </span>
+                  <span class="cmd-item__body">
+                    <span class="cmd-item__label">{{ it.label }}</span>
+                    <span class="cmd-item__path">{{ it.crumbs.join(' › ') }} › {{ it.label }}</span>
+                  </span>
+                  <svg lucideChevronRight class="cmd-item__go" aria-hidden="true"></svg>
+                </button>
+              } @empty {
+                <p class="cmd-empty">Aucun résultat pour « {{ searchQuery }} »</p>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="topnav-link">Home</a>
+        <a routerLink="/jobs" routerLinkActive="active" class="topnav-link">Jobs</a>
+        <a routerLink="/services" routerLinkActive="active" class="topnav-link">Services</a>
+        <a routerLink="/about" routerLinkActive="active" class="topnav-link">About</a>
+        <a routerLink="/contact" routerLinkActive="active" class="topnav-link">Contact</a>
+      }
     </nav>
 
     <div class="topnav-end">
