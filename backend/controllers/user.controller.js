@@ -8,6 +8,7 @@ import {
 } from '../email/mailer.js';
 import { smtpErrorPayload } from '../email/smtp-errors.js';
 import { getFrontendBaseUrl } from '../config/public-url.js';
+import { cleanPersonNameInput } from '../helpers/person-name.js';
 
 const BCRYPT_ROUNDS = 10;
 const EMAIL_CHANGE_HOURS = 48;
@@ -54,7 +55,11 @@ export async function updateMe(req, res) {
 
     const body = req.body || {};
     if (Object.prototype.hasOwnProperty.call(body, 'name')) {
-      user.name = typeof body.name === 'string' ? body.name.trim().slice(0, 80) : '';
+      const { name: cleanName, error: nameError } = cleanPersonNameInput(body.name);
+      if (nameError) {
+        return res.status(400).json({ message: nameError });
+      }
+      user.name = cleanName;
     }
     if (Object.prototype.hasOwnProperty.call(body, 'timeZone')) {
       const tz = typeof body.timeZone === 'string' ? body.timeZone.trim() : '';

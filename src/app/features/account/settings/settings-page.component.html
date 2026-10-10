@@ -88,7 +88,7 @@
 
         <label class="field">
           <span class="field-label">Nom complet</span>
-          <input type="text" [(ngModel)]="name" maxlength="80" placeholder="Votre nom" autocomplete="name">
+          <input type="text" [(ngModel)]="name" maxlength="80" placeholder="Prénom puis nom — ex. Mohamed Ben Mohamed" autocomplete="name" (blur)="onNameBlur()">
         </label>
 
         <label class="field">

@@ -20,6 +20,7 @@ import { BackButtonComponent } from '../../../shared/components/back-button/back
 import { ProfilePhotoUploadComponent } from '../../../shared/components/profile-photo-upload/profile-photo-upload.component';
 import { ClientProfileApiService } from '../../client/services/client-profile-api.service';
 import { AccountApiService, AccountUser } from '../services/account-api.service';
+import { normalizePersonName } from '../../../shared/utils/person-name';
 
 const DEFAULT_AVATAR = '/assets/img/default-avatar.jpg';
 
@@ -227,6 +228,14 @@ export class SettingsPageComponent implements OnInit {
         },
         error: () => {},
       });
+  }
+
+  /** Normalise la casse du nom à la sortie du champ (même règle qu'à l'inscription). */
+  onNameBlur(): void {
+    const normalized = normalizePersonName(this.name);
+    if (normalized !== this.name.trim()) {
+      this.name = normalized;
+    }
   }
 
   saveProfile(): void {

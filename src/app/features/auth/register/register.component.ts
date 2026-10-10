@@ -7,6 +7,7 @@ import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthVisualComponent } from '../auth-visual/auth-visual.component';
+import { isValidPersonName, normalizePersonName } from '../../../shared/utils/person-name';
 
 @Component({
   selector: 'app-register',
@@ -20,6 +21,8 @@ export class RegisterComponent {
   successMsg = '';
   showPassword = false;
   showConfirm = false;
+  /** Suggestion douce — ex. un seul mot saisi ou caractères invalides. */
+  nameHint = '';
 
   form = this.fb.nonNullable.group({
     name: [''],
@@ -27,6 +30,38 @@ export class RegisterComponent {
     password: ['', [Validators.required, Validators.minLength(8)]],
     confirm: ['', Validators.required],
   });
+
+  /** Au blur : normalise la casse (« mohamed ben mohamed » → « Mohamed ben Mohamed »). */
+  onNameBlur(): void {
+    const ctrl = this.form.controls.name;
+    const raw = ctrl.value;
+    if (!raw.trim()) {
+      this.nameHint = '';
+      return;
+    }
+    const normalized = normalizePersonName(raw);
+    if (normalized !== raw.trim()) {
+      ctrl.setValue(normalized);
+    }
+    this.updateNameHint();
+  }
+
+  /** Indice non bloquant — caractères invalides ou prénom probablement manquant. */
+  private updateNameHint(): void {
+    const raw = this.form.controls.name.value.trim();
+    if (!raw) {
+      this.nameHint = '';
+      return;
+    }
+    if (!isValidPersonName(raw)) {
+      this.nameHint = 'Le nom ne doit contenir que des lettres, espaces, tirets et apostrophes.';
+      return;
+    }
+    this.nameHint =
+      raw.split(/\s+/).length < 2
+        ? 'Pensez à indiquer votre prénom puis votre nom — ex. « Mohamed Ben Mohamed ».'
+        : '';
+  }
 
   passwordMismatch(): boolean {
     const confirm = this.form.controls.confirm;
@@ -53,12 +88,20 @@ export class RegisterComponent {
       this.errorMsg = 'Les mots de passe ne correspondent pas.';
       return;
     }
+    // Nom : bloquant seulement si des caractères invalides ont été saisis.
+    const normalizedName = normalizePersonName(this.form.controls.name.value);
+    if (normalizedName && !isValidPersonName(normalizedName)) {
+      this.errorMsg =
+        'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.';
+      this.form.controls.name.markAsTouched();
+      return;
+    }
     this.submitting = true;
     this.errorMsg = '';
     this.successMsg = '';
     const v = this.form.getRawValue();
     this.auth
-      .register({ name: v.name?.trim() || undefined, email: v.email.trim(), password: v.password })
+      .register({ name: normalizedName || undefined, email: v.email.trim(), password: v.password })
       .pipe(finalize(() => (this.submitting = false)))
       .subscribe({
         next: () => {

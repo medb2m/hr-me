@@ -13,6 +13,7 @@ import {
 import { smtpErrorPayload } from '../email/smtp-errors.js';
 import { getFrontendBaseUrl } from '../config/public-url.js';
 import { getJwtSecret } from '../utils/jwt.js';
+import { cleanPersonNameInput } from '../helpers/person-name.js';
 
 const BCRYPT_ROUNDS = 10;
 const EMAIL_VERIFY_HOURS = 48;
@@ -45,6 +46,11 @@ export async function register(req, res) {
       return res.status(400).json({ message: 'Password must be at least 8 characters.' });
     }
 
+    const { name: cleanName, error: nameError } = cleanPersonNameInput(name);
+    if (nameError) {
+      return res.status(400).json({ message: nameError });
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
     const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
@@ -59,7 +65,7 @@ export async function register(req, res) {
     const user = await User.create({
       email: normalizedEmail,
       passwordHash,
-      name: typeof name === 'string' ? name.trim() : '',
+      name: cleanName,
       role: 'client',
       emailVerified: false,
       emailVerifyToken: verifyToken,
@@ -476,6 +482,11 @@ export async function bootstrapAdmin(req, res) {
       return res.status(400).json({ message: 'Password must be at least 8 characters.' });
     }
 
+    const { name: cleanName, error: nameError } = cleanPersonNameInput(name);
+    if (nameError) {
+      return res.status(400).json({ message: nameError });
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
     const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
@@ -488,7 +499,7 @@ export async function bootstrapAdmin(req, res) {
     const user = await User.create({
       email: normalizedEmail,
       passwordHash,
-      name: typeof name === 'string' ? name.trim() : '',
+      name: cleanName,
       role: 'admin',
       emailVerified: true,
       emailVerifyToken: null,

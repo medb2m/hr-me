@@ -16,8 +16,18 @@
 
     <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="field">
-        <label for="name">Nom (optionnel)</label>
-        <input id="name" type="text" formControlName="name" autocomplete="name" placeholder="Votre nom" />
+        <label for="name">Nom complet <small>(optionnel)</small></label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          autocomplete="name"
+          placeholder="Prénom puis nom — ex. Mohamed Ben Mohamed"
+          (blur)="onNameBlur()"
+        />
+        @if (nameHint) {
+          <span class="hint">{{ nameHint }}</span>
+        }
       </div>
       <div class="field">
         <label for="email">E-mail</label>
