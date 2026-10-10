@@ -79,6 +79,9 @@
 
 .user-area {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .user-trigger {

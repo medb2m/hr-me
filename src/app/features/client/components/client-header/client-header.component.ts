@@ -9,12 +9,14 @@ import {
   LucideUserRound,
 } from '@lucide/angular';
 import { AuthService } from '../../../../core/services/auth.service';
+import { NotifBellComponent } from '../../../../shared/components/notif-bell/notif-bell.component';
 
 @Component({
   selector: 'app-client-header',
   imports: [
     CommonModule,
     RouterLink,
+    NotifBellComponent,
     LucideChevronDown,
     LucideLayoutGrid,
     LucideLogOut,

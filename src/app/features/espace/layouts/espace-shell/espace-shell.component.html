@@ -23,6 +23,7 @@
   </nav>
 
   <div class="user-area">
+    <app-notif-bell />
     <button type="button" class="user-trigger" (click)="dropdownOpen = !dropdownOpen"
             aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen">
       <span class="u-avatar" aria-hidden="true"><img [src]="auth.user()?.avatarUrl || '/assets/img/default-avatar.jpg'" alt="" class="u-avatar__img" /></span>

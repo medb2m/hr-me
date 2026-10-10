@@ -12,6 +12,7 @@
     <a routerLink="/candidat/profile" routerLinkActive="is-active">Profil</a>
   </nav>
   <div class="client-header__actions">
+    <app-notif-bell />
     @if (user(); as u) {
       <div class="ch-user">
         <button

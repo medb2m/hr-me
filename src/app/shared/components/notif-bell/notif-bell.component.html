@@ -1,0 +1,70 @@
+<div class="nb-wrap">
+  <button
+    type="button"
+    class="nb-btn"
+    [class.nb-btn--live]="notifHub.socketStatus() === 'CONNECTED'"
+    title="Notifications"
+    aria-label="Notifications"
+    [attr.aria-expanded]="notifHub.panelOpen()"
+    (click)="togglePanel($event)">
+    <svg lucideBell [size]="17" [class.nb-swing]="notifHub.unreadTotal() > 0"></svg>
+    @if (notifHub.unreadLabel()) {
+      <span class="nb-badge">{{ notifHub.unreadLabel() }}</span>
+    }
+  </button>
+
+  @if (notifHub.panelOpen()) {
+    <div class="nb-panel" role="dialog" aria-label="Notifications" (click)="$event.stopPropagation()">
+      <div class="nb-panel-head">
+        <strong>Notifications</strong>
+        <div class="nb-panel-head-actions">
+          <span class="nb-live" [class.nb-live--on]="notifHub.socketStatus() === 'CONNECTED'"></span>
+          <button type="button" class="nb-link" (click)="notifHub.markAllRead()">Tout lu</button>
+        </div>
+      </div>
+      <ul class="nb-list">
+        @for (n of notifHub.items(); track trackId($index, n)) {
+          <li
+            class="nb-item"
+            [class.nb-item--unread]="!n.read"
+            (click)="notifHub.markReadAndGo(n)">
+            <span class="nb-ico" [attr.data-icon]="n.icon">
+              @switch (n.icon) {
+                @case ('send') { <svg lucideSend [size]="15"></svg> }
+                @case ('user-plus') { <svg lucideUserPlus [size]="15"></svg> }
+                @case ('check-circle') { <svg lucideCheckCircle [size]="15"></svg> }
+                @case ('x-circle') { <svg lucideXCircle [size]="15"></svg> }
+                @case ('clock') { <svg lucideClock [size]="15"></svg> }
+                @case ('briefcase') { <svg lucideBriefcase [size]="15"></svg> }
+                @case ('mail') { <svg lucideMail [size]="15"></svg> }
+                @case ('file-check') { <svg lucideFileCheck [size]="15"></svg> }
+                @case ('file-warning') { <svg lucideFileWarning [size]="15"></svg> }
+                @case ('calendar') { <svg lucideCalendar [size]="15"></svg> }
+                @case ('sparkles') { <svg lucideSparkles [size]="15"></svg> }
+                @default { <svg lucideBell [size]="15"></svg> }
+              }
+            </span>
+            <span class="nb-txt">
+              <span class="nb-title">{{ n.title }}</span>
+              @if (n.body) {
+                <span class="nb-body">{{ n.body }}</span>
+              }
+              <span class="nb-meta">
+                {{ timeAgo(n.createdAt) }}
+                @if (n.actionLabel) { · {{ n.actionLabel }} → }
+              </span>
+            </span>
+            @if (!n.read) { <span class="nb-dot" aria-hidden="true"></span> }
+            <button type="button" class="nb-dismiss" (click)="notifHub.dismiss(n, $event)" aria-label="Masquer">×</button>
+          </li>
+        } @empty {
+          <li class="nb-empty">
+            <span class="nb-ico nb-ico--ghost"><svg lucideBell [size]="16"></svg></span>
+            <p>Aucune notification pour l’instant.</p>
+            <span class="nb-empty-sub">Candidatures, offres et documents apparaîtront ici.</span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>

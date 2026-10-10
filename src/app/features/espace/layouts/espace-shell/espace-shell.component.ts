@@ -15,6 +15,7 @@ import {
 } from '@lucide/angular';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationsHubService } from '../../../../core/services/notifications-hub.service';
+import { NotifBellComponent } from '../../../../shared/components/notif-bell/notif-bell.component';
 
 /** Shell de l'espace client : topbar anthracite + dropdown utilisateur. */
 @Component({
@@ -24,6 +25,7 @@ import { NotificationsHubService } from '../../../../core/services/notifications
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
+    NotifBellComponent,
     LucideBriefcase,
     LucideChevronDown,
     LucideCrown,
