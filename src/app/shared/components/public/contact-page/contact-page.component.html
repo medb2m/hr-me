@@ -1,0 +1,106 @@
+<section class="page-hero">
+  <span class="page-eyebrow">Al Wassit — Nous contacter</span>
+  <h1>Contactez-nous</h1>
+  <p class="page-lead">
+    Une question sur un placement à l'international, votre dossier, ou un partenariat
+    entreprise ? Notre équipe vous répond sous 24 à 48&nbsp;h ouvrées.
+  </p>
+</section>
+
+<section class="contact-wrap">
+  <!-- Colonne infos -->
+  <aside class="contact-side">
+    <div class="photo-slot" aria-hidden="true">
+      <svg lucideMapPin [size]="34"></svg>
+      <span>Photo — notre agence / notre équipe</span>
+    </div>
+
+    <div class="side-block">
+      <h3>Nos coordonnées</h3>
+      <p class="side-row"><svg lucideMapPin [size]="16"></svg> [Adresse complète, Ville, Tunisie]</p>
+      <p class="side-row"><svg lucidePhone [size]="16"></svg> [N° Téléphone]</p>
+      <p class="side-row"><svg lucideMail [size]="16"></svg> [Adresse E-mail professionnelle]</p>
+      <p class="side-row"><svg lucideClock [size]="16"></svg> Lun – Sam : 9h00 – 18h00</p>
+    </div>
+
+    <div class="side-block side-block--partner">
+      <svg lucideHandshake [size]="22" aria-hidden="true"></svg>
+      <div>
+        <h3>Entreprises</h3>
+        <p>Vous recrutez à l'étranger ? Choisissez « Partenariat entreprise » dans le formulaire.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Formulaire -->
+  <div class="contact-form-card">
+    @if (sent) {
+      <div class="sent">
+        <span class="sent__icon"><svg lucideCheck [size]="34"></svg></span>
+        <h2>Message envoyé !</h2>
+        <p>
+          Merci {{ name.split(' ')[0] }} — votre message a bien été transmis à notre équipe.
+          Un <strong>e-mail de confirmation</strong> vient d'être envoyé à
+          <strong>{{ email }}</strong>.
+        </p>
+        <a routerLink="/home" class="btn-cta">Retour à l'accueil</a>
+      </div>
+    } @else {
+      <h2 class="form-title">Écrivez-nous</h2>
+
+      <div class="form-grid">
+        <label class="fld">
+          <span>Nom complet *</span>
+          <input type="text" [(ngModel)]="name" name="c-name" maxlength="120" placeholder="Votre nom" />
+        </label>
+        <label class="fld">
+          <span>E-mail *</span>
+          <input type="email" [(ngModel)]="email" name="c-email" maxlength="190" placeholder="vous@exemple.com" />
+        </label>
+        <label class="fld">
+          <span>Téléphone</span>
+          <input type="tel" [(ngModel)]="phone" name="c-phone" maxlength="40" placeholder="+216 …" />
+        </label>
+        <label class="fld">
+          <span>Entreprise <em>(optionnel)</em></span>
+          <input type="text" [(ngModel)]="company" name="c-company" maxlength="140" placeholder="Nom de votre société" />
+        </label>
+      </div>
+
+      <label class="fld">
+        <span>Sujet</span>
+        <select [(ngModel)]="subject" name="c-subject">
+          @for (s of subjects; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="fld">
+        <span>Message *</span>
+        <textarea
+          [(ngModel)]="message"
+          name="c-message"
+          rows="6"
+          maxlength="5000"
+          placeholder="Décrivez votre demande…"
+        ></textarea>
+      </label>
+
+      <!-- honeypot anti-bot -->
+      <input type="text" [(ngModel)]="website" name="c-website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+      @if (errorMsg) {
+        <p class="form-error">{{ errorMsg }}</p>
+      }
+
+      <button type="button" class="btn-cta btn-send" [disabled]="!canSubmit" (click)="submit()">
+        <svg lucideSend [size]="16" aria-hidden="true"></svg>
+        {{ sending ? 'Envoi en cours…' : 'Envoyer le message' }}
+      </button>
+      <p class="form-note">* champs requis — vos données restent confidentielles.</p>
+    }
+  </div>
+</section>
+
+<p class="contact-back"><app-back-button label="Retour à l'accueil"></app-back-button></p>

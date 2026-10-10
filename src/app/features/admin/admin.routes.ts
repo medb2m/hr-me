@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AdminContactsComponent } from './pages/admin-contacts/admin-contacts.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { adminRequiredGuard } from '../../core/guards/admin-required.guard';
@@ -15,6 +16,11 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: 'users',
     component: AdminUsersComponent,
+    canActivate: [adminRequiredGuard],
+  },
+  {
+    path: 'contacts',
+    component: AdminContactsComponent,
     canActivate: [adminRequiredGuard],
   },
 ];

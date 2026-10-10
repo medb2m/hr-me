@@ -1,21 +1,35 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
-  LucideCircleCheckBig,
-  LucideLock,
-  LucideShieldCheck,
+  LucideAward,
+  LucideBuilding2,
+  LucideClipboardList,
   LucideGlobe,
-  LucideGauge,
+  LucideGraduationCap,
+  LucideHandshake,
+  LucideMapPin,
+  LucidePlane,
+  LucideRocket,
+  LucideShieldCheck,
+  LucideUsers,
 } from '@lucide/angular';
 import { BackButtonComponent } from '../../back-button/back-button.component';
 
 @Component({
   selector: 'app-about-page',
   imports: [
-    LucideCircleCheckBig,
-    LucideLock,
-    LucideShieldCheck,
+    RouterLink,
+    LucideAward,
+    LucideBuilding2,
+    LucideClipboardList,
     LucideGlobe,
-    LucideGauge,
+    LucideGraduationCap,
+    LucideHandshake,
+    LucideMapPin,
+    LucidePlane,
+    LucideRocket,
+    LucideShieldCheck,
+    LucideUsers,
     BackButtonComponent,
   ],
   templateUrl: './about-page.component.html',

@@ -23,6 +23,7 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import clientRoutes from './client/routes/client.routes.js';
+import contactRoutes from './routes/contact.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import meetingsRoutes from './routes/meetings.routes.js';
@@ -72,6 +73,9 @@ app.use('/api/users', userRoutes);
 
 // Admin (JWT + role admin)
 app.use('/api/admin', adminRoutes);
+
+// Formulaire de contact public (page /contact)
+app.use('/api/contact', contactRoutes);
 
 // Dossier de placement (JWT + role client|candidate) — profil, photo, CV
 app.use('/api/client', clientRoutes);

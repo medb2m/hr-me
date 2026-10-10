@@ -24,6 +24,7 @@ import { InterviewRoomComponent } from './features/recruitment/interview/intervi
 import { InterviewSessionsListComponent } from './features/recruitment/interview/interview-sessions-list.component';
 import { InterviewSessionDetailComponent } from './features/recruitment/interview/interview-session-detail.component';
 import { AboutPageComponent } from './shared/components/public/about-page/about-page.component';
+import { ContactPageComponent } from './shared/components/public/contact-page/contact-page.component';
 import { LegalPageComponent } from './shared/components/public/legal-page/legal-page.component';
 import { JobsPageComponent } from './shared/components/public/jobs-page/jobs-page.component';
 import { ServicesPageComponent } from './shared/components/public/services-page/services-page.component';
@@ -65,6 +66,7 @@ export const routes: Routes = [
       component: LegalPageComponent,
       data: { legal: 'cgu' },
     },
+    { path: 'contact', component: ContactPageComponent },
     { path: 'login', component: LoginComponent, canActivate: [guestOnlyGuard] },
     { path: 'register', component: RegisterComponent, canActivate: [guestOnlyGuard] },
     { path: 'forgot-password', component: ForgotPasswordComponent },

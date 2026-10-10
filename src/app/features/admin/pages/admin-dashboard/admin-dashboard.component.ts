@@ -6,6 +6,7 @@ import { finalize } from 'rxjs/operators';
 import {
   LucideBriefcase,
   LucideCalendar,
+  LucideInbox,
   LucideLayoutGrid,
   LucideTicket,
   LucideUserPlus,
@@ -23,6 +24,7 @@ import { ROLE_OPTIONS } from '../admin-users/admin-users.component';
     RouterLink,
     LucideBriefcase,
     LucideCalendar,
+    LucideInbox,
     LucideLayoutGrid,
     LucideTicket,
     LucideUserPlus,

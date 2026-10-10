@@ -133,6 +133,19 @@ export async function sendEmailChangeVerify({ to, userName, confirmUrl }) {
   });
 }
 
+/** Confirmation envoyée à un visiteur après le formulaire /contact. */
+export async function sendContactConfirmation({ to, userName, subject, messageExcerpt }) {
+  const v = templateDefaults({ userName, subject, messageExcerpt });
+  const html = renderTemplate('contact-confirmation.html', v);
+  const text = `Bonjour ${userName},\n\nNous avons bien reçu votre message (sujet : ${subject}). Notre équipe vous répondra sous 24-48 h.\n\n— ${v.appName}`;
+  return sendMail({
+    to,
+    subject: `Message bien reçu — ${v.appName}`,
+    html,
+    text,
+  });
+}
+
 /** Passwordless one-time sign-in link @param {{ to: string, userName: string, magicUrl: string, expiryMinutes?: string|number }} p */
 export async function sendMagicLinkEmail({ to, userName, magicUrl, expiryMinutes = '15' }) {
   const v = templateDefaults({ userName, magicUrl, expiryMinutes: String(expiryMinutes) });

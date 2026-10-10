@@ -1,0 +1,119 @@
+<div class="ac">
+  <header class="ac-head">
+    <div>
+      <h1>
+        <svg lucideInbox [size]="22" aria-hidden="true"></svg>
+        Messages de contact
+        @if (newCount > 0) {
+          <span class="ac-badge">{{ newCount }}</span>
+        }
+      </h1>
+      <p class="ac-sub">Demandes reçues via le formulaire de la page « Nous contacter ».</p>
+    </div>
+    <button type="button" class="ac-refresh" (click)="load(page)" [disabled]="loading">
+      <svg lucideRefreshCw [size]="15" [class.spin]="loading" aria-hidden="true"></svg>
+      Actualiser
+    </button>
+  </header>
+
+  <!-- Filtres -->
+  <div class="ac-filters">
+    <div class="ac-tabs">
+      <button type="button" [class.on]="statusFilter === ''" (click)="setStatus('')">Tous</button>
+      <button type="button" [class.on]="statusFilter === 'new'" (click)="setStatus('new')">
+        Nouveaux@if (newCount > 0) { <span class="ac-mini-badge">{{ newCount }}</span> }
+      </button>
+      <button type="button" [class.on]="statusFilter === 'archived'" (click)="setStatus('archived')">Archivés</button>
+    </div>
+    <div class="ac-search">
+      <svg lucideSearch [size]="15" aria-hidden="true"></svg>
+      <input
+        type="text"
+        [(ngModel)]="search"
+        (keyup.enter)="applyFilters()"
+        placeholder="Nom, e-mail, société, sujet…"
+        aria-label="Rechercher"
+      />
+      @if (search) {
+        <button type="button" (click)="clearSearch()" aria-label="Effacer">
+          <svg lucideX [size]="13"></svg>
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (errorMsg) {
+    <p class="ac-error">{{ errorMsg }}</p>
+  }
+
+  <!-- Liste -->
+  <div class="ac-list">
+    @if (loading && contacts.length === 0) {
+      <p class="ac-empty">Chargement…</p>
+    } @else if (contacts.length === 0) {
+      <p class="ac-empty">Aucun message{{ statusFilter === 'archived' ? ' archivé' : '' }} pour le moment.</p>
+    }
+
+    @for (c of contacts; track c.id) {
+      <article class="ac-card" [class.ac-card--open]="expandedId === c.id">
+        <header class="ac-row" (click)="toggleExpand(c)">
+          <span class="ac-dot" [class.ac-dot--new]="c.status === 'new'" aria-hidden="true"></span>
+          <div class="ac-who">
+            <strong>{{ c.name }}</strong>
+            <span class="ac-meta">{{ c.email }}@if (c.phone) { · {{ c.phone }} }@if (c.company) { · {{ c.company }} }</span>
+          </div>
+          <span class="ac-subject">{{ c.subject }}</span>
+          <time class="ac-date">{{ fmtDate(c.createdAt) }}</time>
+          <div class="ac-actions" (click)="$event.stopPropagation()">
+            @if (c.status === 'new') {
+              <button type="button" class="ac-btn" (click)="archive(c, true)" title="Archiver">
+                <svg lucideArchive [size]="15"></svg>
+              </button>
+            } @else {
+              <button type="button" class="ac-btn" (click)="archive(c, false)" title="Désarchiver">
+                <svg lucideUndo2 [size]="15"></svg>
+              </button>
+            }
+            @if (confirmDeleteId === c.id) {
+              <button type="button" class="ac-btn ac-btn--danger" [disabled]="deletingId === c.id" (click)="doDelete(c)">
+                {{ deletingId === c.id ? '…' : 'Confirmer ?' }}
+              </button>
+              <button type="button" class="ac-btn" (click)="cancelDelete()"><svg lucideX [size]="14"></svg></button>
+            } @else {
+              <button type="button" class="ac-btn ac-btn--icon" (click)="askDelete(c)" title="Supprimer">
+                <svg lucideTrash2 [size]="15"></svg>
+              </button>
+            }
+          </div>
+        </header>
+
+        @if (expandedId === c.id) {
+          <div class="ac-body">
+            <p class="ac-message">{{ c.message }}</p>
+            <p class="ac-contact-line">
+              <a [href]="'mailto:' + c.email"><svg lucideMail [size]="14"></svg> {{ c.email }}</a>
+              @if (c.phone) { <span>· {{ c.phone }}</span> }
+              @if (c.company) { <span><svg lucideBuilding2 [size]="14"></svg> {{ c.company }}</span> }
+            </p>
+          </div>
+        }
+      </article>
+    }
+  </div>
+
+  <!-- Pagination -->
+  @if (pages > 1 || total > 0) {
+    <footer class="ac-pager">
+      <span class="ac-total">{{ total }} message(s)</span>
+      <div class="ac-pager-btns">
+        <button type="button" class="ac-btn" (click)="prevPage()" [disabled]="page <= 1">
+          <svg lucideChevronLeft [size]="15"></svg>
+        </button>
+        <span class="ac-pageinfo">{{ page }} / {{ pages }}</span>
+        <button type="button" class="ac-btn" (click)="nextPage()" [disabled]="page >= pages">
+          <svg lucideChevronRight [size]="15"></svg>
+        </button>
+      </div>
+    </footer>
+  }
+</div>

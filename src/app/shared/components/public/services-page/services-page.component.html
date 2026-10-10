@@ -70,6 +70,37 @@
 
 </section>
 
+<!-- Bande médias — emplacements pour photos réelles -->
+<section class="services-media" aria-label="Al Wassit en images">
+  <div class="photo-slot" aria-hidden="true">
+    <svg lucideBuilding2 [size]="30"></svg>
+    <span>Photo — nos bureaux</span>
+  </div>
+  <div class="photo-slot" aria-hidden="true">
+    <svg lucideVideo [size]="30"></svg>
+    <span>Photo — entretien en ligne</span>
+  </div>
+  <div class="photo-slot" aria-hidden="true">
+    <svg lucidePlane [size]="30"></svg>
+    <span>Photo — candidat à l'étranger</span>
+  </div>
+</section>
+
+<!-- CTA partenaires -->
+<section class="partner-cta">
+  <div class="partner-cta__inner">
+    <svg lucideHandshake [size]="40" aria-hidden="true" class="partner-cta__icon"></svg>
+    <div class="partner-cta__text">
+      <h2>Vous êtes une entreprise ?</h2>
+      <p>
+        Accédez à des profils qualifiés et vérifiés, prêts à rejoindre vos équipes
+        à l'étranger. Devenez partenaire d'Al Wassit.
+      </p>
+    </div>
+    <a routerLink="/contact" [queryParams]="{ sujet: 'partenariat' }" class="btn-cta">Devenir partenaire</a>
+  </div>
+</section>
+
 <section class="page-cta">
   <h2>Un recrutement international sans friction</h2>
   <p>Créez votre compte et suivez chaque étape de votre dossier en temps réel.</p>

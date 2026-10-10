@@ -1,0 +1,387 @@
+.ac {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.ac-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.ac-head h1 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ac-head h1 svg {
+  color: #a16207;
+}
+
+.ac-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ffd300;
+  color: #0f172a;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.ac-sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.ac-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  border-radius: 9px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+}
+
+.ac-refresh:hover {
+  border-color: #e6b800;
+}
+
+.ac-refresh:disabled {
+  opacity: 0.5;
+}
+
+.spin {
+  animation: ac-spin 0.9s linear infinite;
+}
+
+@keyframes ac-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- filtres ---------- */
+
+.ac-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.ac-tabs {
+  display: inline-flex;
+  gap: 4px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.ac-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.ac-tabs button.on {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
+}
+
+.ac-mini-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ffd300;
+  color: #0f172a;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.ac-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem;
+  min-width: 260px;
+  flex: 1;
+  max-width: 340px;
+}
+
+.ac-search svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.ac-search input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 0.85rem;
+  color: #0f172a;
+  background: transparent;
+}
+
+.ac-search button {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  padding: 2px;
+}
+
+.ac-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ---------- liste ---------- */
+
+.ac-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ac-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding: 2.5rem 0;
+}
+
+.ac-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ac-card:hover {
+  border-color: #cbd5e1;
+}
+
+.ac-card--open {
+  border-color: rgba(230, 184, 0, 0.55);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+}
+
+.ac-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+}
+
+.ac-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.ac-dot--new {
+  background: #ffd300;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.25);
+}
+
+.ac-who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.ac-who strong {
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.ac-meta {
+  font-size: 0.78rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ac-subject {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #a16207;
+  background: rgba(255, 211, 0, 0.15);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ac-date {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ac-actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.ac-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 7px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.13s;
+}
+
+.ac-btn:hover:not(:disabled) {
+  border-color: #e6b800;
+  color: #0f172a;
+}
+
+.ac-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ac-btn--icon:hover {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.ac-btn--danger {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #fff;
+}
+
+.ac-btn--danger:hover:not(:disabled) {
+  background: #991b1b;
+  color: #fff;
+}
+
+/* corps déplié */
+
+.ac-body {
+  border-top: 1px solid #f1f5f9;
+  padding: 1rem 1.2rem 1.1rem;
+  background: #fafaf9;
+}
+
+.ac-message {
+  margin: 0 0 0.8rem;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #334155;
+  white-space: pre-line;
+}
+
+.ac-contact-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.ac-contact-line a,
+.ac-contact-line span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #64748b;
+  text-decoration: none;
+}
+
+.ac-contact-line a:hover {
+  color: #a16207;
+  text-decoration: underline;
+}
+
+/* ---------- pagination ---------- */
+
+.ac-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.1rem;
+}
+
+.ac-total {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.ac-pager-btns {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ac-pageinfo {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+@media (max-width: 640px) {
+  .ac-subject,
+  .ac-date {
+    display: none;
+  }
+}
