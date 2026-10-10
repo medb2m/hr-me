@@ -114,3 +114,28 @@ export async function ensureClientProfileForUser(userId) {
   }
   return ClientProfile.create({ user: userId });
 }
+
+/**
+ * Drapeaux de complétion dérivés des vraies données du dossier —
+ * jamais saisis à la main : chaque section compte si elle contient
+ * au moins une information réelle.
+ */
+export function deriveSectionFlags(p) {
+  const has = (v) => typeof v === 'string' && v.trim().length > 0;
+  const arr = (a) => Array.isArray(a) && a.length > 0;
+  return {
+    personalInfo:
+      has(p.phone) ||
+      arr(p.phones) ||
+      arr(p.links) ||
+      has(p.city) ||
+      has(p.country) ||
+      has(p.nationality) ||
+      has(p.headline),
+    workHistory: arr(p.workExperiences),
+    education: arr(p.educations),
+    skills: arr(p.skills),
+    languages: arr(p.languagesSpoken),
+    digitalSkills: arr(p.digitalSkills),
+  };
+}

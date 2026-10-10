@@ -1,7 +1,12 @@
 import mongoose from 'mongoose';
-import { ClientProfile, ensureClientProfileForUser } from '../../models/client-profile.model.js';
+import {
+  ClientProfile,
+  deriveSectionFlags,
+  ensureClientProfileForUser,
+} from '../../models/client-profile.model.js';
 import { uploadsPublicPath } from '../../helpers/upload-basics.js';
 import { safeUnlinkUpload } from '../../helpers/upload-fs.js';
+import { cleanPersonNameInput } from '../../helpers/person-name.js';
 
 const CLIENT_UPLOAD_PREFIX = '/uploads/client-profiles/';
 
@@ -54,9 +59,16 @@ export async function patchProfile(req, res) {
     const hasSkills = Object.prototype.hasOwnProperty.call(body, 'skills');
     const hasDigital = Object.prototype.hasOwnProperty.call(body, 'digitalSkills');
     const hasLangs = Object.prototype.hasOwnProperty.call(body, 'languagesSpoken');
+    const hasPrenom = Object.prototype.hasOwnProperty.call(body, 'prenom');
+    const hasNom = Object.prototype.hasOwnProperty.call(body, 'nom');
+    const hasPhone = Object.prototype.hasOwnProperty.call(body, 'phone');
+    const hasCity = Object.prototype.hasOwnProperty.call(body, 'city');
+    const hasCountry = Object.prototype.hasOwnProperty.call(body, 'country');
+    const hasNationality = Object.prototype.hasOwnProperty.call(body, 'nationality');
     if (
       !hasBirth && !hasPhones && !hasLinks && !hasHeadline &&
-      !hasWork && !hasEdu && !hasSkills && !hasDigital && !hasLangs
+      !hasWork && !hasEdu && !hasSkills && !hasDigital && !hasLangs &&
+      !hasPrenom && !hasNom && !hasPhone && !hasCity && !hasCountry && !hasNationality
     ) {
       return res.status(400).json({
         message: 'Aucun champ modifiable dans le corps de la requête.',
@@ -64,6 +76,28 @@ export async function patchProfile(req, res) {
     }
 
     const profile = await ensureClientProfileForUser(req.user.id);
+
+    // Identité : prénom / nom — mêmes règles que l'inscription (lettres, casse normalisée).
+    if (hasPrenom) {
+      const { name, error } = cleanPersonNameInput(body.prenom);
+      if (error) {
+        return res.status(400).json({ message: `Prénom : ${error}` });
+      }
+      profile.prenom = name;
+    }
+    if (hasNom) {
+      const { name, error } = cleanPersonNameInput(body.nom);
+      if (error) {
+        return res.status(400).json({ message: `Nom : ${error}` });
+      }
+      profile.nom = name;
+    }
+
+    const capStr = (v, max) => String(v ?? '').trim().slice(0, max);
+    if (hasPhone) profile.phone = capStr(body.phone, 40);
+    if (hasCity) profile.city = capStr(body.city, 80);
+    if (hasCountry) profile.country = capStr(body.country, 80);
+    if (hasNationality) profile.nationality = capStr(body.nationality, 80);
 
     if (hasBirth) {
       const raw = body.birthDate;
@@ -210,6 +244,8 @@ export async function patchProfile(req, res) {
         .filter((l) => l.language);
     }
 
+    // Drapeaux de complétion toujours dérivés des données réelles.
+    profile.sectionFlags = deriveSectionFlags(profile);
     await profile.save();
     return res.json({ profile: profile.toObject() });
   } catch (err) {

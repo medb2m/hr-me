@@ -1008,3 +1008,130 @@
     flex-wrap: wrap;
   }
 }
+
+/* ============ identité (étape 1, requise) ============ */
+.ep-card--required {
+  border-color: rgba(230, 184, 0, 0.65);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05), 0 0 0 3px rgba(255, 211, 0, 0.14);
+}
+
+.ep-req {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.08rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.ep-identity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: flex-end;
+}
+
+.ep-identity .ep-field {
+  flex: 1 1 200px;
+  min-width: 160px;
+  margin: 0;
+}
+
+.ep-identity-hint {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a16207;
+  background: #fff6d6;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+}
+
+/* ============ bilan auto (étape 6) ============ */
+.ep-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.55rem;
+}
+
+.ep-checklist__item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fafbfc;
+}
+
+.ep-checklist__item--ok {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.ep-checklist__item--req {
+  border-color: #fecaca;
+  background: #fffbeb;
+}
+
+.ep-checklist__mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #94a3b8;
+  background: #e2e8f0;
+}
+
+.ep-checklist__item--ok .ep-checklist__mark {
+  color: #fff;
+  background: #16a34a;
+}
+
+.ep-checklist__item--req .ep-checklist__mark {
+  color: #fff;
+  background: #dc2626;
+}
+
+.ep-checklist__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  flex: 1;
+  min-width: 0;
+}
+
+.ep-checklist__req {
+  font-style: normal;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #b91c1c;
+  margin-left: 0.3rem;
+}
+
+.ep-checklist__state {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  text-align: right;
+  max-width: 45%;
+}
+
+.ep-checklist__item--ok .ep-checklist__state {
+  color: #16a34a;
+  font-weight: 700;
+}

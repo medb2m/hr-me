@@ -21,16 +21,14 @@ import {
   LucideTrash2,
   LucideUserRound,
 } from '@lucide/angular';
-import {
-  ClientProfileSections,
-  ClientProfileStateService,
-} from '../../services/client-profile-state.service';
+import { ClientProfileStateService } from '../../services/client-profile-state.service';
 import {
   ClientProfileApiService,
   type ClientProfileDto,
 } from '../../services/client-profile-api.service';
 import { ProfilePhotoUploadComponent } from '../../../../shared/components/profile-photo-upload/profile-photo-upload.component';
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
+import { normalizePersonName } from '../../../../shared/utils/person-name';
 
 @Component({
   selector: 'app-client-profile-page',
@@ -74,14 +72,11 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
   historyBusyId: string | null = null;
   historyError = '';
 
-  readonly sectionRows: { key: keyof ClientProfileSections; label: string }[] = [
-    { key: 'personalInfo', label: 'Informations personnelles' },
-    { key: 'workHistory', label: 'Expériences professionnelles' },
-    { key: 'education', label: 'Formation & diplômes' },
-    { key: 'skills', label: 'Compétences' },
-    { key: 'languages', label: 'Langues (CEFR, etc.)' },
-    { key: 'digitalSkills', label: 'Compétences numériques' },
-  ];
+  /** Identité — prénom + nom (requis pour un dossier complet). */
+  prenomInput = '';
+  nomInput = '';
+  savingIdentity = false;
+  identityError = '';
 
   /** Valeur du date picker (YYYY-MM-DD), synchronisée avec le serveur. */
   birthDateIso = '';
@@ -190,6 +185,8 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
       label: (l.label ?? '').trim(),
       url: (l.url ?? '').trim(),
     }));
+    this.prenomInput = (p.prenom ?? '').trim();
+    this.nomInput = (p.nom ?? '').trim();
     this.headlineText = (p.headline ?? '').trim();
     this.workExperiences = (p.workExperiences ?? []).map((w) => ({
       jobTitle: w.jobTitle ?? '',
@@ -523,9 +520,38 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
       });
   }
 
-  toggleSection(key: keyof import('../../services/client-profile-state.service').ClientProfileSections): void {
-    const s = this.profileState.sections();
-    this.profileState.patchSections({ [key]: !s[key] });
+  /** Normalise la casse prénom/nom à la sortie du champ (règle de l'inscription). */
+  onNameBlur(field: 'prenom' | 'nom'): void {
+    if (field === 'prenom') {
+      this.prenomInput = normalizePersonName(this.prenomInput);
+    } else {
+      this.nomInput = normalizePersonName(this.nomInput);
+    }
+  }
+
+  saveIdentity(event: MouseEvent): void {
+    const anchorX = event.clientX;
+    const anchorY = event.clientY;
+    this.identityError = '';
+    const prenom = normalizePersonName(this.prenomInput);
+    const nom = normalizePersonName(this.nomInput);
+    if (!prenom || !nom) {
+      this.identityError = 'Le prénom ET le nom sont requis — les deux champs doivent être remplis.';
+      return;
+    }
+    this.savingIdentity = true;
+    this.profileApi
+      .patchProfile({ prenom, nom })
+      .pipe(finalize(() => (this.savingIdentity = false)))
+      .subscribe({
+        next: ({ profile }) => {
+          this.applyServerProfile(profile);
+          this.showSuccessNearPointer(anchorX, anchorY, 'Identité enregistrée.');
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.identityError = err.error?.message || 'Enregistrement impossible.';
+        },
+      });
   }
 
   saveBirthDate(event: MouseEvent): void {

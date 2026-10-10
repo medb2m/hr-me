@@ -39,10 +39,71 @@
     </div>
   </header>
 
-  <!-- ============ ÉTAPE 1 : PHOTO ============ -->
-  <section class="ep-card">
+  <!-- ============ ÉTAPE 1 : IDENTITÉ ============ -->
+  <section class="ep-card" [class.ep-card--required]="profileState.missingIdentity() !== null">
     <div class="ep-card__head">
       <span class="ep-step" aria-hidden="true">1</span>
+      <span class="ep-card__icon" aria-hidden="true"><svg lucideUserRound [size]="18"></svg></span>
+      <div>
+        <h2>Prénom &amp; nom <span class="ep-req">requis</span></h2>
+        <p>
+          Votre identité telle qu&rsquo;elle apparaîtra sur vos CV, lettres de motivation et les
+          dossiers consultés par l&rsquo;agence — les deux champs sont obligatoires.
+        </p>
+      </div>
+      <span class="ep-state" [class.ep-state--ok]="profileState.identityOk()">
+        <svg lucideBadgeCheck [size]="13" aria-hidden="true"></svg>
+        {{ profileState.identityOk() ? 'Enregistré' : 'Requis' }}
+      </span>
+    </div>
+
+    <div class="ep-identity">
+      <label class="ep-field">
+        <span class="ep-field__label">Prénom <i>*</i></span>
+        <input
+          class="ep-input"
+          type="text"
+          [(ngModel)]="prenomInput"
+          name="prenom"
+          maxlength="80"
+          autocomplete="given-name"
+          placeholder="ex. Mohamed"
+          (blur)="onNameBlur('prenom')"
+        />
+      </label>
+      <label class="ep-field">
+        <span class="ep-field__label">Nom <i>*</i></span>
+        <input
+          class="ep-input"
+          type="text"
+          [(ngModel)]="nomInput"
+          name="nom"
+          maxlength="80"
+          autocomplete="family-name"
+          placeholder="ex. Ben Mohamed"
+          (blur)="onNameBlur('nom')"
+        />
+      </label>
+      <button type="button" class="ep-btn" [disabled]="savingIdentity" (click)="saveIdentity($event)">
+        {{ savingIdentity ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </div>
+    @if (profileState.missingIdentity(); as miss) {
+      <p class="ep-identity-hint">
+        @if (miss === 'both') { Indiquez votre prénom et votre nom pour valider cette étape. }
+        @else if (miss === 'prenom') { Il manque encore votre prénom. }
+        @else { Il manque encore votre nom. }
+      </p>
+    }
+    @if (identityError) {
+      <p class="ep-birth-err">{{ identityError }}</p>
+    }
+  </section>
+
+  <!-- ============ ÉTAPE 2 : PHOTO ============ -->
+  <section class="ep-card">
+    <div class="ep-card__head">
+      <span class="ep-step" aria-hidden="true">2</span>
       <span class="ep-card__icon" aria-hidden="true"><svg lucideCamera [size]="18"></svg></span>
       <div>
         <h2>Photo de profil</h2>
@@ -133,7 +194,7 @@
   <!-- ============ ÉTAPE 2 : DATE DE NAISSANCE ============ -->
   <section class="ep-card">
     <div class="ep-card__head">
-      <span class="ep-step" aria-hidden="true">2</span>
+      <span class="ep-step" aria-hidden="true">3</span>
       <span class="ep-card__icon" aria-hidden="true"><svg lucideCake [size]="18"></svg></span>
       <div>
         <h2>Date de naissance</h2>
@@ -170,7 +231,7 @@
   <!-- ============ ÉTAPE 3 : CONTACT & LIENS ============ -->
   <section class="ep-card">
     <div class="ep-card__head">
-      <span class="ep-step" aria-hidden="true">3</span>
+      <span class="ep-step" aria-hidden="true">4</span>
       <span class="ep-card__icon" aria-hidden="true"><svg lucideShare2 [size]="18"></svg></span>
       <div>
         <h2>Contact &amp; liens</h2>
@@ -295,7 +356,7 @@
   <!-- ============ ÉTAPE 4 : PARCOURS & COMPÉTENCES ============ -->
   <section class="ep-card">
     <div class="ep-card__head">
-      <span class="ep-step" aria-hidden="true">4</span>
+      <span class="ep-step" aria-hidden="true">5</span>
       <span class="ep-card__icon" aria-hidden="true"><svg lucideListChecks [size]="18"></svg></span>
       <div>
         <h2>Parcours &amp; compétences</h2>
@@ -606,29 +667,32 @@
     </div>
   </section>
 
-  <!-- ============ ÉTAPE 5 : SECTIONS ============ -->
+  <!-- ============ ÉTAPE 6 : BILAN DE COMPLÉTION ============ -->
   <section class="ep-card">
     <div class="ep-card__head">
-      <span class="ep-step" aria-hidden="true">5</span>
+      <span class="ep-step" aria-hidden="true">6</span>
       <span class="ep-card__icon" aria-hidden="true"><svg lucideListChecks [size]="18"></svg></span>
       <div>
-        <h2>Sections du dossier</h2>
-        <p>Cochez les blocs déjà complétés — chacun compte dans la progression globale.</p>
+        <h2>Bilan du dossier</h2>
+        <p>Chaque point se valide automatiquement dès que la donnée existe — rien à cocher.</p>
       </div>
+      <span class="ep-state" [class.ep-state--ok]="profileState.isProfileComplete()">
+        <svg lucideBadgeCheck [size]="13" aria-hidden="true"></svg>
+        {{ profileState.completionPercent() }} %
+      </span>
     </div>
-    <ul class="ep-checks">
-      @for (row of sectionRows; track row.key) {
-        <li>
-          <label class="ep-check" [class.ep-check--on]="profileState.sections()[row.key]">
-            <input
-              type="checkbox"
-              [checked]="profileState.sections()[row.key]"
-              (change)="toggleSection(row.key)"
-            />
-            <span class="ep-check__mark" aria-hidden="true"><svg lucideCheck [size]="12"></svg></span>
-            <span class="ep-check__label">{{ row.label }}</span>
-            <span class="ep-check__state">{{ profileState.sections()[row.key] ? 'Complété' : 'À compléter' }}</span>
-          </label>
+    <ul class="ep-checklist">
+      @for (item of profileState.checklist(); track item.key) {
+        <li class="ep-checklist__item" [class.ep-checklist__item--ok]="item.done" [class.ep-checklist__item--req]="item.required && !item.done">
+          <span class="ep-checklist__mark" aria-hidden="true">
+            @if (item.done) { <svg lucideCheck [size]="12"></svg> }
+            @else { ! }
+          </span>
+          <span class="ep-checklist__label">
+            {{ item.label }}
+            @if (item.required && !item.done) { <em class="ep-checklist__req">requis</em> }
+          </span>
+          <span class="ep-checklist__state">{{ item.done ? 'Complété' : item.hint || 'À compléter' }}</span>
         </li>
       }
     </ul>
@@ -639,9 +703,9 @@
   }
 
   <p class="ep-note">
-    Le nom affiché provient du compte. S’il est absent, la barre latérale affiche
-    <span class="ep-miss">À renseigner</span> — comme pour la date de naissance et la photo.
-    Modifiable dans <a routerLink="/settings">Paramètres du compte</a>.
+    Le prénom et le nom renseignés ici alimentent la signature de vos lettres, l&rsquo;en-tête de
+    vos CV et les dossiers partagés avec l&rsquo;agence. La progression ne compte que des données
+    réellement enregistrées — aucune case à cocher manuellement.
   </p>
 
   <app-back-button link="/candidat/overview" label="Retour au tableau de bord" class="ep-back"></app-back-button>

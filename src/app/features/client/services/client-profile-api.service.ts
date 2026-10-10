@@ -49,8 +49,14 @@ export class ClientProfileApiService {
     return this.http.get<{ profile: ClientProfileDto }>(`${this.base}/profile`);
   }
 
-  /** Met à jour le profil : `birthDate` (`YYYY-MM-DD` ou `null`), `phones`, `links`, `headline`, parcours, compétences. */
+  /** Met à jour le profil : identité, `birthDate` (`YYYY-MM-DD` ou `null`), `phones`, `links`, `headline`, parcours, compétences. */
   patchProfile(body: {
+    prenom?: string;
+    nom?: string;
+    phone?: string;
+    city?: string;
+    country?: string;
+    nationality?: string;
     birthDate?: string | null;
     phones?: string[];
     links?: Array<{ label: string; url: string }>;

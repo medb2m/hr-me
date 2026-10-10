@@ -4,9 +4,16 @@
     <div class="client-shell__alert" role="status">
       <div class="client-shell__alert-inner">
         <strong>Profil incomplet ({{ profileState.completionPercent() }} %)</strong>
-        <p>
-          Complétez vos informations pour tirer le meilleur parti des outils CV, lettres et candidatures.
-        </p>
+        @if (profileState.missingIdentity(); as miss) {
+          <p>
+            <strong>Indiquez votre prénom{{ miss !== 'nom' ? ' et votre nom' : '' }}</strong>
+            — requis pour vos CV, lettres de motivation et candidatures.
+          </p>
+        } @else {
+          <p>
+            Complétez vos informations pour tirer le meilleur parti des outils CV, lettres et candidatures.
+          </p>
+        }
         <button type="button" class="client-shell__alert-btn" (click)="goToProfile()">
           Compléter mon profil
         </button>
