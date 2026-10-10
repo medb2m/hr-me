@@ -20,6 +20,7 @@ import {
   mergeCvEditorState,
 } from '../../models/cv-editor-state';
 import { ProfilePhotoUploadComponent } from '../../../../shared/components/profile-photo-upload/profile-photo-upload.component';
+import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 
 export type CvBlockKey = 'summary' | 'personal' | 'experience' | 'education' | 'skills' | 'languages';
 export type CvStepKey = 'infos' | CvBlockKey;
@@ -27,7 +28,7 @@ export type CvStepKey = 'infos' | CvBlockKey;
 @Component({
   selector: 'app-client-cv-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackButtonComponent, ProfilePhotoUploadComponent, LucideArrowLeft, LucideArrowRight, LucideCheck],
+  imports: [CommonModule, FormsModule, BackButtonComponent, ProfilePhotoUploadComponent, RichTextEditorComponent, LucideArrowLeft, LucideArrowRight, LucideCheck],
   templateUrl: './client-cv-editor.component.html',
   styleUrl: './client-cv-editor.component.css',
 })
@@ -149,6 +150,9 @@ export class ClientCvEditorComponent implements OnInit {
   }
 
   previewPhotoUrl(): string | null {
+    if (this.state.hidePhoto) {
+      return null;
+    }
     if (this.photoSource === 'custom' && this.cv?.customPhotoUrl) {
       return this.profileApi.resolveMediaUrl(this.cv.customPhotoUrl);
     }
@@ -279,6 +283,11 @@ export class ClientCvEditorComponent implements OnInit {
       return this.textFromProfile(key);
     }
     return (b.customText || '').trim() || '—';
+  }
+
+  /** Texte personnalisé = HTML (éditeur riche) ; données profil = texte brut. */
+  previewBlockIsHtml(key: CvBlockKey): boolean {
+    return !this.state[key].useProfile;
   }
 
   /** Nom affiché en-tête (profil + compte). */

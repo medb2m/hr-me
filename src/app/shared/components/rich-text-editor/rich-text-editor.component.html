@@ -1,0 +1,117 @@
+<div class="rte" [class.rte--disabled]="disabled">
+  <div class="rte__toolbar" role="toolbar" aria-label="Mise en forme du texte">
+    <button
+      type="button"
+      class="rte__tool"
+      [disabled]="disabled"
+      title="Gras"
+      aria-label="Gras"
+      (click)="exec('bold')"
+    >
+      <svg lucideBold [size]="14" aria-hidden="true"></svg>
+    </button>
+    <button
+      type="button"
+      class="rte__tool"
+      [disabled]="disabled"
+      title="Italique"
+      aria-label="Italique"
+      (click)="exec('italic')"
+    >
+      <svg lucideItalic [size]="14" aria-hidden="true"></svg>
+    </button>
+    <button
+      type="button"
+      class="rte__tool"
+      [disabled]="disabled"
+      title="Souligné"
+      aria-label="Souligné"
+      (click)="exec('underline')"
+    >
+      <svg lucideUnderline [size]="14" aria-hidden="true"></svg>
+    </button>
+    <span class="rte__sep" aria-hidden="true"></span>
+    <button
+      type="button"
+      class="rte__tool"
+      [disabled]="disabled"
+      title="Liste à puces"
+      aria-label="Liste à puces"
+      (click)="exec('insertUnorderedList')"
+    >
+      <svg lucideList [size]="14" aria-hidden="true"></svg>
+    </button>
+    <button
+      type="button"
+      class="rte__tool"
+      [disabled]="disabled"
+      title="Liste numérotée"
+      aria-label="Liste numérotée"
+      (click)="exec('insertOrderedList')"
+    >
+      <svg lucideListOrdered [size]="14" aria-hidden="true"></svg>
+    </button>
+    <button
+      type="button"
+      class="rte__tool"
+      [disabled]="disabled"
+      title="Insérer un lien"
+      aria-label="Insérer un lien"
+      (click)="insertLink()"
+    >
+      <svg lucideLink [size]="14" aria-hidden="true"></svg>
+    </button>
+    <span class="rte__sep" aria-hidden="true"></span>
+    <button
+      type="button"
+      class="rte__tool"
+      [disabled]="disabled"
+      title="Effacer la mise en forme"
+      aria-label="Effacer la mise en forme"
+      (click)="clearFormat()"
+    >
+      <svg lucideEraser [size]="14" aria-hidden="true"></svg>
+    </button>
+    <button
+      type="button"
+      class="rte__tool"
+      [disabled]="disabled"
+      title="Tout réinitialiser"
+      aria-label="Tout réinitialiser"
+      (click)="resetContent()"
+    >
+      <svg lucideRotateCcw [size]="14" aria-hidden="true"></svg>
+    </button>
+    @if (aiEnabled) {
+      <span class="rte__sep" aria-hidden="true"></span>
+      <button
+        type="button"
+        class="rte__tool rte__tool--ai"
+        [disabled]="disabled || aiBusy"
+        title="Corriger avec l’IA (orthographe & grammaire)"
+        aria-label="Corriger avec l’IA"
+        (click)="correctWithAi()"
+      >
+        @if (aiBusy) {
+          <svg lucideLoader2 [size]="14" class="rte__spin" aria-hidden="true"></svg>
+        } @else {
+          <svg lucideSparkles [size]="14" aria-hidden="true"></svg>
+        }
+        <span class="rte__ai-label">{{ aiBusy ? 'Correction…' : 'Corriger (IA)' }}</span>
+      </button>
+    }
+  </div>
+  <div
+    #editor
+    class="rte__area"
+    [attr.contenteditable]="disabled ? 'false' : 'true'"
+    [attr.data-placeholder]="placeholder"
+    role="textbox"
+    aria-multiline="true"
+    (input)="onInput()"
+    (blur)="onBlur()"
+  ></div>
+  @if (aiError) {
+    <p class="rte__error">{{ aiError }}</p>
+  }
+</div>

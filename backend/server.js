@@ -24,6 +24,7 @@ import userRoutes from './routes/user.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import clientRoutes from './client/routes/client.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
+import aiRoutes from './routes/ai.routes.js';
 import meetingsRoutes from './routes/meetings.routes.js';
 import calendarRoutes from './routes/calendar.routes.js';
 
@@ -74,6 +75,9 @@ app.use('/api/admin', adminRoutes);
 
 // Dossier de placement (JWT + role client|candidate) — profil, photo, CV
 app.use('/api/client', clientRoutes);
+
+// AI helpers (JWT, any role) — text correction via LLM
+app.use('/api/ai', aiRoutes);
 
 // Real-time stack: notifications, meetings, unified calendar
 app.use('/api/notifications', notificationsRoutes);

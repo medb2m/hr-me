@@ -67,25 +67,36 @@
 
         <section class="ep-card ep-card--step" aria-labelledby="photo-title">
           <h2 id="photo-title" class="ep-h2">Photo</h2>
-          <fieldset class="ep-fieldset">
-            <legend class="ep-legend">Source de la photo</legend>
-            <label class="ep-radio">
-              <input type="radio" name="cvPhotoSrc" value="profile" [(ngModel)]="photoSource" />
-              Photo du dossier
-            </label>
-            <label class="ep-radio">
-              <input type="radio" name="cvPhotoSrc" value="custom" [(ngModel)]="photoSource" />
-              Photo dédiée à ce CV
-            </label>
-          </fieldset>
-          @if (photoSource === 'custom') {
-            <app-profile-photo-upload
-              [uploading]="uploadBusy"
-              [hasServerPhoto]="false"
-              (upload)="onPhotoSelected($event)"
-            />
+          <label class="ep-check ep-check--flag">
+            <input type="checkbox" [(ngModel)]="state.hidePhoto" name="hidePhoto" />
+            Format Canada / USA — CV sans photo
+          </label>
+          <p class="ep-hint">
+            En Amérique du Nord, les CV sans photo sont la norme et facilitent la lecture par les ATS.
+          </p>
+          @if (!state.hidePhoto) {
+            <fieldset class="ep-fieldset">
+              <legend class="ep-legend">Source de la photo</legend>
+              <label class="ep-radio">
+                <input type="radio" name="cvPhotoSrc" value="profile" [(ngModel)]="photoSource" />
+                Photo du dossier
+              </label>
+              <label class="ep-radio">
+                <input type="radio" name="cvPhotoSrc" value="custom" [(ngModel)]="photoSource" />
+                Photo dédiée à ce CV
+              </label>
+            </fieldset>
+            @if (photoSource === 'custom') {
+              <app-profile-photo-upload
+                [uploading]="uploadBusy"
+                [hasServerPhoto]="false"
+                (upload)="onPhotoSelected($event)"
+              />
+            } @else {
+              <p class="ep-hint">La photo de votre dossier sera utilisée — gérez-la depuis le profil.</p>
+            }
           } @else {
-            <p class="ep-hint">La photo de votre dossier sera utilisée — gérez-la depuis le profil.</p>
+            <p class="ep-hint">Aucune photo n’apparaîtra sur le document final.</p>
           }
         </section>
 
@@ -141,13 +152,11 @@
               @if (state[b.key].useProfile) {
                 <pre class="ep-snippet">{{ textFromProfile(b.key) }}</pre>
               } @else {
-                <textarea
-                  class="ep-textarea"
-                  rows="6"
+                <app-rich-text-editor
                   [(ngModel)]="state[b.key].customText"
                   [name]="b.key + '-custom'"
-                  placeholder="Saisissez le texte pour ce bloc…"
-                ></textarea>
+                  placeholder="Saisissez le contenu de cette section…"
+                />
               }
             }
           </section>
@@ -181,18 +190,24 @@
       <h2 class="ep-preview-title">Aperçu</h2>
       <div class="ep-sheet">
         <div class="ep-sheet__accent">
-          <div class="ep-sheet__photo">
-            @if (previewPhotoUrl()) {
-              <img [src]="previewPhotoUrl()!" alt="" />
-            }
-          </div>
+          @if (!state.hidePhoto) {
+            <div class="ep-sheet__photo">
+              @if (previewPhotoUrl()) {
+                <img [src]="previewPhotoUrl()!" alt="" />
+              }
+            </div>
+          }
           <div class="ep-sheet__head">
             <p class="ep-sheet__name">{{ displayName() }}</p>
             @if (state.jobTitle.trim()) {
               <p class="ep-sheet__job">{{ state.jobTitle }}</p>
             }
             @if (state.summary.visible) {
-              <p class="ep-sheet__tagline">{{ previewBlockText('summary') }}</p>
+              @if (previewBlockIsHtml('summary')) {
+                <div class="ep-sheet__tagline" [innerHTML]="previewBlockText('summary')"></div>
+              } @else {
+                <p class="ep-sheet__tagline">{{ previewBlockText('summary') }}</p>
+              }
             }
           </div>
         </div>
@@ -200,31 +215,51 @@
           @if (state.personal.visible) {
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Coordonnées</h3>
-              <div class="ep-sheet__text">{{ previewBlockText('personal') }}</div>
+              @if (previewBlockIsHtml('personal')) {
+                <div class="ep-sheet__text" [innerHTML]="previewBlockText('personal')"></div>
+              } @else {
+                <div class="ep-sheet__text">{{ previewBlockText('personal') }}</div>
+              }
             </section>
           }
           @if (state.experience.visible) {
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Expérience professionnelle</h3>
-              <div class="ep-sheet__text">{{ previewBlockText('experience') }}</div>
+              @if (previewBlockIsHtml('experience')) {
+                <div class="ep-sheet__text" [innerHTML]="previewBlockText('experience')"></div>
+              } @else {
+                <div class="ep-sheet__text">{{ previewBlockText('experience') }}</div>
+              }
             </section>
           }
           @if (state.education.visible) {
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Formation</h3>
-              <div class="ep-sheet__text">{{ previewBlockText('education') }}</div>
+              @if (previewBlockIsHtml('education')) {
+                <div class="ep-sheet__text" [innerHTML]="previewBlockText('education')"></div>
+              } @else {
+                <div class="ep-sheet__text">{{ previewBlockText('education') }}</div>
+              }
             </section>
           }
           @if (state.skills.visible) {
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Compétences</h3>
-              <div class="ep-sheet__text">{{ previewBlockText('skills') }}</div>
+              @if (previewBlockIsHtml('skills')) {
+                <div class="ep-sheet__text" [innerHTML]="previewBlockText('skills')"></div>
+              } @else {
+                <div class="ep-sheet__text">{{ previewBlockText('skills') }}</div>
+              }
             </section>
           }
           @if (state.languages.visible) {
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Langues</h3>
-              <div class="ep-sheet__text">{{ previewBlockText('languages') }}</div>
+              @if (previewBlockIsHtml('languages')) {
+                <div class="ep-sheet__text" [innerHTML]="previewBlockText('languages')"></div>
+              } @else {
+                <div class="ep-sheet__text">{{ previewBlockText('languages') }}</div>
+              }
             </section>
           }
         </div>

@@ -17,6 +17,8 @@ export interface CvEditorState {
   includePhones: boolean;
   /** Afficher les liens externes enregistrés dans le profil. */
   includeLinks: boolean;
+  /** Format Canada / USA : CV sans photo. */
+  hidePhoto: boolean;
   summary: CvSectionBlock;
   personal: CvSectionBlock;
   experience: CvSectionBlock;
@@ -35,6 +37,7 @@ export function createDefaultCvEditorState(): CvEditorState {
     jobTitle: '',
     includePhones: true,
     includeLinks: true,
+    hidePhoto: false,
     summary: defaultCvSectionBlock(),
     personal: defaultCvSectionBlock(),
     experience: defaultCvSectionBlock(),
@@ -68,6 +71,7 @@ export function mergeCvEditorState(raw: unknown): CvEditorState {
     jobTitle: typeof o['jobTitle'] === 'string' ? o['jobTitle'] : d.jobTitle,
     includePhones: typeof o['includePhones'] === 'boolean' ? o['includePhones'] : d.includePhones,
     includeLinks: typeof o['includeLinks'] === 'boolean' ? o['includeLinks'] : d.includeLinks,
+    hidePhoto: typeof o['hidePhoto'] === 'boolean' ? o['hidePhoto'] : d.hidePhoto,
     summary: mergeBlock(d.summary, o['summary']),
     personal: mergeBlock(d.personal, o['personal']),
     experience: mergeBlock(d.experience, o['experience']),
