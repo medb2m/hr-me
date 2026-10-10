@@ -1,0 +1,242 @@
+<div class="ao">
+  <header class="ao-head">
+    <div>
+      <h1>
+        <svg lucideBriefcase [size]="22" aria-hidden="true"></svg>
+        Offres d&rsquo;emploi
+        @if (counters.total > 0) {
+          <span class="ao-badge">{{ counters.total }}</span>
+        }
+      </h1>
+      <p class="ao-sub">
+        {{ counters.applications }} candidature(s) au total · {{ counters.published }} publiée(s) ·
+        {{ counters.expired }} expirée(s)
+      </p>
+    </div>
+    <div class="ao-head-actions">
+      <button type="button" class="ao-refresh" (click)="load(page)" [disabled]="loading">
+        <svg lucideRefreshCw [size]="15" [class.spin]="loading" aria-hidden="true"></svg>
+        Actualiser
+      </button>
+      <a routerLink="/admin/offers/new" class="ao-new">
+        <svg lucidePlus [size]="16" aria-hidden="true"></svg>
+        Nouvelle offre
+      </a>
+    </div>
+  </header>
+
+  <!-- Filtres -->
+  <div class="ao-filters">
+    <div class="ao-tabs">
+      <button type="button" [class.on]="statusFilter === ''" (click)="setStatus('')">
+        Toutes <span class="ao-mini-badge">{{ counters.total }}</span>
+      </button>
+      <button type="button" [class.on]="statusFilter === 'published'" (click)="setStatus('published')">
+        Publiées
+      </button>
+      <button type="button" [class.on]="statusFilter === 'draft'" (click)="setStatus('draft')">
+        Brouillons
+      </button>
+      <button type="button" [class.on]="statusFilter === 'closed'" (click)="setStatus('closed')">
+        Clôturées
+      </button>
+      <button type="button" [class.on]="statusFilter === 'expired'" (click)="setStatus('expired')">
+        Expirées @if (counters.expired > 0) { <span class="ao-mini-badge ao-mini-badge--warn">{{ counters.expired }}</span> }
+      </button>
+    </div>
+    <div class="ao-search">
+      <svg lucideSearch [size]="15" aria-hidden="true"></svg>
+      <input
+        type="text"
+        [(ngModel)]="search"
+        (keyup.enter)="applyFilters()"
+        placeholder="Poste, entreprise, pays, compétence…"
+        aria-label="Rechercher une offre"
+      />
+      @if (search) {
+        <button type="button" (click)="clearSearch()" aria-label="Effacer">
+          <svg lucideX [size]="13"></svg>
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="ao-filters2">
+    <label class="ao-sel">
+      <span>Mode</span>
+      <select [(ngModel)]="modeFilter" (change)="applyFilters()">
+        <option value="">Tous</option>
+        <option value="onsite">Sur site</option>
+        <option value="hybrid">Hybride</option>
+        <option value="remote">Remote</option>
+      </select>
+    </label>
+    <label class="ao-sel">
+      <span>Pays</span>
+      <select [(ngModel)]="countryFilter" (change)="applyFilters()">
+        <option value="">Tous</option>
+        @for (c of countries; track c.code) {
+          <option [value]="c.code">{{ flag(c.code) }} {{ c.name }}</option>
+        }
+      </select>
+    </label>
+    <label class="ao-sel">
+      <span>Tri</span>
+      <select [(ngModel)]="sort" (change)="applyFilters()">
+        <option value="recent">Plus récentes</option>
+        <option value="deadline">Échéance proche</option>
+        <option value="name">Titre A→Z</option>
+      </select>
+    </label>
+    @if (statusFilter || modeFilter || countryFilter || search || sort !== 'recent') {
+      <button type="button" class="ao-reset" (click)="resetFilters()">
+        <svg lucideX [size]="13"></svg> Réinitialiser
+      </button>
+    }
+  </div>
+
+  @if (errorMsg) {
+    <p class="ao-error">{{ errorMsg }}</p>
+  }
+
+  <!-- Liste -->
+  <div class="ao-list">
+    @if (loading && offers.length === 0) {
+      <p class="ao-empty">Chargement…</p>
+    } @else if (offers.length === 0) {
+      <div class="ao-empty">
+        <svg lucideBriefcase [size]="34" aria-hidden="true"></svg>
+        <p>Aucune offre pour ces filtres.</p>
+        <a routerLink="/admin/offers/new" class="ao-new ao-new--ghost">
+          <svg lucidePlus [size]="15"></svg> Créer la première offre
+        </a>
+      </div>
+    }
+
+    @for (o of offers; track trackById) {
+      <article class="ao-card" [class.ao-card--open]="expandedId === o.id" [class.ao-card--expired]="o.isExpired">
+        <header class="ao-row" (click)="toggleExpand(o)">
+          <!-- Logo entreprise / icône par défaut -->
+          <span class="ao-logo">
+            @if (o.companyLogo) {
+              <img [src]="o.companyLogo" [alt]="o.partner" loading="lazy" />
+            } @else {
+              <svg lucideBuilding2 [size]="20" aria-hidden="true"></svg>
+            }
+          </span>
+
+          <div class="ao-main">
+            <div class="ao-title-line">
+              <strong class="ao-title">{{ o.name }}</strong>
+              <span class="ao-pill" [attr.data-status]="statusLabel(o)">{{ statusLabel(o) }}</span>
+              @if (deadlineBadge(o)) {
+                <span class="ao-dl" [attr.data-tone]="deadlineTone(o)">
+                  <svg lucideTimer [size]="11" aria-hidden="true"></svg>
+                  {{ deadlineBadge(o) }}
+                </span>
+              }
+            </div>
+            <span class="ao-meta">
+              {{ o.partner }}
+              @if (o.country.name) { · <span class="ao-country">{{ flag(o.country.code) }} {{ o.country.name }}</span> }
+              @if (o.city) { · {{ o.city }} }
+            </span>
+          </div>
+
+          <span class="ao-mode ao-mode--{{ o.workMode }}">
+            @if (o.workMode === 'remote') { <svg lucideWifi [size]="12"></svg> }
+            @else if (o.workMode === 'hybrid') { <svg lucideLaptop [size]="12"></svg> }
+            @else { <svg lucideBuilding2 [size]="12"></svg> }
+            {{ modeLabel(o.workMode) }}
+          </span>
+
+          <span class="ao-apps" title="Candidatures reçues">
+            <svg lucideUserCheck [size]="14" aria-hidden="true"></svg>
+            {{ o.applications.total }}
+          </span>
+
+          <div class="ao-actions" (click)="$event.stopPropagation()">
+            <a class="ao-btn" [routerLink]="['/admin/offers', o.id, 'edit']" title="Modifier">
+              <svg lucidePencil [size]="15"></svg>
+            </a>
+            @if (confirmDeleteId === o.id) {
+              <button type="button" class="ao-btn ao-btn--danger" [disabled]="deletingId === o.id" (click)="doDelete(o)">
+                {{ deletingId === o.id ? '…' : 'Confirmer ?' }}
+              </button>
+              <button type="button" class="ao-btn" (click)="cancelDelete()"><svg lucideX [size]="14"></svg></button>
+            } @else {
+              <button type="button" class="ao-btn ao-btn--icon" (click)="askDelete(o)" title="Supprimer">
+                <svg lucideTrash2 [size]="15"></svg>
+              </button>
+            }
+            <svg lucideChevronRight [size]="16" class="ao-caret" aria-hidden="true"></svg>
+          </div>
+        </header>
+
+        @if (expandedId === o.id) {
+          <div class="ao-body">
+            <div class="ao-grid">
+              <div class="ao-fact">
+                <svg lucideUsers [size]="14"></svg>
+                <span>{{ o.openings }} poste(s) ouvert(s)</span>
+              </div>
+              <div class="ao-fact">
+                <svg lucideCalendar [size]="14"></svg>
+                <span>Publiée le {{ fmtDate(o.publishDate) }}</span>
+              </div>
+              <div class="ao-fact">
+                <svg lucideClock [size]="14"></svg>
+                <span>Fin : {{ fmtDate(o.deadline) }}</span>
+              </div>
+              <div class="ao-fact">
+                <svg lucideUserCheck [size]="14"></svg>
+                <span>
+                  {{ o.applications.total }} candidature(s)
+                  <em>({{ o.applications.candidate }} candidat · {{ o.applications.client }} client · {{ o.applications.agent }} agent)</em>
+                </span>
+              </div>
+              <div class="ao-fact">
+                <svg lucideEye [size]="14"></svg>
+                <span>Postée par {{ o.postedBy.label || '—' }}@if (o.postedBy.role) { <em>({{ o.postedBy.role }})</em> }</span>
+              </div>
+              <div class="ao-fact">
+                <svg lucidePencil [size]="14"></svg>
+                <span>Modifiée le {{ fmtDateTime(o.lastModifiedAt) }}</span>
+              </div>
+            </div>
+
+            @if (o.skills.length) {
+              <div class="ao-skills">
+                @for (s of o.skills; track s) {
+                  <span class="ao-skill">{{ s }}</span>
+                }
+              </div>
+            }
+
+            @if (o.description) {
+              <div class="ao-desc" [innerHTML]="o.description"></div>
+            } @else {
+              <p class="ao-nodesc">Aucune description.</p>
+            }
+          </div>
+        }
+      </article>
+    }
+  </div>
+
+  <!-- Pagination -->
+  @if (pages > 1 || total > 0) {
+    <footer class="ao-pager">
+      <span class="ao-total">{{ total }} offre(s)</span>
+      <div class="ao-pager-btns">
+        <button type="button" class="ao-btn" (click)="prevPage()" [disabled]="page <= 1">
+          <svg lucideChevronLeft [size]="15"></svg>
+        </button>
+        <span class="ao-pageinfo">{{ page }} / {{ pages }}</span>
+        <button type="button" class="ao-btn" (click)="nextPage()" [disabled]="page >= pages">
+          <svg lucideChevronRight [size]="15"></svg>
+        </button>
+      </div>
+    </footer>
+  }
+</div>

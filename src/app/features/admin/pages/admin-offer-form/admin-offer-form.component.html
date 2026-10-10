@@ -1,0 +1,293 @@
+<div class="aof">
+  <header class="aof-head">
+    <a routerLink="/admin/offers" class="aof-back">
+      <svg lucideArrowLeft [size]="15"></svg> Offres
+    </a>
+    <h1>
+      <svg lucideBuilding2 [size]="21" aria-hidden="true"></svg>
+      {{ isEdit ? 'Modifier l\u2019offre' : 'Nouvelle offre' }}
+    </h1>
+    @if (isEdit) {
+      <p class="aof-meta">
+        Postée par {{ postedByLabel || '—' }} ·
+        {{ applicationsTotal }} candidature(s) ·
+        dernière modif. {{ lastModifiedAt | date: 'd MMM y, HH:mm' : '' : 'fr' }}
+      </p>
+    }
+  </header>
+
+  @if (loadingOffer) {
+    <p class="aof-loading">Chargement de l\u2019offre…</p>
+  } @else {
+    <div class="aof-grid">
+      <!-- ================= colonne principale ================= -->
+      <div class="aof-col">
+        <!-- Informations générales -->
+        <section class="aof-card">
+          <h2 class="aof-card-title">Informations</h2>
+
+          <div class="aof-field">
+            <label for="f-name">Titre du poste <i>*</i></label>
+            <input
+              id="f-name"
+              type="text"
+              [(ngModel)]="name"
+              placeholder="Ex. Soudeur TIG, Développeur full-stack…"
+              [class.err]="fieldErrors['name']"
+            />
+            @if (fieldErrors['name']) { <p class="aof-err">{{ fieldErrors['name'] }}</p> }
+          </div>
+
+          <div class="aof-row">
+            <div class="aof-field">
+              <label for="f-partner">Entreprise <i>*</i></label>
+              <input
+                id="f-partner"
+                type="text"
+                [(ngModel)]="partner"
+                placeholder="Nom de l\u2019entreprise"
+                [class.err]="fieldErrors['partner']"
+              />
+              @if (fieldErrors['partner']) { <p class="aof-err">{{ fieldErrors['partner'] }}</p> }
+            </div>
+            <div class="aof-field aof-field--logo">
+              <label>Logo entreprise</label>
+              <div class="aof-logo">
+                <span class="aof-logo-preview">
+                  @if (companyLogo) {
+                    <img [src]="companyLogo" alt="Logo entreprise" />
+                  } @else {
+                    <svg lucideBuilding2 [size]="20"></svg>
+                  }
+                </span>
+                <label class="aof-logo-btn" [class.busy]="logoUploading">
+                  <svg lucideImagePlus [size]="14"></svg>
+                  {{ logoUploading ? 'Envoi…' : companyLogo ? 'Changer' : 'Ajouter' }}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onLogoFile($event)" />
+                </label>
+                @if (companyLogo) {
+                  <button type="button" class="aof-logo-rm" (click)="removeLogo()" aria-label="Retirer le logo">
+                    <svg lucideX [size]="13"></svg>
+                  </button>
+                }
+              </div>
+              @if (logoError) { <p class="aof-err">{{ logoError }}</p> }
+            </div>
+          </div>
+
+          <div class="aof-row">
+            <!-- Pays : dropdown recherchable + drapeaux -->
+            <div class="aof-field aof-country">
+              <label>Pays de l\u2019offre</label>
+              <div class="aof-country-box" [class.open]="countryOpen">
+                @if (country && !countryOpen) {
+                  <span class="aof-country-sel">{{ flag(country.code) }} {{ country.name }}</span>
+                }
+                <input
+                  #countryInput
+                  type="text"
+                  [placeholder]="country ? '' : 'Rechercher un pays…'"
+                  [(ngModel)]="countryQuery"
+                  (focus)="openCountry()"
+                  (keydown)="onCountryKey($event)"
+                  aria-label="Pays de l'offre"
+                />
+                @if (country) {
+                  <button type="button" class="aof-country-x" (click)="clearCountry()" aria-label="Effacer le pays">
+                    <svg lucideX [size]="13"></svg>
+                  </button>
+                }
+                <svg lucideChevronDown [size]="15" class="aof-country-caret"></svg>
+              </div>
+              @if (countryOpen) {
+                <div class="aof-country-list" role="listbox">
+                  @for (c of filteredCountries; track c.code; let i = $index) {
+                    <button
+                      type="button"
+                      class="aof-country-item"
+                      [class.on]="i === countryActive"
+                      (mousedown)="$event.preventDefault()"
+                      (click)="pickCountry(c)"
+                      (mouseenter)="countryActive = i"
+                    >
+                      <span class="aof-flag">{{ flag(c.code) }}</span>
+                      {{ c.name }}
+                      @if (country?.code === c.code) {
+                        <svg lucideCheck [size]="14" class="aof-country-check"></svg>
+                      }
+                    </button>
+                  } @empty {
+                    <p class="aof-country-empty">Aucun pays pour « {{ countryQuery }} »</p>
+                  }
+                </div>
+              }
+            </div>
+            <div class="aof-field">
+              <label for="f-city">Ville</label>
+              <div class="aof-icon-field">
+                <svg lucideMapPin [size]="14"></svg>
+                <input id="f-city" type="text" [(ngModel)]="city" placeholder="Ex. Lyon, Doha…" />
+              </div>
+            </div>
+          </div>
+
+          <div class="aof-row aof-row--3">
+            <div class="aof-field">
+              <label>Mode de travail</label>
+              <div class="aof-modes">
+                <button type="button" [class.on]="workMode === 'onsite'" (click)="workMode = 'onsite'">
+                  <svg lucideBuilding2 [size]="14"></svg> Sur site
+                </button>
+                <button type="button" [class.on]="workMode === 'hybrid'" (click)="workMode = 'hybrid'">
+                  <svg lucideLaptop [size]="14"></svg> Hybride
+                </button>
+                <button type="button" [class.on]="workMode === 'remote'" (click)="workMode = 'remote'">
+                  <svg lucideWifi [size]="14"></svg> Remote
+                </button>
+              </div>
+            </div>
+            <div class="aof-field">
+              <label>Nombre de postes</label>
+              <div class="aof-stepper">
+                <button type="button" (click)="bumpOpenings(-1)" [disabled]="openings <= 1" aria-label="Moins">
+                  <svg lucideMinus [size]="14"></svg>
+                </button>
+                <strong>{{ openings }}</strong>
+                <button type="button" (click)="bumpOpenings(1)" aria-label="Plus">
+                  <svg lucidePlus [size]="14"></svg>
+                </button>
+              </div>
+            </div>
+            <div class="aof-field">
+              <label for="f-status">Statut</label>
+              <select id="f-status" [(ngModel)]="status">
+                <option value="published">Publiée</option>
+                <option value="draft">Brouillon</option>
+                <option value="closed">Clôturée</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Description -->
+        <section class="aof-card">
+          <div class="aof-card-head">
+            <h2 class="aof-card-title">Description du poste</h2>
+            <button type="button" class="aof-ai-btn" (click)="aiPanelOpen = !aiPanelOpen">
+              <svg lucideSparkles [size]="14"></svg>
+              Générer avec l\u2019IA
+            </button>
+          </div>
+
+          @if (aiPanelOpen) {
+            <div class="aof-ai-panel">
+              <p class="aof-ai-hint">
+                L\u2019IA rédige une description structurée (accroche, missions, profil, avantages)
+                à partir du titre, du pays et des compétences. Ajoute une consigne pour guider le ton.
+              </p>
+              <textarea
+                [(ngModel)]="aiPrompt"
+                rows="3"
+                placeholder="Consigne optionnelle — ex. « insiste sur le logement fourni et le salaire motivant »…"
+              ></textarea>
+              <div class="aof-ai-actions">
+                <button type="button" class="aof-ai-go" (click)="generateDescription()" [disabled]="aiLoading">
+                  <svg lucideSparkles [size]="14" [class.spin]="aiLoading"></svg>
+                  {{ aiLoading ? 'Génération…' : 'Générer la description' }}
+                </button>
+                <button type="button" class="aof-ai-cancel" (click)="aiPanelOpen = false" [disabled]="aiLoading">
+                  Annuler
+                </button>
+              </div>
+              @if (aiError) { <p class="aof-err">{{ aiError }}</p> }
+            </div>
+          }
+
+          <app-rich-text-editor
+            [(ngModel)]="description"
+            placeholder="Décris le poste, les missions, le profil recherché…"
+          />
+        </section>
+      </div>
+
+      <!-- ================= colonne latérale ================= -->
+      <div class="aof-col aof-col--side">
+        <!-- Publication -->
+        <section class="aof-card">
+          <h2 class="aof-card-title">Publication</h2>
+          <div class="aof-field">
+            <label>Date de publication</label>
+            <app-date-picker [(ngModel)]="publishDate" placeholder="Choisir une date" />
+          </div>
+          <div class="aof-field">
+            <label>Date de fin de candidature</label>
+            <app-date-picker
+              [(ngModel)]="deadline"
+              placeholder="Choisir une date"
+              [min]="publishDate"
+              [class.err]="fieldErrors['deadline']"
+            />
+            @if (fieldErrors['deadline']) {
+              <p class="aof-err">{{ fieldErrors['deadline'] }}</p>
+            } @else if (deadlineHint) {
+              <p class="aof-hint" [attr.data-tone]="deadlineHintTone">{{ deadlineHint }}</p>
+            }
+          </div>
+        </section>
+
+        <!-- Compétences -->
+        <section class="aof-card">
+          <div class="aof-card-head">
+            <h2 class="aof-card-title">Compétences</h2>
+            <button type="button" class="aof-ai-btn" (click)="suggestSkills()" [disabled]="skillsLoading">
+              <svg lucideSparkles [size]="14" [class.spin]="skillsLoading"></svg>
+              {{ skillsLoading ? 'Analyse…' : 'Suggérer' }}
+            </button>
+          </div>
+
+          <div class="aof-skills-box">
+            @for (s of skills; track s) {
+              <span class="aof-chip">
+                {{ s }}
+                <button type="button" (click)="removeSkill(s)" aria-label="Retirer">
+                  <svg lucideX [size]="11"></svg>
+                </button>
+              </span>
+            }
+            <input
+              type="text"
+              [(ngModel)]="skillDraft"
+              (keydown)="onSkillKey($event)"
+              (blur)="addSkill()"
+              [placeholder]="skills.length ? '' : 'Tape une compétence puis Entrée…'"
+            />
+          </div>
+
+          @if (suggestedSkills.length) {
+            <div class="aof-suggest">
+              <p>Suggestions IA — clique pour ajouter :</p>
+              <div class="aof-suggest-chips">
+                @for (s of suggestedSkills; track s) {
+                  <button type="button" class="aof-suggest-chip" (click)="addSkill(s)">
+                    <svg lucidePlus [size]="11"></svg> {{ s }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+          @if (skillsError) { <p class="aof-err">{{ skillsError }}</p> }
+        </section>
+
+        <!-- Actions -->
+        <div class="aof-submit">
+          <a routerLink="/admin/offers" class="aof-cancel">Annuler</a>
+          <button type="button" class="aof-save" (click)="save()" [disabled]="saving">
+            <svg lucideSave [size]="15"></svg>
+            {{ saving ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Publier l\u2019offre' }}
+          </button>
+        </div>
+        @if (errorMsg) { <p class="aof-error">{{ errorMsg }}</p> }
+      </div>
+    </div>
+  }
+</div>

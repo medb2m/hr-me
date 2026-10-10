@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { requireAdmin } from '../middleware/admin-auth.middleware.js';
 import * as users from '../controllers/admin-users.controller.js';
+import * as offers from '../controllers/admin-offers.controller.js';
+import { uploadCompanyLogo } from '../middleware/company-logo.multer.js';
 import { deleteContact, listContacts, updateContact } from '../controllers/contact.controller.js';
 
 /** Routes API réservées admin (JWT + rôle admin). */
@@ -21,5 +23,15 @@ router.delete('/users/:id', users.deleteUser);
 router.get('/contacts', listContacts);
 router.put('/contacts/:id', updateContact);
 router.delete('/contacts/:id', deleteContact);
+
+// Gestion des offres d'emploi (admin)
+router.post('/offers/logo', uploadCompanyLogo.single('logo'), offers.uploadLogo);
+router.post('/offers/generate-description', offers.generateDescription);
+router.post('/offers/suggest-skills', offers.suggestSkills);
+router.get('/offers', offers.listOffers);
+router.post('/offers', offers.createOffer);
+router.get('/offers/:id', offers.getOffer);
+router.put('/offers/:id', offers.updateOffer);
+router.delete('/offers/:id', offers.deleteOffer);
 
 export default router;

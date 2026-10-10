@@ -5,7 +5,14 @@ const applicationSchema = new mongoose.Schema({
   offer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer', required: true },
   position: { type: mongoose.Schema.Types.ObjectId, ref: 'Position', required: true },
   status: { type: String, default: 'applied' }, 
-  notes: { type: String }, 
+  notes: { type: String },
+  // Qui a déposé la candidature — permet de distinguer les types de postulation.
+  source: {
+    type: String,
+    enum: ['candidate', 'client', 'agent'],
+    default: 'candidate',
+  },
+  appliedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 },
 {timestamps: true}
 );
