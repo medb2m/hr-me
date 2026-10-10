@@ -2,6 +2,13 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import {
+  LucideMail,
+  LucidePenLine,
+  LucidePlus,
+  LucideSearch,
+  LucideTrash2,
+} from '@lucide/angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
 import { ClientClApiService, ClientClDto } from '../../services/client-cl-api.service';
@@ -10,7 +17,17 @@ import { createDefaultClEditorState } from '../../models/cl-editor-state';
 @Component({
   selector: 'app-client-cl-hub',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    BackButtonComponent,
+    LucideMail,
+    LucidePenLine,
+    LucidePlus,
+    LucideSearch,
+    LucideTrash2,
+  ],
   templateUrl: './client-cl-hub.component.html',
   styleUrl: './client-cl-hub.component.css',
 })
@@ -21,6 +38,7 @@ export class ClientClHubComponent implements OnInit {
   cls: ClientClDto[] = [];
   loading = true;
   loadError = '';
+  search = '';
 
   newName = '';
   newCompany = '';
@@ -76,6 +94,17 @@ export class ClientClHubComponent implements OnInit {
   clCompany(cl: ClientClDto): string {
     const c = cl.editorState?.['companyName'];
     return typeof c === 'string' ? c.trim() : '';
+  }
+
+  /** Lettres filtrées par la recherche (nom + entreprise). */
+  get filtered(): ClientClDto[] {
+    const q = this.search.trim().toLowerCase();
+    if (!q) {
+      return this.cls;
+    }
+    return this.cls.filter(
+      (c) => c.name.toLowerCase().includes(q) || this.clCompany(c).toLowerCase().includes(q),
+    );
   }
 
   deleteCl(ev: MouseEvent, cl: ClientClDto): void {

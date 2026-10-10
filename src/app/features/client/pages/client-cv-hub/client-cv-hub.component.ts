@@ -2,6 +2,13 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import {
+  LucideFileText,
+  LucidePenLine,
+  LucidePlus,
+  LucideSearch,
+  LucideTrash2,
+} from '@lucide/angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { finalize } from 'rxjs/operators';
 import { ClientCvApiService, ClientCvDto } from '../../services/client-cv-api.service';
@@ -10,7 +17,17 @@ import { createDefaultCvEditorState } from '../../models/cv-editor-state';
 @Component({
   selector: 'app-client-cv-hub',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, BackButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    BackButtonComponent,
+    LucideFileText,
+    LucidePenLine,
+    LucidePlus,
+    LucideSearch,
+    LucideTrash2,
+  ],
   templateUrl: './client-cv-hub.component.html',
   styleUrl: './client-cv-hub.component.css',
 })
@@ -21,6 +38,7 @@ export class ClientCvHubComponent implements OnInit {
   cvs: ClientCvDto[] = [];
   loading = true;
   loadError = '';
+  search = '';
 
   newName = '';
   newJobTitle = '';
@@ -76,6 +94,18 @@ export class ClientCvHubComponent implements OnInit {
   cvJobTitle(cv: ClientCvDto): string {
     const t = cv.editorState?.['jobTitle'];
     return typeof t === 'string' ? t.trim() : '';
+  }
+
+  /** CV filtrés par la recherche (nom + poste visé). */
+  get filtered(): ClientCvDto[] {
+    const q = this.search.trim().toLowerCase();
+    if (!q) {
+      return this.cvs;
+    }
+    return this.cvs.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) || this.cvJobTitle(c).toLowerCase().includes(q),
+    );
   }
 
   deleteCv(ev: MouseEvent, cv: ClientCvDto): void {

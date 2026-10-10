@@ -1,18 +1,25 @@
 <div class="cv-hub">
-  <header class="cv-hub__head">
-    <h1 class="cv-hub__title">Mes CV</h1>
-    <p class="cv-hub__lead">
-      Créez plusieurs CV — un nom interne et un titre (poste visé) chacun — puis ouvrez l’éditeur
-      pour choisir les sections, les données du dossier ou du texte personnalisé, et la photo.
+  <!-- ======== bannière ======== -->
+  <header class="hub-hero">
+    <span class="hub-hero__eyebrow">Éditeur</span>
+    <h1 class="hub-hero__title">Mes CV</h1>
+    <p class="hub-hero__lead">
+      Créez plusieurs CV adaptés à chaque poste visé — sections, données du dossier ou texte
+      personnalisé, photo — puis partagez-les quand vous postulez.
     </p>
+    <span class="hub-hero__stat">{{ cvs.length }} CV enregistré{{ cvs.length > 1 ? 's' : '' }}</span>
   </header>
 
-  <section class="cv-hub__create" aria-labelledby="cv-new-title">
-    <h2 id="cv-new-title" class="cv-hub__h2">Nouveau CV</h2>
-    <div class="cv-hub__row">
+  <!-- ======== création ======== -->
+  <section class="hub-create" aria-labelledby="cv-new-title">
+    <div class="hub-create__head">
+      <span class="hub-create__icon"><svg lucidePlus [size]="16" aria-hidden="true"></svg></span>
+      <h2 id="cv-new-title" class="hub-create__title">Nouveau CV</h2>
+    </div>
+    <div class="hub-create__row">
       <input
         type="text"
-        class="cv-hub__input"
+        class="hub-input"
         [(ngModel)]="newName"
         name="newCvName"
         maxlength="120"
@@ -20,40 +27,69 @@
       />
       <input
         type="text"
-        class="cv-hub__input"
+        class="hub-input"
         [(ngModel)]="newJobTitle"
         name="newCvJobTitle"
         maxlength="120"
         placeholder="Titre / poste visé (optionnel)"
         (keyup.enter)="createCv()"
       />
-      <button type="button" class="cv-hub__btn cv-hub__btn--primary" [disabled]="creating" (click)="createCv()">
+      <button type="button" class="hub-btn hub-btn--primary" [disabled]="creating" (click)="createCv()">
         {{ creating ? 'Création…' : 'Créer et ouvrir l’éditeur' }}
       </button>
     </div>
     @if (createError) {
-      <p class="cv-hub__err">{{ createError }}</p>
+      <p class="hub-err">{{ createError }}</p>
     }
   </section>
 
+  <!-- ======== recherche ======== -->
+  @if (cvs.length) {
+    <div class="hub-search">
+      <svg lucideSearch [size]="16" aria-hidden="true"></svg>
+      <input
+        type="text"
+        [(ngModel)]="search"
+        name="cvSearch"
+        placeholder="Rechercher un CV par nom ou poste visé…"
+      />
+      @if (search) {
+        <button type="button" class="hub-search__clear" (click)="search = ''" aria-label="Effacer">×</button>
+      }
+    </div>
+  }
+
+  <!-- ======== liste ======== -->
   @if (loading) {
-    <p class="cv-hub__muted">Chargement…</p>
+    <p class="hub-muted">Chargement…</p>
   } @else if (loadError) {
-    <p class="cv-hub__err">{{ loadError }}</p>
-  } @else if (cvs.length === 0) {
-    <p class="cv-hub__muted">Aucun CV pour l’instant — créez-en un ci-dessus.</p>
+    <p class="hub-err">{{ loadError }}</p>
+  } @else if (!cvs.length) {
+    <p class="hub-muted">Aucun CV pour l’instant — créez-en un ci-dessus.</p>
+  } @else if (!filtered.length) {
+    <p class="hub-muted">Aucun CV ne correspond à « {{ search }} ».</p>
   } @else {
-    <ul class="cv-hub__list">
-      @for (cv of cvs; track cv._id) {
-        <li class="cv-hub__item">
-          <a [routerLink]="['/candidat/editor/cv', cv._id]" class="cv-hub__link">
-            {{ cv.name }}
-            @if (cvJobTitle(cv); as jt) {
-              <span class="cv-hub__job">· {{ jt }}</span>
-            }
+    <ul class="hub-grid">
+      @for (cv of filtered; track cv._id) {
+        <li class="hub-card">
+          <a [routerLink]="['/candidat/editor/cv', cv._id]" class="hub-card__main">
+            <span class="hub-card__icon"><svg lucideFileText [size]="20" aria-hidden="true"></svg></span>
+            <span class="hub-card__body">
+              <strong class="hub-card__name">{{ cv.name }}</strong>
+              @if (cvJobTitle(cv); as jt) {
+                <span class="hub-card__job">{{ jt }}</span>
+              }
+              <span class="hub-card__meta">Modifié {{ cv.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </span>
           </a>
-          <span class="cv-hub__meta">Modifié {{ cv.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
-          <button type="button" class="cv-hub__btn-del" (click)="deleteCv($event, cv)">Supprimer</button>
+          <div class="hub-card__actions">
+            <a [routerLink]="['/candidat/editor/cv', cv._id]" class="hub-card__open" title="Ouvrir dans l’éditeur">
+              <svg lucidePenLine [size]="14" aria-hidden="true"></svg> Modifier
+            </a>
+            <button type="button" class="hub-card__del" (click)="deleteCv($event, cv)" title="Supprimer">
+              <svg lucideTrash2 [size]="14" aria-hidden="true"></svg>
+            </button>
+          </div>
         </li>
       }
     </ul>
