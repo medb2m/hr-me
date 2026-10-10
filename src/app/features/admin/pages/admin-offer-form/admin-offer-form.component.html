@@ -79,25 +79,29 @@
             <!-- Pays : dropdown recherchable + drapeaux -->
             <div class="aof-field aof-country">
               <label>Pays de l&rsquo;offre</label>
-              <div class="aof-country-box" [class.open]="countryOpen">
+              <div class="aof-country-box" [class.open]="countryOpen" (click)="onCountryBoxClick()">
                 @if (country && !countryOpen) {
                   <span class="aof-country-sel"><app-flag [code]="country.code" /> {{ country.name }}</span>
+                } @else {
+                  <input
+                    #countryInput
+                    type="text"
+                    placeholder="Rechercher un pays…"
+                    [(ngModel)]="countryQuery"
+                    (focus)="openCountry()"
+                    (keydown)="onCountryKey($event)"
+                    aria-label="Pays de l'offre"
+                    autocomplete="off"
+                  />
                 }
-                <input
-                  #countryInput
-                  type="text"
-                  [placeholder]="country ? '' : 'Rechercher un pays…'"
-                  [(ngModel)]="countryQuery"
-                  (focus)="openCountry()"
-                  (keydown)="onCountryKey($event)"
-                  aria-label="Pays de l'offre"
-                />
-                @if (country) {
-                  <button type="button" class="aof-country-x" (click)="clearCountry()" aria-label="Effacer le pays">
+                @if (country && !countryOpen) {
+                  <button type="button" class="aof-country-x" (click)="$event.stopPropagation(); clearCountry()" aria-label="Effacer le pays">
                     <svg lucideX [size]="13"></svg>
                   </button>
                 }
-                <svg lucideChevronDown [size]="15" class="aof-country-caret"></svg>
+                <button type="button" class="aof-country-caret-btn" (click)="$event.stopPropagation(); toggleCountry()" aria-label="Ouvrir la liste des pays">
+                  <svg lucideChevronDown [size]="15" class="aof-country-caret"></svg>
+                </button>
               </div>
               @if (countryOpen) {
                 <div class="aof-country-list" role="listbox">

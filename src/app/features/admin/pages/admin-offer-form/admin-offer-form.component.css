@@ -272,10 +272,14 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0;
   font-size: 0.88rem;
   font-weight: 600;
   color: #0f172a;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .aof-country-box input {
@@ -302,7 +306,21 @@
   flex-shrink: 0;
 }
 
-.aof-country-caret { color: #94a3b8; flex-shrink: 0; }
+.aof-country-caret-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.aof-country-caret-btn:hover { background: #f1f5f9; color: #475569; }
 .aof-country-box.open .aof-country-caret { transform: rotate(180deg); }
 
 .aof-country-list {

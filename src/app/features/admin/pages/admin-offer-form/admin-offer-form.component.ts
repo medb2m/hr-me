@@ -207,6 +207,22 @@ export class AdminOfferFormComponent implements OnInit {
     this.countryActive = 0;
   }
 
+  /** Clic sur le champ : ouvre la liste ; un pays affiché repasse en recherche. */
+  onCountryBoxClick(): void {
+    if (this.countryOpen) return;
+    this.countryOpen = true;
+    this.countryActive = 0;
+    setTimeout(() => this.countryInput?.nativeElement.focus());
+  }
+
+  toggleCountry(): void {
+    this.countryOpen = !this.countryOpen;
+    if (this.countryOpen) {
+      this.countryActive = 0;
+      setTimeout(() => this.countryInput?.nativeElement.focus());
+    }
+  }
+
   pickCountry(c: CountryOption): void {
     this.country = c;
     this.countryQuery = '';
