@@ -100,13 +100,20 @@
   pointer-events: none;
 }
 
-.rte__area ul,
-.rte__area ol {
+/* Contenu contenteditable sans _ngcontent → ::ng-deep ; restaure les puces. */
+.rte__area ::ng-deep ul {
   margin: 0.35rem 0;
   padding-left: 1.35rem;
+  list-style: disc;
 }
 
-.rte__area li {
+.rte__area ::ng-deep ol {
+  margin: 0.35rem 0;
+  padding-left: 1.35rem;
+  list-style: decimal;
+}
+
+.rte__area ::ng-deep li {
   color: #1e293b;
 }
 
