@@ -71,7 +71,7 @@ export const routes: Routes = [
       loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
     },
 
-    /** Espace candidat (layout type Europass) : `/candidat/overview`, `/candidat/profile`, etc. */
+    /** Espace candidat (layout ) : `/candidat/overview`, `/candidat/profile`, etc. */
     {
       path: 'candidat',
       canActivate: [authRequiredGuard],

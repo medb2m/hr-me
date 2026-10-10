@@ -23,6 +23,7 @@ export class ClientCvHubComponent implements OnInit {
   loadError = '';
 
   newName = '';
+  newJobTitle = '';
   creating = false;
   createError = '';
 
@@ -54,18 +55,27 @@ export class ClientCvHubComponent implements OnInit {
     }
     this.creating = true;
     this.createError = '';
+    const editorState = createDefaultCvEditorState();
+    editorState.jobTitle = this.newJobTitle.trim();
     this.api
-      .createCv({ name, editorState: createDefaultCvEditorState() })
+      .createCv({ name, editorState })
       .pipe(finalize(() => (this.creating = false)))
       .subscribe({
         next: ({ cv }) => {
           this.newName = '';
+          this.newJobTitle = '';
           void this.router.navigate(['/candidat/editor/cv', cv._id]);
         },
         error: (err: { error?: { message?: string } }) => {
           this.createError = err.error?.message || 'Création impossible.';
         },
       });
+  }
+
+  /** Titre du CV (poste visé) enregistré dans `editorState`. */
+  cvJobTitle(cv: ClientCvDto): string {
+    const t = cv.editorState?.['jobTitle'];
+    return typeof t === 'string' ? t.trim() : '';
   }
 
   deleteCv(ev: MouseEvent, cv: ClientCvDto): void {

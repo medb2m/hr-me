@@ -1,4 +1,4 @@
-/** État éditeur CV (Europass) — versionné pour évolutions futures. */
+/** État éditeur CV  — versionné pour évolutions futures. */
 export const CV_EDITOR_VERSION = 1;
 
 export interface CvSectionBlock {
@@ -11,6 +11,12 @@ export interface CvSectionBlock {
 
 export interface CvEditorState {
   version: number;
+  /** Titre affiché en-tête du CV (ex. poste visé) — distinct du nom interne du CV. */
+  jobTitle: string;
+  /** Afficher les numéros de téléphone enregistrés dans le profil. */
+  includePhones: boolean;
+  /** Afficher les liens externes enregistrés dans le profil. */
+  includeLinks: boolean;
   summary: CvSectionBlock;
   personal: CvSectionBlock;
   experience: CvSectionBlock;
@@ -26,6 +32,9 @@ export function defaultCvSectionBlock(): CvSectionBlock {
 export function createDefaultCvEditorState(): CvEditorState {
   return {
     version: CV_EDITOR_VERSION,
+    jobTitle: '',
+    includePhones: true,
+    includeLinks: true,
     summary: defaultCvSectionBlock(),
     personal: defaultCvSectionBlock(),
     experience: defaultCvSectionBlock(),
@@ -56,6 +65,9 @@ export function mergeCvEditorState(raw: unknown): CvEditorState {
   const o = raw as Record<string, unknown>;
   return {
     version: typeof o['version'] === 'number' ? o['version'] : CV_EDITOR_VERSION,
+    jobTitle: typeof o['jobTitle'] === 'string' ? o['jobTitle'] : d.jobTitle,
+    includePhones: typeof o['includePhones'] === 'boolean' ? o['includePhones'] : d.includePhones,
+    includeLinks: typeof o['includeLinks'] === 'boolean' ? o['includeLinks'] : d.includeLinks,
     summary: mergeBlock(d.summary, o['summary']),
     personal: mergeBlock(d.personal, o['personal']),
     experience: mergeBlock(d.experience, o['experience']),

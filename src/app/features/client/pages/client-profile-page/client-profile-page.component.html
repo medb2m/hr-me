@@ -20,7 +20,7 @@
         Dépôt central des données utilisées par vos CV, lettres et l’explorateur d’opportunités.
         Complétez les étapes ci-dessous pour atteindre 100&nbsp;%.
       </p>
-      <a routerLink="/candidat/editor/cv" class="ep-cta">Mes CV — éditeur Europass</a>
+      <a routerLink="/candidat/editor/cv" class="ep-cta">Mes CV — éditeur</a>
     </div>
     <div class="ep-progress" aria-label="Progression du profil">
       <svg viewBox="0 0 64 64" class="ep-progress__ring" role="img" aria-hidden="true">
@@ -167,10 +167,135 @@
     }
   </section>
 
-  <!-- ============ ÉTAPE 3 : SECTIONS ============ -->
+  <!-- ============ ÉTAPE 3 : CONTACT & LIENS ============ -->
   <section class="ep-card">
     <div class="ep-card__head">
       <span class="ep-step" aria-hidden="true">3</span>
+      <span class="ep-card__icon" aria-hidden="true"><svg lucideShare2 [size]="18"></svg></span>
+      <div>
+        <h2>Contact &amp; liens</h2>
+        <p>Numéros de téléphone et profils en ligne — réutilisables dans vos CV en un clic.</p>
+      </div>
+      <span class="ep-state" [class.ep-state--ok]="phones.length > 0 || links.length > 0">
+        <svg lucideBadgeCheck [size]="13" aria-hidden="true"></svg>
+        {{ phones.length > 0 || links.length > 0 ? 'Renseigné' : 'À renseigner' }}
+      </span>
+    </div>
+
+    <h3 class="ep-sub"><svg lucidePhone [size]="14" aria-hidden="true"></svg> Numéros de téléphone</h3>
+    <ul class="ep-phones">
+      @for (p of phones; track trackIndex($index)) {
+        <li class="ep-phones__row">
+          <input
+            class="ep-input"
+            type="tel"
+            [(ngModel)]="phones[$index]"
+            [name]="'phone-' + $index"
+            maxlength="40"
+            placeholder="+216 00 000 000"
+          />
+          <button
+            type="button"
+            class="ep-icon-btn ep-icon-btn--danger"
+            (click)="removePhone($index)"
+            aria-label="Supprimer ce numéro"
+          >
+            <svg lucideTrash2 [size]="14" aria-hidden="true"></svg>
+          </button>
+        </li>
+      }
+    </ul>
+    @if (phones.length === 0) {
+      <p class="ep-empty">Aucun numéro pour l’instant.</p>
+    }
+    <button type="button" class="ep-add" [disabled]="phones.length >= 6" (click)="addPhone()">
+      <svg lucidePlus [size]="13" aria-hidden="true"></svg> Ajouter un numéro
+    </button>
+
+    <h3 class="ep-sub"><svg lucideLink [size]="14" aria-hidden="true"></svg> Liens &amp; réseaux</h3>
+    <p class="ep-hint-sm">Cliquez une plateforme pour l’ajouter, ou créez un lien personnalisé.</p>
+    <div class="ep-presets">
+      @for (preset of linkPresets; track preset) {
+        <button
+          type="button"
+          class="ep-preset"
+          [disabled]="hasPresetLink(preset)"
+          (click)="addPresetLink(preset)"
+        >
+          {{ preset }}
+        </button>
+      }
+    </div>
+
+    <ul class="ep-links">
+      @for (l of links; track trackIndex($index)) {
+        <li class="ep-links__row">
+          <span class="ep-links__chip">{{ l.label || 'Lien' }}</span>
+          <input
+            class="ep-input"
+            type="url"
+            [(ngModel)]="l.url"
+            [name]="'link-' + $index"
+            maxlength="300"
+            placeholder="https://…"
+          />
+          <button
+            type="button"
+            class="ep-icon-btn ep-icon-btn--danger"
+            (click)="removeLink($index)"
+            aria-label="Supprimer ce lien"
+          >
+            <svg lucideTrash2 [size]="14" aria-hidden="true"></svg>
+          </button>
+        </li>
+      }
+    </ul>
+    @if (links.length === 0) {
+      <p class="ep-empty">Aucun lien ajouté.</p>
+    }
+
+    <div class="ep-custom-link">
+      <input
+        class="ep-input"
+        type="text"
+        [(ngModel)]="newLinkLabel"
+        name="newLinkLabel"
+        maxlength="40"
+        placeholder="Nom du lien (ex. Dribbble)"
+      />
+      <input
+        class="ep-input"
+        type="url"
+        [(ngModel)]="newLinkUrl"
+        name="newLinkUrl"
+        maxlength="300"
+        placeholder="https://…"
+        (keyup.enter)="addCustomLink()"
+      />
+      <button
+        type="button"
+        class="ep-add"
+        [disabled]="!newLinkLabel.trim() || !newLinkUrl.trim() || links.length >= 10"
+        (click)="addCustomLink()"
+      >
+        <svg lucidePlus [size]="13" aria-hidden="true"></svg> Ajouter
+      </button>
+    </div>
+
+    <div class="ep-contact-save">
+      <button type="button" class="ep-btn" [disabled]="savingContact" (click)="saveContact($event)">
+        {{ savingContact ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+      @if (contactSaveError) {
+        <p class="ep-birth-err">{{ contactSaveError }}</p>
+      }
+    </div>
+  </section>
+
+  <!-- ============ ÉTAPE 4 : SECTIONS ============ -->
+  <section class="ep-card">
+    <div class="ep-card__head">
+      <span class="ep-step" aria-hidden="true">4</span>
       <span class="ep-card__icon" aria-hidden="true"><svg lucideListChecks [size]="18"></svg></span>
       <div>
         <h2>Sections du dossier</h2>

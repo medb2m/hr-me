@@ -30,9 +30,14 @@
 }
 
 .ep-btn--primary {
-  background: #0f172a;
-  color: #fff;
-  border-color: #0f172a;
+  background: linear-gradient(135deg, #ffd300, #e6b800);
+  color: #0f172a;
+  border-color: transparent;
+  font-weight: 800;
+}
+
+.ep-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(255, 211, 0, 0.4);
 }
 
 .ep-btn--primary:disabled {
@@ -301,4 +306,108 @@
   color: #1e293b;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* ---------- parcours par étapes ---------- */
+
+.ep-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.ep-step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ep-step-pill:hover {
+  border-color: rgba(255, 211, 0, 0.7);
+}
+
+.ep-step-pill--active {
+  border-color: #ffd300;
+  background: rgba(255, 211, 0, 0.14);
+  color: #0f172a;
+}
+
+.ep-step-pill__num {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0f172a;
+  color: #ffd300;
+  font-size: 0.64rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.ep-step-pill--active .ep-step-pill__num {
+  background: #ffd300;
+  color: #0f172a;
+}
+
+.ep-card--step {
+  border-top: 3px solid #ffd300;
+  animation: ep-step-in 0.2s ease-out;
+}
+
+@keyframes ep-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ep-stepnav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.ep-stepnav .ep-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ep-check input[type='checkbox'],
+.ep-radio input[type='radio'] {
+  accent-color: #e6b800;
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+}
+
+.ep-input:focus,
+.ep-textarea:focus {
+  outline: none;
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.35);
+}
+
+.ep-sheet__job {
+  margin: 0.25rem 0 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffd300;
+  letter-spacing: 0.01em;
 }

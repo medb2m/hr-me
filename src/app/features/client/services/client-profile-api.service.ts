@@ -14,6 +14,8 @@ export interface ClientProfileDto {
   sectionFlags?: Partial<ClientProfileSections>;
   headline?: string;
   phone?: string;
+  phones?: string[];
+  links?: Array<{ _id?: string; label?: string; url?: string }>;
   city?: string;
   country?: string;
   nationality?: string;
@@ -45,8 +47,12 @@ export class ClientProfileApiService {
     return this.http.get<{ profile: ClientProfileDto }>(`${this.base}/profile`);
   }
 
-  /** Met à jour le profil (ex. date de naissance). `birthDate` : `YYYY-MM-DD` ou `null` pour effacer. */
-  patchProfile(body: { birthDate: string | null }): Observable<{ profile: ClientProfileDto }> {
+  /** Met à jour le profil : `birthDate` (`YYYY-MM-DD` ou `null`), `phones`, `links` ({label,url}). */
+  patchProfile(body: {
+    birthDate?: string | null;
+    phones?: string[];
+    links?: Array<{ label: string; url: string }>;
+  }): Observable<{ profile: ClientProfileDto }> {
     return this.http.put<{ profile: ClientProfileDto }>(`${this.base}/profile`, body);
   }
 

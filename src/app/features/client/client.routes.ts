@@ -27,8 +27,8 @@ export const CLIENT_ROUTES: Routes = [
       {
         path: 'editor/cv/:cvId',
         loadComponent: () =>
-          import('./pages/client-cv-europass-editor/client-cv-europass-editor.component').then(
-            (m) => m.ClientCvEuropassEditorComponent,
+          import('./pages/client-cv-editor/client-cv-editor.component').then(
+            (m) => m.ClientCvEditorComponent,
           ),
       },
       {

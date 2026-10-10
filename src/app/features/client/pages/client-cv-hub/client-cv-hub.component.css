@@ -63,9 +63,21 @@
 }
 
 .cv-hub__btn--primary {
-  background: #0f172a;
-  color: #fff;
+  background: linear-gradient(135deg, #ffd300, #e6b800);
+  color: #0f172a;
+  border-color: transparent;
+  font-weight: 800;
+}
+
+.cv-hub__job {
+  font-weight: 600;
+  color: #a16207;
+}
+
+.cv-hub__input:focus {
+  outline: none;
   border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.35);
 }
 
 .cv-hub__btn--primary:disabled {

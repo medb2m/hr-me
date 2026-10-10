@@ -4,6 +4,7 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, catchError, finalize } from 'rxjs';
+import { LucideArrowLeft, LucideArrowRight, LucideCheck } from '@lucide/angular';
 
 import { AuthService } from '../../../../core/services/auth.service';
 import { ClientCvApiService, ClientCvDto } from '../../services/client-cv-api.service';
@@ -18,17 +19,21 @@ import {
   createDefaultCvEditorState,
   mergeCvEditorState,
 } from '../../models/cv-editor-state';
+import { ProfilePhotoUploadComponent } from '../../../../shared/components/profile-photo-upload/profile-photo-upload.component';
 
-export type CvBlockKey = Exclude<keyof CvEditorState, 'version'>;
+export type CvBlockKey = 'summary' | 'personal' | 'experience' | 'education' | 'skills' | 'languages';
+export type CvStepKey = 'infos' | CvBlockKey;
 
 @Component({
-  selector: 'app-client-cv-europass-editor',
+  selector: 'app-client-cv-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackButtonComponent],
-  templateUrl: './client-cv-europass-editor.component.html',
-  styleUrl: './client-cv-europass-editor.component.css',
+  imports: [CommonModule, FormsModule, BackButtonComponent, ProfilePhotoUploadComponent, LucideArrowLeft, LucideArrowRight, LucideCheck],
+  templateUrl: './client-cv-editor.component.html',
+  styleUrl: './client-cv-editor.component.css',
 })
-export class ClientCvEuropassEditorComponent implements OnInit {
+export class ClientCvEditorComponent implements OnInit {
+  /** Étape courante du parcours guidé (0 = infos & photo). */
+  step = 0;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly cvApi = inject(ClientCvApiService);
@@ -56,6 +61,44 @@ export class ClientCvEuropassEditorComponent implements OnInit {
     { key: 'skills', title: 'Compétences', hint: 'Liste issue du profil ou liste personnalisée.' },
     { key: 'languages', title: 'Langues', hint: 'Langues et niveaux CECRL du profil.' },
   ];
+
+  /** Parcours : étape 0 = infos générales, puis une étape par bloc. */
+  readonly steps: { key: CvStepKey; title: string }[] = [
+    { key: 'infos', title: 'CV & photo' },
+    ...this.blocks.map((b) => ({ key: b.key as CvStepKey, title: b.title })),
+  ];
+
+  goStep(i: number): void {
+    if (i >= 0 && i < this.steps.length) {
+      this.step = i;
+    }
+  }
+
+  nextStep(): void {
+    this.goStep(this.step + 1);
+  }
+
+  prevStep(): void {
+    this.goStep(this.step - 1);
+  }
+
+  get lastStep(): number {
+    return this.steps.length - 1;
+  }
+
+  /** Étape considérée "remplie" (pour le point vert dans la navigation). */
+  isStepDone(i: number): boolean {
+    const s = this.steps[i];
+    if (!s || s.key === 'infos') {
+      return this.cvName.trim().length >= 2 && this.state.jobTitle.trim().length >= 2;
+    }
+    const b = this.state[s.key as CvBlockKey];
+    return b.visible && (b.useProfile || (b.customText || '').trim().length > 0);
+  }
+
+  hasCustomPhoto(): boolean {
+    return !!(this.cv?.customPhotoUrl && this.photoSource === 'custom');
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((pm) => {
@@ -140,6 +183,20 @@ export class ClientCvEuropassEditorComponent implements OnInit {
         }
         if (p?.phone?.trim()) {
           lines.push(p.phone.trim());
+        }
+        if (this.state.includePhones) {
+          lines.push(...(p?.phones ?? []).map((t) => t.trim()).filter(Boolean));
+        }
+        if (this.state.includeLinks) {
+          lines.push(
+            ...(p?.links ?? [])
+              .map((l) => {
+                const u = (l.url || '').trim();
+                const lab = (l.label || '').trim();
+                return u ? (lab ? `${lab} : ${u}` : u) : '';
+              })
+              .filter(Boolean),
+          );
         }
         const place = [p?.city, p?.country].filter((x) => x?.trim()).join(', ');
         if (place) {
@@ -261,10 +318,7 @@ export class ClientCvEuropassEditorComponent implements OnInit {
       });
   }
 
-  onPhotoSelected(ev: Event): void {
-    const input = ev.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
+  onPhotoSelected(file: File): void {
     if (!file || !this.cvId) {
       return;
     }

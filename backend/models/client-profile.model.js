@@ -60,6 +60,18 @@ const clientProfileSchema = new mongoose.Schema(
     profilePhotoUrl: { type: String, trim: true, default: '' },
     profilePhotoHistory: { type: [profilePhotoHistoryEntrySchema], default: [] },
     phone: { type: String, trim: true, default: '' },
+    /** Numéros de téléphone supplémentaires (plusieurs possibles). */
+    phones: { type: [String], default: [] },
+    /** Liens externes : préréglages (LinkedIn, GitHub…) ou nom personnalisé. */
+    links: {
+      type: [
+        {
+          label: { type: String, trim: true, default: '' },
+          url: { type: String, trim: true, default: '' },
+        },
+      ],
+      default: [],
+    },
     city: { type: String, trim: true, default: '' },
     country: { type: String, trim: true, default: '' },
     nationality: { type: String, trim: true, default: '' },

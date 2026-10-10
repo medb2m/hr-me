@@ -13,7 +13,11 @@ import {
   LucideCheck,
   LucideCrop,
   LucideHistory,
+  LucideLink,
   LucideListChecks,
+  LucidePhone,
+  LucidePlus,
+  LucideShare2,
   LucideTrash2,
   LucideUserRound,
 } from '@lucide/angular';
@@ -42,7 +46,11 @@ import { ProfilePhotoUploadComponent } from '../../../../shared/components/profi
     LucideCheck,
     LucideCrop,
     LucideHistory,
+    LucideLink,
     LucideListChecks,
+    LucidePhone,
+    LucidePlus,
+    LucideShare2,
     LucideTrash2,
     LucideUserRound,
   ],
@@ -77,6 +85,15 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
   birthDateIso = '';
   savingBirth = false;
   birthSaveError = '';
+
+  /** Contact : numéros multiples + liens externes (serveur). */
+  phones: string[] = [];
+  links: Array<{ label: string; url: string }> = [];
+  savingContact = false;
+  contactSaveError = '';
+  newLinkLabel = '';
+  newLinkUrl = '';
+  readonly linkPresets = ['LinkedIn', 'GitHub', 'GitLab', 'Bitbucket', 'Portfolio', 'Facebook'];
 
   /** Une naissance ne peut pas être dans le futur. */
   readonly todayIso = new Date().toISOString().slice(0, 10);
@@ -134,6 +151,16 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
       (a, b) =>
         new Date(b.uploadedAt ?? 0).getTime() - new Date(a.uploadedAt ?? 0).getTime(),
     );
+    const phones = [...(p.phones ?? [])];
+    const legacy = (p.phone ?? '').trim();
+    if (legacy && !phones.includes(legacy)) {
+      phones.unshift(legacy);
+    }
+    this.phones = phones;
+    this.links = (p.links ?? []).map((l) => ({
+      label: (l.label ?? '').trim(),
+      url: (l.url ?? '').trim(),
+    }));
   }
 
   private syncBirthDateFromState(): void {
@@ -221,6 +248,68 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
         next: ({ profile }) => this.applyServerProfile(profile),
         error: (err: { error?: { message?: string } }) => {
           this.historyError = err.error?.message || 'Suppression impossible.';
+        },
+      });
+  }
+
+  addPhone(): void {
+    if (this.phones.length < 6) {
+      this.phones.push('');
+    }
+  }
+
+  removePhone(i: number): void {
+    this.phones.splice(i, 1);
+  }
+
+  trackIndex(i: number): number {
+    return i;
+  }
+
+  hasPresetLink(label: string): boolean {
+    return this.links.length >= 10 || this.links.some((l) => l.label === label);
+  }
+
+  addPresetLink(label: string): void {
+    if (this.links.length >= 10 || this.links.some((l) => l.label === label)) {
+      return;
+    }
+    this.links.push({ label, url: '' });
+  }
+
+  addCustomLink(): void {
+    const label = this.newLinkLabel.trim();
+    const url = this.newLinkUrl.trim();
+    if (!label || !url || this.links.length >= 10) {
+      return;
+    }
+    this.links.push({ label, url });
+    this.newLinkLabel = '';
+    this.newLinkUrl = '';
+  }
+
+  removeLink(i: number): void {
+    this.links.splice(i, 1);
+  }
+
+  saveContact(event: MouseEvent): void {
+    const anchorX = event.clientX;
+    const anchorY = event.clientY;
+    this.savingContact = true;
+    this.contactSaveError = '';
+    this.profileApi
+      .patchProfile({
+        phones: this.phones.map((p) => p.trim()).filter(Boolean),
+        links: this.links.map((l) => ({ label: l.label.trim(), url: l.url.trim() })).filter((l) => l.url),
+      })
+      .pipe(finalize(() => (this.savingContact = false)))
+      .subscribe({
+        next: ({ profile }) => {
+          this.applyServerProfile(profile);
+          this.showSuccessNearPointer(anchorX, anchorY, 'Contact & liens enregistrés.');
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.contactSaveError = err.error?.message || 'Enregistrement impossible.';
         },
       });
   }

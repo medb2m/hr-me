@@ -2,8 +2,8 @@
   <header class="cv-hub__head">
     <h1 class="cv-hub__title">Mes CV</h1>
     <p class="cv-hub__lead">
-      Créez plusieurs CV avec un nom chacun, puis ouvrez l’éditeur type Europass pour choisir les blocs, les données
-      profil ou du texte personnalisé, et la photo.
+      Créez plusieurs CV — un nom interne et un titre (poste visé) chacun — puis ouvrez l’éditeur
+      pour choisir les sections, les données du dossier ou du texte personnalisé, et la photo.
     </p>
   </header>
 
@@ -16,7 +16,15 @@
         [(ngModel)]="newName"
         name="newCvName"
         maxlength="120"
-        placeholder="ex. CV ingénieur 2026"
+        placeholder="Nom du CV — ex. CV ingénieur 2026"
+      />
+      <input
+        type="text"
+        class="cv-hub__input"
+        [(ngModel)]="newJobTitle"
+        name="newCvJobTitle"
+        maxlength="120"
+        placeholder="Titre / poste visé (optionnel)"
         (keyup.enter)="createCv()"
       />
       <button type="button" class="cv-hub__btn cv-hub__btn--primary" [disabled]="creating" (click)="createCv()">
@@ -38,7 +46,12 @@
     <ul class="cv-hub__list">
       @for (cv of cvs; track cv._id) {
         <li class="cv-hub__item">
-          <a [routerLink]="['/candidat/editor/cv', cv._id]" class="cv-hub__link">{{ cv.name }}</a>
+          <a [routerLink]="['/candidat/editor/cv', cv._id]" class="cv-hub__link">
+            {{ cv.name }}
+            @if (cvJobTitle(cv); as jt) {
+              <span class="cv-hub__job">· {{ jt }}</span>
+            }
+          </a>
           <span class="cv-hub__meta">Modifié {{ cv.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
           <button type="button" class="cv-hub__btn-del" (click)="deleteCv($event, cv)">Supprimer</button>
         </li>

@@ -37,38 +37,91 @@ export async function getProfile(req, res) {
 }
 
 /**
- * PATCH ou PUT /api/client/profile — mise à jour partielle (ex. date de naissance).
+ * PATCH ou PUT /api/client/profile — mise à jour partielle.
  * `birthDate` : chaîne `YYYY-MM-DD` ou `null` / `""` pour effacer.
+ * `phones` : tableau de chaînes (max 6, 40 car. chacun).
+ * `links` : tableau { label, url } (max 10 ; url normalisée en https).
  */
 export async function patchProfile(req, res) {
   try {
     const body = req.body || {};
-    if (!Object.prototype.hasOwnProperty.call(body, 'birthDate')) {
+    const hasBirth = Object.prototype.hasOwnProperty.call(body, 'birthDate');
+    const hasPhones = Object.prototype.hasOwnProperty.call(body, 'phones');
+    const hasLinks = Object.prototype.hasOwnProperty.call(body, 'links');
+    if (!hasBirth && !hasPhones && !hasLinks) {
       return res.status(400).json({
-        message: 'Le corps doit inclure « birthDate » (YYYY-MM-DD ou null pour effacer).',
+        message: 'Le corps doit inclure « birthDate », « phones » et/ou « links ».',
       });
     }
 
     const profile = await ensureClientProfileForUser(req.user.id);
-    const raw = body.birthDate;
 
-    if (raw === null || raw === '') {
-      profile.birthDate = null;
-    } else if (typeof raw === 'string') {
-      const m = raw.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!m) {
-        return res.status(400).json({ message: 'Date de naissance invalide (attendu : YYYY-MM-DD).' });
+    if (hasBirth) {
+      const raw = body.birthDate;
+      if (raw === null || raw === '') {
+        profile.birthDate = null;
+      } else if (typeof raw === 'string') {
+        const m = raw.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!m) {
+          return res.status(400).json({ message: 'Date de naissance invalide (attendu : YYYY-MM-DD).' });
+        }
+        const y = parseInt(m[1], 10);
+        const mo = parseInt(m[2], 10);
+        const d = parseInt(m[3], 10);
+        const dt = new Date(Date.UTC(y, mo - 1, d));
+        if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) {
+          return res.status(400).json({ message: 'Date de naissance invalide.' });
+        }
+        profile.birthDate = dt;
+      } else {
+        return res.status(400).json({ message: 'birthDate invalide.' });
       }
-      const y = parseInt(m[1], 10);
-      const mo = parseInt(m[2], 10);
-      const d = parseInt(m[3], 10);
-      const dt = new Date(Date.UTC(y, mo - 1, d));
-      if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) {
-        return res.status(400).json({ message: 'Date de naissance invalide.' });
+    }
+
+    if (hasPhones) {
+      if (!Array.isArray(body.phones)) {
+        return res.status(400).json({ message: '« phones » doit être un tableau de numéros.' });
       }
-      profile.birthDate = dt;
-    } else {
-      return res.status(400).json({ message: 'birthDate invalide.' });
+      if (body.phones.length > 6) {
+        return res.status(400).json({ message: 'Maximum 6 numéros de téléphone.' });
+      }
+      const phones = [];
+      for (const p of body.phones) {
+        const v = String(p ?? '').trim();
+        if (!v) continue;
+        if (v.length > 40) {
+          return res.status(400).json({ message: 'Numéro trop long (40 caractères max).' });
+        }
+        phones.push(v);
+      }
+      profile.phones = phones;
+    }
+
+    if (hasLinks) {
+      if (!Array.isArray(body.links)) {
+        return res.status(400).json({ message: '« links » doit être un tableau { label, url }.' });
+      }
+      if (body.links.length > 10) {
+        return res.status(400).json({ message: 'Maximum 10 liens.' });
+      }
+      const links = [];
+      for (const l of body.links) {
+        if (!l || typeof l !== 'object') continue;
+        const label = String(l.label ?? '').trim().slice(0, 40);
+        let url = String(l.url ?? '').trim();
+        if (!url) continue;
+        if (url.length > 300) {
+          return res.status(400).json({ message: 'URL trop longue (300 caractères max).' });
+        }
+        if (!/^https?:\/\//i.test(url)) {
+          url = `https://${url}`;
+        }
+        if (!/^https?:\/\/[^\s]+\.[^\s]{2,}/i.test(url)) {
+          return res.status(400).json({ message: `URL invalide : ${label || url}` });
+        }
+        links.push({ label: label || 'Lien', url });
+      }
+      profile.links = links;
     }
 
     await profile.save();
