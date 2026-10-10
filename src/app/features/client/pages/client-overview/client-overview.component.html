@@ -1,19 +1,44 @@
 <div class="ep">
   <header class="ep-hero">
+    <span class="ep-hero__eyebrow">Espace candidat</span>
     <h1 class="ep-hero__title">Mon espace candidat</h1>
     <p class="ep-hero__lead">
-      Un parcours clair, inspiré des principes reconnus : un profil unique, des documents exploitables,
-      et des outils d’édition pour vos candidatures.
+      Un parcours clair, inspiré des principes reconnus : un profil unique, des documents
+      exploitables, et des outils d’édition pour vos candidatures.
     </p>
   </header>
 
   <section class="ep-grid" aria-label="Accès rapides">
     @for (t of tiles; track t.link) {
       <a [routerLink]="t.link" class="ep-card">
+        <span class="ep-card__icon" aria-hidden="true">
+          @switch (t.icon) {
+            @case ('id') {
+              <svg lucideIdCard [size]="34"></svg>
+            }
+            @case ('cv') {
+              <svg lucideFileText [size]="34"></svg>
+            }
+            @case ('letter') {
+              <svg lucidePenLine [size]="34"></svg>
+            }
+            @case ('docs') {
+              <svg lucideFolderOpen [size]="34"></svg>
+            }
+            @case ('skills') {
+              <svg lucideListChecks [size]="34"></svg>
+            }
+            @case ('explore') {
+              <svg lucideCompass [size]="34"></svg>
+            }
+          }
+        </span>
         <span class="ep-card__tag">{{ t.tag }}</span>
         <h2 class="ep-card__title">{{ t.title }}</h2>
         <p class="ep-card__desc">{{ t.desc }}</p>
-        <span class="ep-card__cta">Ouvrir →</span>
+        <span class="ep-card__cta">
+          Ouvrir <svg lucideArrowRight [size]="15" aria-hidden="true"></svg>
+        </span>
       </a>
     }
   </section>
