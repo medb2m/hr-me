@@ -446,8 +446,8 @@
 
 .avatar-history__check {
   position: absolute;
-  right: -1px;
-  bottom: -1px;
+  right: 2px;
+  bottom: 2px;
   display: grid;
   place-items: center;
   width: 19px;
