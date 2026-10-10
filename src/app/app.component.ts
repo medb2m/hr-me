@@ -60,6 +60,12 @@ export class AppComponent {
         if (!a) {
           return;
         }
+        // Chargement à froid d'un lien profond (`window.open`, refresh) : `router.url` vaut encore
+        // `/` pendant que le chunk lazy charge. Sans garde, on écraserait la vraie navigation —
+        // l'écoute `NavigationEnd` relance ce contrôle avec l'URL finale.
+        if (!this.router.navigated) {
+          return;
+        }
         const p = this.router.url.split('?')[0];
         if (!this.isAllowedScopedPath(a, p)) {
           void this.router.navigateByUrl(a === 'client' ? '/espace/accueil' : '/candidat/overview', {
