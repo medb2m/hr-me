@@ -29,6 +29,9 @@ function appDto(a, profile = null, user = null) {
     message: a.message || '',
     cv: a.cv ? fileDto(a.cv) : null,
     attachments: (a.attachments || []).map(fileDto),
+    sharedProfile: !!a.sharedProfile,
+    sharedCv: a.sharedCv?.id ? { id: a.sharedCv.id, name: a.sharedCv.name || '' } : null,
+    sharedDocs: (a.sharedDocs || []).map((f) => ({ ...fileDto(f), kind: f.kind || 'other' })),
     adminNotes: a.adminNotes || '',
     createdAt: a.createdAt,
     user: user

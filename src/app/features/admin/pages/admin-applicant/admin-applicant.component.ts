@@ -145,6 +145,12 @@ export class AdminApplicantComponent implements OnInit {
     return SOURCE_META[s] || s;
   }
 
+  docKindLabel(k?: string): string {
+    if (k === 'diploma') return 'Diplôme';
+    if (k === 'certificate') return 'Certification';
+    return 'Document';
+  }
+
   displayName(): string {
     const a = this.app;
     if (!a) return '—';

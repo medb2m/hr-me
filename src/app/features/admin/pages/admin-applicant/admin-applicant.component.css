@@ -262,6 +262,17 @@
   flex-shrink: 0;
 }
 
+/* élément partagé depuis le profil plateforme (non cliquable = CV éditeur) */
+.ap-file--shared {
+  cursor: default;
+  border-color: rgba(230, 184, 0, 0.55);
+  background: rgba(255, 211, 0, 0.09);
+}
+
+.ap-tag-shared {
+  color: #a16207 !important;
+}
+
 /* motivation */
 
 .ap-msg {

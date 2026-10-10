@@ -67,6 +67,8 @@
           </span>
           <span class="ma-date">
             <svg lucideCalendar [size]="12"></svg> Postulée le {{ fmtDate(a.createdAt) }}
+            @if (a.sharedCvName) { · <svg lucideFileText [size]="12"></svg> CV « {{ a.sharedCvName }} » partagé }
+            @if (a.sharedDocsCount) { · {{ a.sharedDocsCount }} document(s) profil }
             @if (a.hasCv) { · <svg lucideFileText [size]="12"></svg> CV joint }
             @if (a.attachmentsCount) { · {{ a.attachmentsCount }} pièce(s) jointe(s) }
           </span>

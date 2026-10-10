@@ -1,0 +1,177 @@
+<div class="oc-body">
+  @if (errorMsg) {
+    <p class="oc-error">{{ errorMsg }}</p>
+  }
+
+  @if (loading) {
+    <p class="oc-loading">Chargement des offres…</p>
+  } @else {
+    <!-- ======== barre de recherche + filtres ======== -->
+    <div class="toolbar">
+      <label class="search">
+        <svg lucideSearch [size]="16" aria-hidden="true"></svg>
+        <input
+          type="search"
+          [(ngModel)]="search"
+          (ngModelChange)="onFilterChange()"
+          placeholder="Rechercher un poste, une entreprise, une ville, une compétence…"
+          aria-label="Rechercher une offre" />
+        @if (search) {
+          <button type="button" class="search-clear" (click)="search = ''; onFilterChange()" aria-label="Effacer">
+            &times;
+          </button>
+        }
+      </label>
+
+      <div class="toolbar-row">
+        <label class="tfield">
+          <span>Pays</span>
+          <select [(ngModel)]="countryFilter" (ngModelChange)="onFilterChange()">
+            <option value="Tous">Tous les pays</option>
+            <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+          </select>
+        </label>
+        <label class="tfield">
+          <span>Contrat</span>
+          <select [(ngModel)]="contractFilter" (ngModelChange)="onFilterChange()">
+            <option value="">Tous contrats</option>
+            <option *ngFor="let c of contracts" [value]="c">{{ c }}</option>
+          </select>
+        </label>
+        <label class="tfield">
+          <span>Mode</span>
+          <select [(ngModel)]="modeFilter" (ngModelChange)="onFilterChange()">
+            <option value="">Tous modes</option>
+            <option value="onsite">Sur site</option>
+            <option value="hybrid">Hybride</option>
+            <option value="remote">Remote</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          class="urgent-toggle"
+          [class.on]="urgentOnly"
+          (click)="urgentOnly = !urgentOnly; onFilterChange()">
+          <svg lucideFlame [size]="14" aria-hidden="true"></svg> Urgent
+        </button>
+        <label class="tfield">
+          <span>Trier</span>
+          <select [(ngModel)]="sort" (ngModelChange)="onFilterChange()">
+            <option value="recent">Plus récentes</option>
+            <option value="deadline">Échéance proche</option>
+            <option value="urgent">Urgentes d'abord</option>
+          </select>
+        </label>
+        @if (hasFilters()) {
+          <button type="button" class="reset" (click)="resetFilters()">
+            <svg lucideRotateCcw [size]="13" aria-hidden="true"></svg> Réinitialiser
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ======== grille ======== -->
+    <div class="offers-grid">
+      @for (o of paged(); track trackById) {
+        <article class="offer-card" [class.offer-card--applied]="o.applied">
+          <div class="offer-top">
+            <span class="offer-logo">
+              @if (o.companyLogo) {
+                <img [src]="o.companyLogo" [alt]="o.partner" loading="lazy" />
+              } @else {
+                <svg lucideBuilding2 [size]="20" aria-hidden="true"></svg>
+              }
+            </span>
+            <span class="offer-flag"><app-flag [code]="o.country.code" size="lg" /></span>
+          </div>
+
+          <div class="offer-badges">
+            @if (o.urgent) { <span class="offer-hot">Urgent</span> }
+            @if (o.applied) {
+              <span class="offer-applied"><svg lucideCheck [size]="11"></svg> Postulé</span>
+            }
+          </div>
+
+          <h2 class="offer-title">{{ o.name }}</h2>
+          <p class="offer-company" [title]="o.partner">{{ o.partner }}</p>
+          <p class="offer-loc">
+            <svg lucideMapPin [size]="13" aria-hidden="true"></svg>
+            {{ o.city }}{{ o.city && o.country.name ? ', ' : '' }}{{ o.country.name }}
+          </p>
+
+          <div class="offer-meta">
+            @if (o.contract) {
+              <span class="meta-pill"><svg lucideClock [size]="12" aria-hidden="true"></svg> {{ o.contract }}</span>
+            }
+            @if (o.workMode !== 'onsite') {
+              <span class="meta-pill meta-pill--mode">
+                @if (o.workMode === 'remote') { <svg lucideWifi [size]="12"></svg> }
+                @else { <svg lucideLaptop [size]="12"></svg> }
+                {{ modeLabel(o.workMode) }}
+              </span>
+            }
+            @if (deadlineLabel(o)) {
+              <span class="meta-pill meta-pill--dl"><svg lucideTimer [size]="12" aria-hidden="true"></svg> {{ deadlineLabel(o) }}</span>
+            }
+          </div>
+          <p class="offer-salary">
+            @if (o.salary) {
+              <svg lucideBanknote [size]="13" aria-hidden="true"></svg> {{ o.salary }}
+            }
+          </p>
+
+          <div class="offer-tags">
+            <span class="tag" *ngFor="let t of tags(o)">{{ t }}</span>
+          </div>
+
+          <span class="offer-count">
+            @if (o.applicationsCount === 0) {
+              Soyez le premier à postuler
+            } @else {
+              {{ o.applicationsCount }} candidature{{ o.applicationsCount > 1 ? 's' : '' }}
+            }
+          </span>
+
+          @if (o.applied) {
+            <a class="btn-apply btn-apply--done" [routerLink]="[detailBase, o.id]">
+              <svg lucideCheck [size]="14" aria-hidden="true"></svg> Candidature envoyée — voir
+            </a>
+          } @else {
+            <a class="btn-apply" [routerLink]="[detailBase, o.id]">Postuler</a>
+          }
+        </article>
+      } @empty {
+        <div class="offers-empty">
+          <svg lucideSearch [size]="30" aria-hidden="true"></svg>
+          <p>Aucune offre ne correspond à ces critères.</p>
+          @if (hasFilters()) {
+            <button type="button" class="reset" (click)="resetFilters()">
+              <svg lucideRotateCcw [size]="13"></svg> Réinitialiser les filtres
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ======== pagination ======== -->
+    @if (totalPages() > 1) {
+      <nav class="pager" aria-label="Pagination des offres">
+        <button type="button" class="pager-btn" [disabled]="page === 1" (click)="goTo(page - 1)" aria-label="Page précédente">
+          <svg lucideChevronLeft [size]="15"></svg>
+        </button>
+        @for (p of pages(); track p) {
+          <button type="button" class="pager-btn" [class.on]="p === page" (click)="goTo(p)">{{ p }}</button>
+        }
+        <button type="button" class="pager-btn" [disabled]="page === totalPages()" (click)="goTo(page + 1)" aria-label="Page suivante">
+          <svg lucideChevronRight [size]="15"></svg>
+        </button>
+      </nav>
+    }
+
+    <p class="offers-note">
+      {{ filtered().length }} offre{{ filtered().length > 1 ? 's' : '' }}
+      @if (hasFilters()) { sur {{ offers.length }} publiées }
+      — nouvelles opportunités chaque semaine.
+    </p>
+  }
+</div>

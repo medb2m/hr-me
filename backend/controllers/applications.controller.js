@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import { Offer } from '../models/offer.js';
 import { Application } from '../models/application.js';
+import { ClientCv } from '../models/client-cv.model.js';
+import { ClientDocument } from '../models/client-document.model.js';
 import { uploadsPublicPath } from '../helpers/upload-basics.js';
 
 const ROLE_TO_SOURCE = {
@@ -56,6 +58,47 @@ export const apply = async (req, res) => {
     const cvArr = files.cv || [];
     const attArr = (files.attachments || []).slice(0, 5);
 
+    // « Partager mon profil » : CV de l'espace + documents de la bibliothèque.
+    const shareProfile = ['1', 'true', 'yes'].includes(String(req.body?.shareProfile || ''));
+    const sharedCvId = String(req.body?.sharedCvId || '');
+    let sharedCv = { id: null, name: '' };
+    if (mongoose.isValidObjectId(sharedCvId)) {
+      const cvDoc = await ClientCv.findOne({ _id: sharedCvId, user: req.user.id })
+        .select('name')
+        .lean();
+      if (cvDoc) sharedCv = { id: cvDoc._id, name: cvDoc.name };
+    }
+
+    let sharedDocIds = req.body?.sharedDocIds;
+    if (typeof sharedDocIds === 'string') {
+      // multipart : un seul champ = string ; JSON possible aussi
+      try {
+        const parsed = JSON.parse(sharedDocIds);
+        sharedDocIds = Array.isArray(parsed) ? parsed : [sharedDocIds];
+      } catch {
+        sharedDocIds = [sharedDocIds];
+      }
+    }
+    sharedDocIds = (Array.isArray(sharedDocIds) ? sharedDocIds : [])
+      .filter((id) => mongoose.isValidObjectId(id))
+      .slice(0, 10);
+
+    let sharedDocs = [];
+    if (sharedDocIds.length) {
+      const docs = await ClientDocument.find({
+        _id: { $in: sharedDocIds },
+        user: req.user.id,
+      }).lean();
+      sharedDocs = docs.map((d) => ({
+        filename: d.filename,
+        path: d.path,
+        originalName: d.originalName || d.filename,
+        mime: d.mime || '',
+        size: d.size || 0,
+        kind: d.kind || 'other',
+      }));
+    }
+
     const application = new Application({
       offer: offerId,
       appliedBy: req.user.id,
@@ -66,6 +109,9 @@ export const apply = async (req, res) => {
       message,
       cv: cvArr[0] ? fileDto(cvArr[0]) : null,
       attachments: attArr.map(fileDto),
+      sharedProfile: shareProfile || !!sharedCv.id || sharedDocs.length > 0,
+      sharedCv,
+      sharedDocs,
     });
     await application.save();
 
@@ -103,6 +149,9 @@ export const myApplications = async (req, res) => {
         message: a.message || '',
         hasCv: !!a.cv,
         attachmentsCount: (a.attachments || []).length,
+        sharedProfile: !!a.sharedProfile,
+        sharedCvName: a.sharedCv?.name || '',
+        sharedDocsCount: (a.sharedDocs || []).length,
         createdAt: a.createdAt,
         offer: a.offer
           ? {

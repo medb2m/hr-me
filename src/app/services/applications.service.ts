@@ -11,6 +11,9 @@ export interface MyApplication {
   message: string;
   hasCv: boolean;
   attachmentsCount: number;
+  sharedProfile?: boolean;
+  sharedCvName?: string;
+  sharedDocsCount?: number;
   createdAt: string;
   offer: {
     id: string;
@@ -42,6 +45,10 @@ export class ApplicationsService {
     message?: string;
     cv?: File | null;
     attachments?: File[];
+    /** « Partager mon profil » — le candidat partage son dossier plateforme. */
+    shareProfile?: boolean;
+    sharedCvId?: string;
+    sharedDocIds?: string[];
   }): Observable<{ application: { id: string; status: string; createdAt: string } }> {
     const fd = new FormData();
     fd.append('offerId', body.offerId);
@@ -50,6 +57,9 @@ export class ApplicationsService {
     if (body.message) fd.append('message', body.message);
     if (body.cv) fd.append('cv', body.cv);
     for (const f of body.attachments || []) fd.append('attachments', f);
+    if (body.shareProfile) fd.append('shareProfile', '1');
+    if (body.sharedCvId) fd.append('sharedCvId', body.sharedCvId);
+    for (const id of body.sharedDocIds || []) fd.append('sharedDocIds', id);
     return this.http.post<{ application: { id: string; status: string; createdAt: string } }>(
       this.base,
       fd,

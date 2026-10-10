@@ -58,12 +58,27 @@ export const CLIENT_ROUTES: Routes = [
           import('../account/settings/settings-page.component').then((m) => m.SettingsPageComponent),
       },
       {
-        path: 'explore',
+        path: 'offres',
         loadComponent: () =>
-          import('./pages/client-explore-page/client-explore-page.component').then(
-            (m) => m.ClientExplorePageComponent,
+          import('./pages/client-offers/client-offers.component').then(
+            (m) => m.ClientOffersComponent,
           ),
       },
+      {
+        path: 'offres/:id',
+        loadComponent: () =>
+          import('./pages/client-offer-detail/client-offer-detail.component').then(
+            (m) => m.ClientOfferDetailComponent,
+          ),
+      },
+      {
+        path: 'candidatures',
+        loadComponent: () =>
+          import('../espace/pages/espace-applications/espace-applications.component').then(
+            (m) => m.EspaceApplicationsComponent,
+          ),
+      },
+      { path: 'explore', redirectTo: 'offres' },
     ],
   },
 ];

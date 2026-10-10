@@ -93,9 +93,19 @@
           </span>
           <span class="oa-line3">
             <svg lucideClock [size]="12"></svg> {{ fmtDate(a.createdAt) }}
+            @if (a.sharedCv) {
+              · <span class="oa-file oa-file--shared" title="CV plateforme partagé">
+                  <svg lucideFileText [size]="12"></svg> {{ a.sharedCv.name }}
+                </span>
+            }
             @if (a.cv) {
               · <a class="oa-file" [href]="a.cv.path" target="_blank" (click)="$event.stopPropagation()">
                   <svg lucideFileText [size]="12"></svg> {{ a.cv.name || 'CV' }}
+                </a>
+            }
+            @for (f of a.sharedDocs; track f.path) {
+              · <a class="oa-file" [href]="f.path" target="_blank" (click)="$event.stopPropagation()">
+                  <svg lucidePaperclip [size]="12"></svg> {{ f.name }}
                 </a>
             }
             @for (f of a.attachments; track f.path) {

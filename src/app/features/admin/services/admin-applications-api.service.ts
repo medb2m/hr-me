@@ -13,6 +13,10 @@ export interface AppFile {
   size: number;
 }
 
+export interface SharedDoc extends AppFile {
+  kind?: 'diploma' | 'certificate' | 'other' | '';
+}
+
 export interface ApplicantProfile {
   name: string;
   phone?: string;
@@ -67,6 +71,9 @@ export interface AdminApplication {
   message: string;
   cv: AppFile | null;
   attachments: AppFile[];
+  sharedProfile: boolean;
+  sharedCv: { id: string; name: string } | null;
+  sharedDocs: SharedDoc[];
   adminNotes: string;
   createdAt: string;
   user: { id: string; email: string; role: string; name: string; avatarUrl: string } | null;

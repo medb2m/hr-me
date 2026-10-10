@@ -50,7 +50,8 @@ export class ClientSidebarComponent {
     { path: '/candidat/editor/cl', label: 'Lettre de motivation', icon: '▤' },
     { path: '/candidat/library', label: 'Documents & diplômes', icon: '▦' },
     { path: '/candidat/skills', label: 'Compétences & langues', icon: '○' },
-    { path: '/candidat/explore', label: 'Offres & formations', icon: '▸' },
+    { path: '/candidat/offres', label: 'Offres internationales', icon: '▸' },
+    { path: '/candidat/candidatures', label: 'Mes candidatures', icon: '➤' },
     { path: '/candidat/settings', label: 'Mon compte', icon: '⚙' },
   ] as const;
 }

@@ -1,12 +1,85 @@
-<div class="ep">
-  <h1 class="ep-title">Bibliothèque de documents</h1>
-  <p class="ep-lead">
-    Portefeuille numérique : diplômes, certifications, attestations (PDF vérifiés — démo).
+<div class="lib">
+  <h1 class="lib-title">Bibliothèque de documents</h1>
+  <p class="lib-lead">
+    Téléverse tes diplômes, certifications et attestations une seule fois —
+    tu pourras ensuite les partager directement quand tu postules à une offre.
   </p>
-  <ul class="ep-list">
-    <li>Diplôme — <span class="ep-tag">à ajouter</span></li>
-    <li>Certification langue — <span class="ep-tag">à ajouter</span></li>
-  </ul>
-  <a routerLink="/candidat/skills" class="ep-link">Vers l’auto-évaluation →</a>
-  <app-back-button link="/candidat/overview" label="Tableau de bord" class="ep-link ep-link--block"></app-back-button>
+
+  <!-- ======== upload ======== -->
+  <section class="lib-upload">
+    <div class="lib-kind">
+      @for (k of kinds; track k) {
+        <button
+          type="button"
+          class="lib-kind-btn"
+          [class.on]="pickKind === k"
+          (click)="pickKind = k">
+          @if (k === 'diploma') { <svg lucideGraduationCap [size]="15"></svg> }
+          @else if (k === 'certificate') { <svg lucideAward [size]="15"></svg> }
+          @else { <svg lucidePaperclip [size]="15"></svg> }
+          {{ kindLabel(k) }}
+        </button>
+      }
+    </div>
+    <div class="lib-upload-row">
+      <input
+        type="text"
+        class="lib-name"
+        [(ngModel)]="pickName"
+        placeholder="Nom du document (optionnel — ex. Licence 2023)" />
+      <label class="lib-file" [class.has]="!!pickFile">
+        <svg lucideUpload [size]="15"></svg>
+        {{ pickFile ? pickFile.name : 'Choisir un fichier (PDF, DOC, image)' }}
+        <input type="file" hidden accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png,.webp" (change)="onFilePick($event)" />
+      </label>
+      <button type="button" class="lib-send" (click)="submit()" [disabled]="!pickFile || uploading">
+        {{ uploading ? 'Envoi…' : 'Ajouter' }}
+      </button>
+    </div>
+    @if (uploadError) { <p class="lib-error">{{ uploadError }}</p> }
+  </section>
+
+  <!-- ======== liste ======== -->
+  @if (errorMsg) { <p class="lib-error">{{ errorMsg }}</p> }
+
+  <div class="lib-list">
+    @if (loading) {
+      <p class="lib-muted">Chargement…</p>
+    } @else if (!documents.length) {
+      <div class="lib-empty">
+        <svg lucideFileText [size]="30"></svg>
+        <p>Aucun document pour le moment — ajoute ton premier diplôme ou certificat ci-dessus.</p>
+      </div>
+    }
+
+    @for (d of documents; track trackById) {
+      <article class="lib-doc">
+        <span class="lib-doc-icon" [attr.data-kind]="d.kind">
+          @if (d.kind === 'diploma') { <svg lucideGraduationCap [size]="17"></svg> }
+          @else if (d.kind === 'certificate') { <svg lucideAward [size]="17"></svg> }
+          @else { <svg lucidePaperclip [size]="17"></svg> }
+        </span>
+        <div class="lib-doc-main">
+          <a class="lib-doc-name" [href]="d.path" target="_blank">{{ d.name }}</a>
+          <span class="lib-doc-meta">
+            {{ kindLabel(d.kind) }}
+            @if (d.size) { · {{ fmtSize(d.size) }} }
+            @if (d.createdAt) { · ajouté le {{ fmtDate(d.createdAt) }} }
+          </span>
+        </div>
+        @if (confirmDeleteId === d.id) {
+          <button type="button" class="lib-doc-confirm" [disabled]="deletingId === d.id" (click)="doDelete(d)">
+            {{ deletingId === d.id ? '…' : 'Confirmer ?' }}
+          </button>
+          <button type="button" class="lib-doc-cancel" (click)="askDelete(d)"><svg lucideX [size]="13"></svg></button>
+        } @else {
+          <button type="button" class="lib-doc-del" (click)="askDelete(d)" title="Supprimer">
+            <svg lucideTrash2 [size]="15"></svg>
+          </button>
+        }
+      </article>
+    }
+  </div>
+
+  <app-back-button link="/candidat/overview" label="Tableau de bord" class="lib-back"></app-back-button>
 </div>

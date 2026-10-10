@@ -7,6 +7,7 @@ const applicationFileSchema = new mongoose.Schema(
     originalName: { type: String, default: '' },     // nom affiché à l'utilisateur
     mime: { type: String, default: '' },
     size: { type: Number, default: 0 },
+    kind: { type: String, default: '' },             // diploma | certificate | other (docs partagés)
   },
   { _id: true },
 );
@@ -39,6 +40,15 @@ const applicationSchema = new mongoose.Schema({
   message: { type: String, default: '' },
   cv: { type: applicationFileSchema, default: null },
   attachments: { type: [applicationFileSchema], default: [] },
+
+  // « Partager mon profil » — le postulant partage son dossier plateforme.
+  sharedProfile: { type: Boolean, default: false },
+  sharedCv: {
+    id: { type: mongoose.Schema.Types.ObjectId, ref: 'ClientCv', default: null },
+    name: { type: String, default: '' },
+  },
+  // Documents de la bibliothèque candidat copiés dans la candidature (snapshot).
+  sharedDocs: { type: [applicationFileSchema], default: [] },
 },
 {timestamps: true}
 );

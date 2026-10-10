@@ -4,8 +4,10 @@ import { requireClientRole } from '../middleware/require-client.middleware.js';
 import { uploadClientProfilePhoto } from '../middleware/client-profile-photo.multer.js';
 import { multerSingleHandler } from '../../helpers/multer-upload-wrap.js';
 import { uploadClientCvPhoto } from '../middleware/client-cv-photo.multer.js';
+import { uploadClientDocument } from '../middleware/client-document.multer.js';
 import * as clientProfile from '../controllers/client-profile.controller.js';
 import * as clientCv from '../controllers/client-cv.controller.js';
+import * as clientDocs from '../controllers/client-documents.controller.js';
 
 const router = Router();
 
@@ -36,5 +38,13 @@ router.post(
   multerSingleHandler(uploadClientCvPhoto, 'photo'),
   clientCv.uploadCvPhoto,
 );
+
+router.get('/documents', clientDocs.listDocuments);
+router.post(
+  '/documents',
+  multerSingleHandler(uploadClientDocument, 'document'),
+  clientDocs.uploadDocument,
+);
+router.delete('/documents/:id', clientDocs.deleteDocument);
 
 export default router;

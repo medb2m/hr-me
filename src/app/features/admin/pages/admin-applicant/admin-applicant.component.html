@@ -69,16 +69,32 @@
         <!-- fichiers de la candidature -->
         <section class="ap-card">
           <h2><svg lucidePaperclip [size]="15"></svg> Pièces jointes à cette candidature</h2>
-          @if (!app.cv && !app.attachments.length) {
+          @if (!app.cv && !app.attachments.length && !app.sharedCv && !app.sharedDocs.length) {
             <p class="ap-muted">Aucun fichier téléversé.</p>
           }
           <ul class="ap-files">
+            @if (app.sharedCv) {
+              <li class="ap-file ap-file--shared">
+                <svg lucideFileText [size]="15"></svg>
+                <span class="ap-file-name">{{ app.sharedCv.name }}</span>
+                <em class="ap-tag-shared">CV partagé · plateforme</em>
+              </li>
+            }
             @if (app.cv) {
               <li>
                 <a [href]="app.cv.path" target="_blank" class="ap-file">
                   <svg lucideFileText [size]="15"></svg>
                   <span class="ap-file-name">{{ app.cv.name || 'CV' }}</span>
                   <em>CV</em>
+                </a>
+              </li>
+            }
+            @for (f of app.sharedDocs; track f.path) {
+              <li>
+                <a [href]="f.path" target="_blank" class="ap-file">
+                  <svg lucidePaperclip [size]="15"></svg>
+                  <span class="ap-file-name">{{ f.name }}</span>
+                  <em class="ap-tag-shared">Bibliothèque · {{ docKindLabel(f.kind) }}</em>
                 </a>
               </li>
             }
@@ -172,11 +188,11 @@
               </div>
             </section>
           }
-        } @else {
+        } @else if (app.source === 'candidate') {
           <section class="ap-card">
             <h2><svg lucideUserCheck [size]="15"></svg> Profil candidat</h2>
             <p class="ap-muted">
-              Ce postulant n&rsquo;a pas encore complété son profil candidat sur la plateforme.
+              Ce candidat n&rsquo;a pas encore complété son profil sur la plateforme.
               Seules les informations de la candidature sont disponibles.
             </p>
           </section>
@@ -187,6 +203,7 @@
           <ul class="ap-facts">
             <li><em>Soumise par</em>{{ app.user?.name || app.user?.email || '—' }} ({{ app.user?.role || '—' }})</li>
             <li><em>Type</em>{{ sourceLabel(app.source) }}</li>
+            <li><em>Partage profil</em>{{ app.sharedProfile ? 'Oui — dossier plateforme partagé' : 'Non' }}</li>
             @if (app.applicantName && app.applicantName !== app.user?.name) {
               <li><em>Nom déclaré</em>{{ app.applicantName }}</li>
             }
