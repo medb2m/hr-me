@@ -21,6 +21,12 @@ const offerSchema = new mongoose.Schema({
     openings: { type: Number, default: 1, min: 1 },  // nombre de postes
     skills: [{ type: String }],
 
+    // Conditions affichées sur les cartes publiques
+    contract: { type: String, default: '' },         // CDI, CDD 12 mois, Saisonnier…
+    salary: { type: String, default: '' },           // « 2 600 – 3 100 € »
+    sector: { type: String, default: '' },           // Santé, BTP, IT…
+    urgent: { type: Boolean, default: false },       // badge « Urgent »
+
     // Cycle de vie de la publication
     publishDate: { type: Date },
     deadline: { type: Date },

@@ -1,0 +1,140 @@
+<div class="oa">
+  <a routerLink="/admin/offres" class="oa-back">
+    <svg lucideArrowLeft [size]="15"></svg> Retour aux offres
+  </a>
+
+  @if (result?.offer) {
+    @let o = result!.offer;
+    <header class="oa-head">
+      <div class="oa-head-main">
+        <span class="oa-logo">
+          @if (o.companyLogo) {
+            <img [src]="o.companyLogo" [alt]="o.partner" />
+          } @else {
+            <svg lucideBuilding2 [size]="24"></svg>
+          }
+        </span>
+        <div>
+          <h1>{{ o.name }}</h1>
+          <p class="oa-sub">
+            {{ o.partner }}
+            @if (o.country.name) { · <app-flag [code]="o.country.code" /> {{ o.country.name }} }
+            @if (o.contract) { · {{ o.contract }} }
+          </p>
+        </div>
+      </div>
+      <span class="oa-total">
+        <svg lucideUsers [size]="16"></svg>
+        {{ result!.counters.total }} candidature{{ result!.counters.total > 1 ? 's' : '' }}
+      </span>
+    </header>
+
+    <!-- onglets statut -->
+    <div class="oa-tabs">
+      <button type="button" [class.on]="statusFilter === ''" (click)="setStatus('')">
+        Toutes <span class="oa-mini">{{ result!.counters.total }}</span>
+      </button>
+      <button type="button" [class.on]="statusFilter === 'pending'" (click)="setStatus('pending')">
+        Envoyées <span class="oa-mini">{{ result!.counters.pending }}</span>
+      </button>
+      <button type="button" [class.on]="statusFilter === 'review'" (click)="setStatus('review')">
+        En révision <span class="oa-mini">{{ result!.counters.review }}</span>
+      </button>
+      <button type="button" [class.on]="statusFilter === 'accepted'" (click)="setStatus('accepted')">
+        Acceptées <span class="oa-mini">{{ result!.counters.accepted }}</span>
+      </button>
+      <button type="button" [class.on]="statusFilter === 'rejected'" (click)="setStatus('rejected')">
+        Refusées <span class="oa-mini">{{ result!.counters.rejected }}</span>
+      </button>
+    </div>
+
+    <!-- filtre par type de postulant -->
+    <div class="oa-src">
+      <span class="oa-src-label">Type de postulant :</span>
+      <button type="button" [class.on]="sourceFilter === ''" (click)="setSource('')">Tous</button>
+      <button type="button" [class.on]="sourceFilter === 'candidate'" (click)="setSource('candidate')">Candidats</button>
+      <button type="button" [class.on]="sourceFilter === 'client'" (click)="setSource('client')">Clients</button>
+      <button type="button" [class.on]="sourceFilter === 'agent'" (click)="setSource('agent')">Agents RH</button>
+    </div>
+  }
+
+  @if (errorMsg) { <p class="oa-error">{{ errorMsg }}</p> }
+
+  <div class="oa-list">
+    @if (loading) {
+      <p class="oa-empty"><svg lucideRefreshCw [size]="18" class="spin"></svg> Chargement…</p>
+    } @else if (result && !result.applications.length) {
+      <div class="oa-empty">
+        <svg lucideSearch [size]="30"></svg>
+        <p>Aucune candidature{{ statusFilter || sourceFilter ? ' avec ces filtres' : ' pour le moment' }}.</p>
+      </div>
+    }
+
+    @for (a of result?.applications || []; track trackById) {
+      <article class="oa-card">
+        <a class="oa-avatar" [routerLink]="['/admin/applications', a.id]">
+          @if (avatarOf(a)) {
+            <img [src]="avatarOf(a)" [alt]="displayName(a)" />
+          } @else {
+            <span>{{ initials(a) }}</span>
+          }
+        </a>
+        <div class="oa-main">
+          <div class="oa-line1">
+            <a class="oa-name" [routerLink]="['/admin/applications', a.id]">{{ displayName(a) }}</a>
+            <span class="oa-src-pill">{{ sourceLabel(a.source) }}</span>
+            <span class="oa-status" [attr.data-s]="statusCls(a.status)">{{ statusLabel(a.status) }}</span>
+            @if (result!.offer.expired) { <span class="oa-expired"><svg lucideTimer [size]="11"></svg> Offre expirée</span> }
+          </div>
+          <span class="oa-line2">
+            <svg lucideMail [size]="12"></svg> {{ a.applicantEmail || a.user?.email || '—' }}
+            @if (a.profile?.headline) { · {{ a.profile!.headline }} }
+            @if (a.profile?.nationality) { · {{ a.profile!.nationality }} }
+          </span>
+          <span class="oa-line3">
+            <svg lucideClock [size]="12"></svg> {{ fmtDate(a.createdAt) }}
+            @if (a.cv) {
+              · <a class="oa-file" [href]="a.cv.path" target="_blank" (click)="$event.stopPropagation()">
+                  <svg lucideFileText [size]="12"></svg> {{ a.cv.name || 'CV' }}
+                </a>
+            }
+            @for (f of a.attachments; track f.path) {
+              · <a class="oa-file" [href]="f.path" target="_blank" (click)="$event.stopPropagation()">
+                  <svg lucidePaperclip [size]="12"></svg> {{ f.name }}
+                </a>
+            }
+          </span>
+          @if (a.message) {
+            <p class="oa-msg">{{ a.message }}</p>
+          }
+          @if (!a.profile) {
+            <span class="oa-hint">Ce postulant n&rsquo;a pas encore complété son profil candidat.</span>
+          }
+        </div>
+        <div class="oa-actions">
+          <button type="button" class="oa-btn" [class.act]="a.status === 'review'"
+                  [disabled]="savingId === a.id" (click)="setAppStatus(a, 'review')" title="Mettre en révision">
+            <svg lucideUserCheck [size]="14"></svg> Révision
+          </button>
+          <button type="button" class="oa-btn" [class.act]="a.status === 'accepted'"
+                  [disabled]="savingId === a.id" (click)="setAppStatus(a, 'accepted')" title="Accepter">
+            <svg lucideCheckCircle [size]="14"></svg> Accepter
+          </button>
+          <button type="button" class="oa-btn oa-btn--danger" [class.act]="a.status === 'rejected'"
+                  [disabled]="savingId === a.id" (click)="setAppStatus(a, 'rejected')" title="Refuser">
+            <svg lucideXCircle [size]="14"></svg> Refuser
+          </button>
+          @if (a.status !== 'pending') {
+            <button type="button" class="oa-btn" [disabled]="savingId === a.id"
+                    (click)="setAppStatus(a, 'pending')" title="Remettre en attente">
+              <svg lucideClock [size]="14"></svg>
+            </button>
+          }
+          <a class="oa-open" [routerLink]="['/admin/applications', a.id]" title="Ouvrir le dossier">
+            <svg lucideChevronRight [size]="17"></svg>
+          </a>
+        </div>
+      </article>
+    }
+  </div>
+</div>

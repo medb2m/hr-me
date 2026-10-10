@@ -1,0 +1,186 @@
+<div class="od">
+  <a routerLink="/espace/offres" class="od-back">
+    <svg lucideArrowLeft [size]="15"></svg> Toutes les offres
+  </a>
+
+  @if (loading) {
+    <p class="od-loading">Chargement de l&rsquo;offre…</p>
+  } @else if (errorMsg) {
+    <p class="od-error">{{ errorMsg }}</p>
+  } @else if (offer) {
+    <!-- ============ en-tête de l'offre ============ -->
+    <header class="od-head">
+      <div class="od-head-main">
+        <span class="od-logo">
+          @if (offer.companyLogo) {
+            <img [src]="offer.companyLogo" [alt]="offer.partner" />
+          } @else {
+            <svg lucideBuilding2 [size]="26"></svg>
+          }
+        </span>
+        <div class="od-title-block">
+          @if (offer.urgent) { <span class="od-urgent">Urgent</span> }
+          <h1>{{ offer.name }}</h1>
+          <p class="od-company">{{ offer.partner }}</p>
+          <p class="od-loc">
+            <app-flag [code]="offer.country.code" />
+            {{ offer.city }}{{ offer.city && offer.country.name ? ', ' : '' }}{{ offer.country.name }}
+            @if (offer.sector) { · <span class="od-sector">{{ offer.sector }}</span> }
+          </p>
+        </div>
+      </div>
+      @if (!sent) {
+        <button type="button" class="od-apply-top" (click)="toggleApply()">
+          <svg lucideSend [size]="15"></svg> Postuler
+        </button>
+      } @else {
+        <span class="od-sent-pill"><svg lucideCheck [size]="14"></svg> {{ statusLabel(offer.myStatus) }}</span>
+      }
+    </header>
+
+    <!-- badges -->
+    <div class="od-badges">
+      @if (offer.contract) { <span class="od-badge"><svg lucideClock [size]="13"></svg> {{ offer.contract }}</span> }
+      @if (offer.salary) { <span class="od-badge od-badge--salary"><svg lucideBanknote [size]="13"></svg> {{ offer.salary }}</span> }
+      <span class="od-badge od-badge--mode">
+        @if (offer.workMode === 'remote') { <svg lucideWifi [size]="13"></svg> }
+        @else if (offer.workMode === 'hybrid') { <svg lucideLaptop [size]="13"></svg> }
+        @else { <svg lucideBuilding2 [size]="13"></svg> }
+        {{ modeLabel(offer.workMode) }}
+      </span>
+      <span class="od-badge"><svg lucideUsers [size]="13"></svg> {{ offer.openings }} poste{{ offer.openings > 1 ? 's' : '' }}</span>
+      @if (deadlineLabel(offer)) {
+        <span class="od-badge od-badge--dl"><svg lucideTimer [size]="13"></svg> {{ deadlineLabel(offer) }}</span>
+      }
+    </div>
+
+    <!-- compteur de candidatures -->
+    <p class="od-counter">
+      @if (offer.applicationsCount === 0) {
+        <strong>Soyez le premier à postuler !</strong> Aucune candidature pour le moment.
+      } @else {
+        {{ offer.applicationsCount }} personne{{ offer.applicationsCount > 1 ? 's ont' : ' a' }} déjà postulé.
+      }
+    </p>
+
+    @if (sent) {
+      <div class="od-sent-banner">
+        <svg lucideCheck [size]="18"></svg>
+        <div>
+          <strong>Candidature envoyée</strong>
+          <p>Statut : {{ statusLabel(offer.myStatus) }} — suivez-la dans <a routerLink="/espace/candidatures">Mes candidatures</a>.</p>
+        </div>
+      </div>
+    }
+
+    <div class="od-grid">
+      <!-- description -->
+      <section class="od-card">
+        <h2 class="od-card-title">Description du poste</h2>
+        @if (offer.description) {
+          <div class="od-desc" [innerHTML]="offer.description"></div>
+        } @else {
+          <p class="od-nodesc">La description sera communiquée prochainement.</p>
+        }
+      </section>
+
+      <!-- infos + compétences -->
+      <aside class="od-side">
+        @if (offer.skills.length) {
+          <section class="od-card">
+            <h2 class="od-card-title">Compétences demandées</h2>
+            <div class="od-skills">
+              @for (s of offer.skills; track s) { <span class="od-skill">{{ s }}</span> }
+            </div>
+          </section>
+        }
+        <section class="od-card">
+          <h2 class="od-card-title">Informations</h2>
+          <ul class="od-facts">
+            <li><svg lucideBuilding2 [size]="14"></svg><span><em>Entreprise</em>{{ offer.partner }}</span></li>
+            <li><svg lucideMapPin [size]="14"></svg><span><em>Lieu</em>{{ offer.city }}{{ offer.city && offer.country.name ? ', ' : '' }}{{ offer.country.name }}</span></li>
+            @if (offer.contract) { <li><svg lucideClock [size]="14"></svg><span><em>Contrat</em>{{ offer.contract }}</span></li> }
+            @if (offer.salary) { <li><svg lucideBanknote [size]="14"></svg><span><em>Salaire</em>{{ offer.salary }}</span></li> }
+            <li><svg lucideBriefcase [size]="14"></svg><span><em>Publiée le</em>{{ fmtDate(offer.publishDate) }}</span></li>
+            @if (offer.deadline) { <li><svg lucideTimer [size]="14"></svg><span><em>Candidatures jusqu'au</em>{{ fmtDate(offer.deadline) }}</span></li> }
+          </ul>
+        </section>
+      </aside>
+    </div>
+
+    <!-- ============ formulaire de candidature ============ -->
+    @if (!sent) {
+      <section id="apply-panel" class="od-card od-apply" [class.open]="applyOpen">
+        @if (!applyOpen) {
+          <button type="button" class="od-apply-cta" (click)="toggleApply()">
+            <svg lucideSend [size]="16"></svg>
+            Postuler à cette offre
+          </button>
+        } @else {
+          <div class="od-apply-head">
+            <h2 class="od-card-title">Votre candidature</h2>
+            <button type="button" class="od-apply-close" (click)="toggleApply()" aria-label="Fermer">
+              <svg lucideX [size]="16"></svg>
+            </button>
+          </div>
+
+          <div class="od-form">
+            <div class="od-row">
+              <div class="od-field">
+                <label for="ap-name">Nom complet <i>*</i></label>
+                <input id="ap-name" type="text" [(ngModel)]="appName" placeholder="Votre nom et prénom" />
+              </div>
+              <div class="od-field">
+                <label for="ap-email">E-mail</label>
+                <input id="ap-email" type="email" [(ngModel)]="appEmail" placeholder="vous@exemple.com" />
+              </div>
+            </div>
+
+            <div class="od-field">
+              <label>Message / lettre de motivation</label>
+              <app-rich-text-editor
+                [(ngModel)]="appMessage"
+                placeholder="Présentez-vous en quelques lignes : expérience, motivation, disponibilité…"
+              />
+            </div>
+
+            <div class="od-row">
+              <div class="od-field">
+                <label>Votre CV</label>
+                <label class="od-file" [class.has]="!!cvFile">
+                  <svg lucideUpload [size]="15"></svg>
+                  {{ cvFile ? cvFile.name : 'Choisir un fichier (PDF, DOC…)' }}
+                  <input type="file" hidden accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png,.webp" (change)="onCvPick($event)" />
+                </label>
+                @if (cvFile) {
+                  <button type="button" class="od-file-rm" (click)="cvFile = null"><svg lucideX [size]="12"></svg> Retirer</button>
+                }
+              </div>
+              <div class="od-field">
+                <label>Pièces complémentaires <small>(diplômes, certificats — 5 max)</small></label>
+                <label class="od-file">
+                  <svg lucidePaperclip [size]="15"></svg>
+                  Ajouter des fichiers
+                  <input type="file" hidden multiple accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png,.webp" (change)="onExtraPick($event)" />
+                </label>
+                @for (f of extraFiles; track f.name; let i = $index) {
+                  <span class="od-extra">
+                    <svg lucideFileText [size]="13"></svg> {{ f.name }}
+                    <button type="button" (click)="removeExtra(i)" aria-label="Retirer"><svg lucideX [size]="11"></svg></button>
+                  </span>
+                }
+              </div>
+            </div>
+
+            @if (sendError) { <p class="od-error">{{ sendError }}</p> }
+
+            <button type="button" class="od-submit" (click)="submit()" [disabled]="!canSubmit">
+              <svg lucideSend [size]="15"></svg>
+              {{ sending ? 'Envoi en cours…' : 'Envoyer ma candidature' }}
+            </button>
+          </div>
+        }
+      </section>
+    }
+  }
+</div>

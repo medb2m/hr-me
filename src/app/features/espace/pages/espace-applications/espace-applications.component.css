@@ -1,0 +1,237 @@
+.ma {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.ma-head {
+  margin-bottom: 1rem;
+}
+
+.ma-head h1 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ma-head h1 svg { color: #a16207; }
+
+.ma-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ffd300;
+  color: #0f172a;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.ma-sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.ma-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 1rem;
+}
+
+.ma-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ma-tabs button.on {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
+}
+
+.ma-mini {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ffd300;
+  color: #0f172a;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.ma-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ma-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ma-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding: 2.5rem 0;
+}
+
+.ma-empty svg { color: #cbd5e1; }
+
+.ma-cta {
+  display: inline-block;
+  margin-top: 0.8rem;
+  background: linear-gradient(135deg, #ffd300, #f0c500);
+  border-radius: 9px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.ma-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  transition: border-color 0.15s;
+}
+
+.ma-card:hover { border-color: #cbd5e1; }
+
+.ma-logo {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #94a3b8;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ma-logo img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+
+.ma-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ma-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ma-title-line strong {
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.ma-status {
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+
+.ma-status[data-s='pending'] { background: rgba(255, 211, 0, 0.25); color: #a16207; }
+.ma-status[data-s='review'] { background: #dbeafe; color: #1d4ed8; }
+.ma-status[data-s='accepted'] { background: #dcfce7; color: #15803d; }
+.ma-status[data-s='rejected'] { background: #fecaca; color: #b91c1c; }
+
+.ma-expired {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.ma-meta {
+  font-size: 0.78rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ma-country {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  vertical-align: middle;
+}
+
+.ma-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.ma-view {
+  flex-shrink: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #a16207;
+  text-decoration: none;
+  border: 1.5px solid rgba(230, 184, 0, 0.5);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  white-space: nowrap;
+}
+
+.ma-view:hover { background: rgba(255, 211, 0, 0.15); }
+
+@media (max-width: 560px) {
+  .ma-view { display: none; }
+}

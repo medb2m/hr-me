@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireAdmin } from '../middleware/admin-auth.middleware.js';
 import * as users from '../controllers/admin-users.controller.js';
 import * as offers from '../controllers/admin-offers.controller.js';
+import * as applications from '../controllers/admin-applications.controller.js';
 import { uploadCompanyLogo } from '../middleware/company-logo.multer.js';
 import { deleteContact, listContacts, updateContact } from '../controllers/contact.controller.js';
 
@@ -33,5 +34,10 @@ router.post('/offers', offers.createOffer);
 router.get('/offers/:id', offers.getOffer);
 router.put('/offers/:id', offers.updateOffer);
 router.delete('/offers/:id', offers.deleteOffer);
+
+// Candidatures (admin) — par offre, détail, changement de statut
+router.get('/offers/:id/applications', applications.listOfferApplications);
+router.get('/applications/:id', applications.getApplication);
+router.put('/applications/:id', applications.updateApplication);
 
 export default router;

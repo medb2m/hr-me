@@ -1,0 +1,80 @@
+<div class="ma">
+  <header class="ma-head">
+    <div>
+      <h1>
+        <svg lucideSend [size]="22" aria-hidden="true"></svg>
+        Mes candidatures
+        @if (applications.length) { <span class="ma-badge">{{ applications.length }}</span> }
+      </h1>
+      <p class="ma-sub">Suis l&rsquo;avancement de chaque postulation en temps réel.</p>
+    </div>
+  </header>
+
+  <div class="ma-tabs">
+    <button type="button" [class.on]="filter === ''" (click)="setFilter('')">
+      Toutes <span class="ma-mini">{{ count('') }}</span>
+    </button>
+    <button type="button" [class.on]="filter === 'pending'" (click)="setFilter('pending')">
+      Envoyées <span class="ma-mini">{{ count('pending') }}</span>
+    </button>
+    <button type="button" [class.on]="filter === 'review'" (click)="setFilter('review')">
+      En révision <span class="ma-mini">{{ count('review') }}</span>
+    </button>
+    <button type="button" [class.on]="filter === 'accepted'" (click)="setFilter('accepted')">
+      Acceptées <span class="ma-mini">{{ count('accepted') }}</span>
+    </button>
+    <button type="button" [class.on]="filter === 'rejected'" (click)="setFilter('rejected')">
+      Refusées <span class="ma-mini">{{ count('rejected') }}</span>
+    </button>
+  </div>
+
+  @if (errorMsg) { <p class="ma-error">{{ errorMsg }}</p> }
+
+  <div class="ma-list">
+    @if (loading) {
+      <p class="ma-empty">Chargement…</p>
+    } @else if (!filtered().length) {
+      <div class="ma-empty">
+        <svg lucideSearch [size]="32" aria-hidden="true"></svg>
+        <p>{{ filter ? 'Aucune candidature avec ce statut.' : 'Tu n\u2019as pas encore postulé.' }}</p>
+        @if (!filter) {
+          <a routerLink="/espace/offres" class="ma-cta">Voir les offres disponibles</a>
+        }
+      </div>
+    }
+
+    @for (a of filtered(); track trackById) {
+      <article class="ma-card">
+        <span class="ma-logo">
+          @if (a.offer?.companyLogo) {
+            <img [src]="a.offer!.companyLogo" [alt]="a.offer!.partner" />
+          } @else {
+            <svg lucideBuilding2 [size]="19"></svg>
+          }
+        </span>
+        <div class="ma-main">
+          <div class="ma-title-line">
+            <strong>{{ a.offer?.name || 'Offre supprimée' }}</strong>
+            <span class="ma-status" [attr.data-s]="statusCls(a.status)">{{ statusLabel(a.status) }}</span>
+            @if (a.offer?.expired) { <span class="ma-expired"><svg lucideTimer [size]="11"></svg> Offre expirée</span> }
+          </div>
+          <span class="ma-meta">
+            {{ a.offer?.partner }}
+            @if (a.offer?.country?.name) {
+              · <span class="ma-country"><app-flag [code]="a.offer!.country.code" /> {{ a.offer!.country.name }}</span>
+            }
+            @if (a.offer?.contract) { · {{ a.offer!.contract }} }
+          </span>
+          <span class="ma-date">
+            <svg lucideCalendar [size]="12"></svg> Postulée le {{ fmtDate(a.createdAt) }}
+            @if (a.hasCv) { · <svg lucideFileText [size]="12"></svg> CV joint }
+            @if (a.attachmentsCount) { · {{ a.attachmentsCount }} pièce(s) jointe(s) }
+          </span>
+        </div>
+        @if (a.offer) {
+          <a class="ma-view" [routerLink]="['/espace/offres', a.offer.id]">Voir l&rsquo;offre</a>
+        }
+      </article>
+    }
+  </div>
+</div>

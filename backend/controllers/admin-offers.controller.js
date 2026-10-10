@@ -34,6 +34,10 @@ function pickBody(b) {
   out.skills = Array.isArray(b.skills)
     ? b.skills.map((s) => str(s, 60)).filter(Boolean).slice(0, 30)
     : [];
+  out.contract = str(b.contract, 60);
+  out.salary = str(b.salary, 80);
+  out.sector = str(b.sector, 80);
+  out.urgent = !!b.urgent;
   out.publishDate = b.publishDate ? new Date(b.publishDate) : null;
   out.deadline = b.deadline ? new Date(b.deadline) : null;
   out.status = STATUS_VALUES.has(b.status) ? b.status : 'published';
@@ -69,6 +73,10 @@ function toDto(o, appStats = { total: 0, candidate: 0, client: 0, agent: 0 }) {
     workMode: o.workMode || 'onsite',
     openings: o.openings ?? 1,
     skills: o.skills || [],
+    contract: o.contract || '',
+    salary: o.salary || '',
+    sector: o.sector || '',
+    urgent: !!o.urgent,
     publishDate: o.publishDate || null,
     deadline: o.deadline || null,
     status: o.status || 'published',

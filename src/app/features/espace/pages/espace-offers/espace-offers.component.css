@@ -254,3 +254,74 @@
     min-height: 160px;
   }
 }
+
+/* ---------- candidature / deadline ---------- */
+
+.offer-card--applied {
+  border-color: rgba(22, 163, 74, 0.35);
+}
+
+/* quand « Postulé » ET « Urgent » cohabitent : l'urgent descend */
+.offer-card--applied .offer-hot {
+  top: 46px;
+}
+
+.offer-applied {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #15803d;
+  background: #dcfce7;
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+.meta-pill--dl {
+  background: #ffedd5;
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.apply-first {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a16207;
+}
+
+.btn-apply {
+  text-decoration: none;
+}
+
+.btn-apply--done {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.btn-apply--done:hover {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #4ade80;
+}
+
+.offers-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.offers-loading {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding: 3rem 0;
+}

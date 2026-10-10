@@ -1,23 +1,49 @@
 import mongoose from 'mongoose';
 
+const applicationFileSchema = new mongoose.Schema(
+  {
+    filename: { type: String, required: true },      // nom de stockage
+    path: { type: String, required: true },          // /uploads/applications/…
+    originalName: { type: String, default: '' },     // nom affiché à l'utilisateur
+    mime: { type: String, default: '' },
+    size: { type: Number, default: 0 },
+  },
+  { _id: true },
+);
+
 const applicationSchema = new mongoose.Schema({
-  candidate: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate', required: true },
+  // Candidat interne (parcours agence) — optionnel : un client postule via son compte User.
+  candidate: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' },
   offer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer', required: true },
-  position: { type: mongoose.Schema.Types.ObjectId, ref: 'Position', required: true },
-  status: { type: String, default: 'applied' }, 
+  position: { type: mongoose.Schema.Types.ObjectId, ref: 'Position' },
+  // Cycle de vie : pending (envoyée) → review (en révision) → accepted | rejected.
+  status: {
+    type: String,
+    enum: ['pending', 'applied', 'review', 'accepted', 'rejected'],
+    default: 'pending',
+  },
   notes: { type: String },
-  // Qui a déposé la candidature — permet de distinguer les types de postulation.
+  adminNotes: { type: String, default: '' },
+
+  // Qui a déposé la candidature — distingue les types de postulation.
   source: {
     type: String,
     enum: ['candidate', 'client', 'agent'],
     default: 'candidate',
   },
   appliedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  applicantName: { type: String, trim: true, default: '' },
+  applicantEmail: { type: String, trim: true, default: '' },
+
+  // Lettre de motivation + pièces jointes.
+  message: { type: String, default: '' },
+  cv: { type: applicationFileSchema, default: null },
+  attachments: { type: [applicationFileSchema], default: [] },
 },
 {timestamps: true}
 );
 
-// Ensure uniqueness of candidate-offer-position combinations
-applicationSchema.index({ candidate: 1, offer: 1, position: 1 }, { unique: true });
+applicationSchema.index({ offer: 1 });
+applicationSchema.index({ appliedBy: 1, offer: 1 });
 
 export const Application = mongoose.model('Application', applicationSchema);

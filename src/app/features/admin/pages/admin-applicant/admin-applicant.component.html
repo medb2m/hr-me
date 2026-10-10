@@ -1,0 +1,198 @@
+<div class="ap">
+  @if (app?.offer) {
+    <a class="ap-back" [routerLink]="['/admin/offres', app!.offer!.id, 'applications']">
+      <svg lucideArrowLeft [size]="15"></svg> Candidatures — {{ app!.offer!.name }}
+    </a>
+  }
+
+  @if (loading) {
+    <p class="ap-empty">Chargement…</p>
+  } @else if (errorMsg && !app) {
+    <p class="ap-error">{{ errorMsg }}</p>
+  } @else if (app) {
+    @let p = app.profile;
+    <!-- ======== en-tête candidat ======== -->
+    <header class="ap-head">
+      <div class="ap-avatar">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" [alt]="displayName()" />
+        } @else {
+          <span>{{ initials() }}</span>
+        }
+      </div>
+      <div class="ap-id">
+        <h1>{{ displayName() }}</h1>
+        <p class="ap-sub">
+          @if (p?.headline) { {{ p!.headline }} · }
+          <span class="ap-src-pill">{{ sourceLabel(app.source) }}</span>
+          <span class="ap-status" [attr.data-s]="statusCls(app.status)">{{ statusLabel(app.status) }}</span>
+          @if (offerExpired()) { <span class="ap-expired"><svg lucideTimer [size]="11"></svg> Offre expirée</span> }
+        </p>
+        <p class="ap-contact">
+          <span><svg lucideMail [size]="13"></svg> {{ app.applicantEmail || app.user?.email || '—' }}</span>
+          @if (p?.phone) { <span><svg lucidePhone [size]="13"></svg> {{ p!.phone }}</span> }
+          @if (p?.city || p?.country) { <span><svg lucideMapPin [size]="13"></svg> {{ p!.city }}{{ p!.city && p!.country ? ', ' : '' }}{{ p!.country }}</span> }
+        </p>
+        <p class="ap-date">
+          <svg lucideClock [size]="13"></svg> Candidature envoyée le {{ fmtDate(app.createdAt) }}
+          @if (app.offer) {
+            · pour <a [routerLink]="['/espace/offres', app.offer.id]" class="ap-offer-link">{{ app.offer.name }}</a>
+            — {{ app.offer.partner }}
+          }
+        </p>
+      </div>
+      <div class="ap-head-actions">
+        <button type="button" class="ap-btn" [class.act-review]="app.status === 'review'"
+                [disabled]="saving" (click)="setStatus('review')">
+          <svg lucideUserCheck [size]="14"></svg> En révision
+        </button>
+        <button type="button" class="ap-btn" [class.act-accept]="app.status === 'accepted'"
+                [disabled]="saving" (click)="setStatus('accepted')">
+          <svg lucideCheckCircle [size]="14"></svg> Accepter
+        </button>
+        <button type="button" class="ap-btn ap-btn--danger" [class.act-reject]="app.status === 'rejected'"
+                [disabled]="saving" (click)="setStatus('rejected')">
+          <svg lucideXCircle [size]="14"></svg> Refuser
+        </button>
+        @if (app.status !== 'pending') {
+          <button type="button" class="ap-btn" [disabled]="saving" (click)="setStatus('pending')">
+            <svg lucideClock [size]="14"></svg> Remettre en attente
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (errorMsg) { <p class="ap-error">{{ errorMsg }}</p> }
+
+    <div class="ap-grid">
+      <div class="ap-col">
+        <!-- fichiers de la candidature -->
+        <section class="ap-card">
+          <h2><svg lucidePaperclip [size]="15"></svg> Pièces jointes à cette candidature</h2>
+          @if (!app.cv && !app.attachments.length) {
+            <p class="ap-muted">Aucun fichier téléversé.</p>
+          }
+          <ul class="ap-files">
+            @if (app.cv) {
+              <li>
+                <a [href]="app.cv.path" target="_blank" class="ap-file">
+                  <svg lucideFileText [size]="15"></svg>
+                  <span class="ap-file-name">{{ app.cv.name || 'CV' }}</span>
+                  <em>CV</em>
+                </a>
+              </li>
+            }
+            @for (f of app.attachments; track f.path) {
+              <li>
+                <a [href]="f.path" target="_blank" class="ap-file">
+                  <svg lucidePaperclip [size]="15"></svg>
+                  <span class="ap-file-name">{{ f.name }}</span>
+                  <em>{{ (f.size / 1024) | number:'1.0-0' }} Ko</em>
+                </a>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <!-- lettre de motivation -->
+        @if (app.message) {
+          <section class="ap-card">
+            <h2><svg lucideMessageSquare [size]="15"></svg> Message de motivation</h2>
+            <div class="ap-msg" [innerHTML]="app.message"></div>
+          </section>
+        }
+
+        <!-- notes internes -->
+        <section class="ap-card">
+          <h2><svg lucideSend [size]="15"></svg> Notes internes</h2>
+          <textarea class="ap-notes" [(ngModel)]="notes" rows="3"
+                    placeholder="Note visible uniquement par l'équipe…"></textarea>
+          <button type="button" class="ap-note-btn" (click)="saveNotes()" [disabled]="noteSaving">
+            {{ noteSaving ? 'Enregistrement…' : noteSaved ? 'Enregistré ✓' : 'Enregistrer la note' }}
+          </button>
+        </section>
+      </div>
+
+      <div class="ap-col">
+        <!-- profil candidat -->
+        @if (p) {
+          <section class="ap-card">
+            <h2><svg lucideUserCheck [size]="15"></svg> Profil candidat</h2>
+            <ul class="ap-facts">
+              @if (p.name) { <li><em>Nom</em>{{ p.name }}</li> }
+              @if (p.nationality) { <li><em>Nationalité</em>{{ p.nationality }}</li> }
+              @if (p.birthDate) { <li><em>Naissance</em>{{ fmtDate(p.birthDate) }}</li> }
+              @if (p.headline) { <li><em>Titre</em>{{ p.headline }}</li> }
+              @if (p.links?.length) {
+                <li>
+                  <em>Liens</em>
+                  @for (l of p.links; track l.url) {
+                    <a [href]="l.url" target="_blank" class="ap-ext">{{ l.label || l.url }}</a>{{ !$last ? ' · ' : '' }}
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+
+          @if (p.workExperiences?.length) {
+            <section class="ap-card">
+              <h2><svg lucideBriefcase [size]="15"></svg> Expériences</h2>
+              <div class="ap-entry" *ngFor="let e of p.workExperiences">
+                <strong>{{ e.jobTitle }}</strong>
+                <span class="ap-entry-meta">{{ e.employer }} · {{ fmtPeriod(e.current, e.startDate, e.endDate) }}</span>
+                <div class="ap-entry-desc" [innerHTML]="e.description"></div>
+              </div>
+            </section>
+          }
+
+          @if (p.educations?.length) {
+            <section class="ap-card">
+              <h2><svg lucideGraduationCap [size]="15"></svg> Formations</h2>
+              <div class="ap-entry" *ngFor="let e of p.educations">
+                <strong>{{ e.title }}</strong>
+                <span class="ap-entry-meta">{{ e.organization }} · {{ fmtPeriod(e.current, e.startDate, e.endDate) }}</span>
+              </div>
+            </section>
+          }
+
+          @if (p.skills?.length) {
+            <section class="ap-card">
+              <h2><svg lucideWrench [size]="15"></svg> Compétences</h2>
+              <div class="ap-chips">
+                <span class="ap-chip" *ngFor="let s of p.skills">{{ s }}</span>
+              </div>
+            </section>
+          }
+
+          @if (p.languagesSpoken?.length) {
+            <section class="ap-card">
+              <h2><svg lucideLanguages [size]="15"></svg> Langues</h2>
+              <div class="ap-chips">
+                <span class="ap-chip" *ngFor="let l of p.languagesSpoken">{{ l.language }} <b>{{ l.cefrLevel }}</b></span>
+              </div>
+            </section>
+          }
+        } @else {
+          <section class="ap-card">
+            <h2><svg lucideUserCheck [size]="15"></svg> Profil candidat</h2>
+            <p class="ap-muted">
+              Ce postulant n&rsquo;a pas encore complété son profil candidat sur la plateforme.
+              Seules les informations de la candidature sont disponibles.
+            </p>
+          </section>
+        }
+
+        <section class="ap-card">
+          <h2><svg lucideSend [size]="15"></svg> Soumission</h2>
+          <ul class="ap-facts">
+            <li><em>Soumise par</em>{{ app.user?.name || app.user?.email || '—' }} ({{ app.user?.role || '—' }})</li>
+            <li><em>Type</em>{{ sourceLabel(app.source) }}</li>
+            @if (app.applicantName && app.applicantName !== app.user?.name) {
+              <li><em>Nom déclaré</em>{{ app.applicantName }}</li>
+            }
+          </ul>
+        </section>
+      </div>
+    </div>
+  }
+</div>

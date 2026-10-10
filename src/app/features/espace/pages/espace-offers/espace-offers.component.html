@@ -3,7 +3,7 @@
     <div>
       <span class="eyebrow-light"><svg lucideBriefcase [size]="14" aria-hidden="true"></svg> Offres internationales</span>
       <h1>Des postes qui vous attendent à l'étranger</h1>
-      <p>Sélection d'offres de nos employeurs partenaires. Devenez candidat pour postuler et suivre votre dossier.</p>
+      <p>Offres réelles de nos employeurs partenaires — postulez en quelques clics avec votre CV.</p>
     </div>
     <!-- PHOTO : entretien d'embauche / bureau avec vue sur une ville européenne -->
     <div class="img-ph">
@@ -15,43 +15,71 @@
 </header>
 
 <div class="offers-body">
-  <div class="filters">
-    <button
-      *ngFor="let f of filters"
-      type="button"
-      class="chip"
-      [class.chip--active]="activeFilter === f"
-      (click)="activeFilter = f">
-      {{ f }}
-    </button>
-  </div>
+  @if (errorMsg) {
+    <p class="offers-error">{{ errorMsg }}</p>
+  }
 
-  <div class="offers-grid">
-    <article class="offer-card" *ngFor="let o of filtered()">
-      <span class="offer-flag" aria-hidden="true">{{ o.flag }}</span>
-      <span class="offer-hot" *ngIf="o.hot">Urgent</span>
-      <h2 class="offer-title">{{ o.title }}</h2>
-      <p class="offer-company">
-        <svg lucideBuilding2 [size]="14" aria-hidden="true"></svg> {{ o.company }}
-      </p>
-      <p class="offer-loc">
-        <svg lucideMapPin [size]="14" aria-hidden="true"></svg> {{ o.city }}, {{ o.country }}
-      </p>
-      <div class="offer-meta">
-        <span class="meta-pill"><svg lucideClock [size]="13" aria-hidden="true"></svg> {{ o.contract }}</span>
-        <span class="meta-pill meta-pill--salary"><svg lucideBanknote [size]="13" aria-hidden="true"></svg> {{ o.salary }}</span>
-      </div>
-      <div class="offer-tags">
-        <span class="tag" *ngFor="let t of o.tags">{{ t }}</span>
-      </div>
-      <button type="button" class="btn-apply" (click)="apply(o)">
-        <svg lucideLock [size]="14" aria-hidden="true"></svg> Postuler (candidats)
+  @if (loading) {
+    <p class="offers-loading">Chargement des offres…</p>
+  } @else {
+    <div class="filters">
+      <button
+        *ngFor="let f of filters"
+        type="button"
+        class="chip"
+        [class.chip--active]="activeFilter === f"
+        (click)="activeFilter = f">
+        {{ f }}
       </button>
-    </article>
-  </div>
+    </div>
 
-  <p class="offers-note">
-    {{ filtered().length }} offre{{ filtered().length > 1 ? 's' : '' }} affichée{{ filtered().length > 1 ? 's' : '' }}
-    — nouvelles opportunités chaque semaine.
-  </p>
+    <div class="offers-grid">
+      <article class="offer-card" *ngFor="let o of filtered()" [class.offer-card--applied]="o.applied">
+        <span class="offer-flag" aria-hidden="true"><app-flag [code]="o.country.code" size="lg" /></span>
+        @if (o.urgent) { <span class="offer-hot">Urgent</span> }
+        @if (o.applied) {
+          <span class="offer-applied"><svg lucideCheck [size]="11"></svg> Postulé</span>
+        }
+        <h2 class="offer-title">{{ o.name }}</h2>
+        <p class="offer-company">
+          <svg lucideBuilding2 [size]="14" aria-hidden="true"></svg> {{ o.partner }}
+        </p>
+        <p class="offer-loc">
+          <svg lucideMapPin [size]="14" aria-hidden="true"></svg> {{ o.city }}{{ o.city && o.country.name ? ', ' : '' }}{{ o.country.name }}
+        </p>
+        <div class="offer-meta">
+          @if (o.contract) {
+            <span class="meta-pill"><svg lucideClock [size]="13" aria-hidden="true"></svg> {{ o.contract }}</span>
+          }
+          @if (o.salary) {
+            <span class="meta-pill meta-pill--salary"><svg lucideBanknote [size]="13" aria-hidden="true"></svg> {{ o.salary }}</span>
+          }
+          @if (deadlineLabel(o)) {
+            <span class="meta-pill meta-pill--dl"><svg lucideTimer [size]="13" aria-hidden="true"></svg> {{ deadlineLabel(o) }}</span>
+          }
+        </div>
+        <div class="offer-tags">
+          <span class="tag" *ngFor="let t of tags(o)">{{ t }}</span>
+        </div>
+        @if (o.applied) {
+          <a class="btn-apply btn-apply--done" [routerLink]="['/espace/offres', o.id]">
+            <svg lucideCheck [size]="14" aria-hidden="true"></svg> Candidature envoyée — voir l&rsquo;offre
+          </a>
+        } @else {
+          <a class="btn-apply" [routerLink]="['/espace/offres', o.id]">
+            Postuler@if (o.applicationsCount === 0) { <span class="apply-first">· Soyez le 1er !</span> }
+          </a>
+        }
+      </article>
+    </div>
+
+    @if (!filtered().length) {
+      <p class="offers-note">Aucune offre {{ activeFilter === 'Tous' ? 'publiée' : 'pour ce pays' }} pour le moment.</p>
+    } @else {
+      <p class="offers-note">
+        {{ filtered().length }} offre{{ filtered().length > 1 ? 's' : '' }} affichée{{ filtered().length > 1 ? 's' : '' }}
+        — nouvelles opportunités chaque semaine.
+      </p>
+    }
+  }
 </div>

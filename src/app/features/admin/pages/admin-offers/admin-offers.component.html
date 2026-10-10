@@ -150,10 +150,11 @@
             {{ modeLabel(o.workMode) }}
           </span>
 
-          <span class="ao-apps" title="Candidatures reçues">
+          <a class="ao-apps" [routerLink]="['/admin/offers', o.id, 'applications']"
+             title="Voir les candidatures" (click)="$event.stopPropagation()">
             <svg lucideUserCheck [size]="14" aria-hidden="true"></svg>
             {{ o.applications.total }}
-          </span>
+          </a>
 
           <div class="ao-actions" (click)="$event.stopPropagation()">
             <a class="ao-btn" [routerLink]="['/admin/offers', o.id, 'edit']" title="Modifier">
@@ -218,6 +219,13 @@
             } @else {
               <p class="ao-nodesc">Aucune description.</p>
             }
+
+            <a class="ao-apps-link" [routerLink]="['/admin/offers', o.id, 'applications']">
+              <svg lucideUserCheck [size]="14"></svg>
+              Gérer les candidatures
+              <span class="ao-apps-count">{{ o.applications.total }}</span>
+              <svg lucideChevronRight [size]="14"></svg>
+            </a>
           </div>
         }
       </article>

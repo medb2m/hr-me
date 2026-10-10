@@ -21,6 +21,20 @@ export const ESPACE_ROUTES: Routes = [
           ),
       },
       {
+        path: 'offres/:id',
+        loadComponent: () =>
+          import('./pages/espace-offer-detail/espace-offer-detail.component').then(
+            (m) => m.EspaceOfferDetailComponent,
+          ),
+      },
+      {
+        path: 'candidatures',
+        loadComponent: () =>
+          import('./pages/espace-applications/espace-applications.component').then(
+            (m) => m.EspaceApplicationsComponent,
+          ),
+      },
+      {
         path: 'profil',
         loadComponent: () =>
           import('./pages/espace-profile/espace-profile.component').then(
