@@ -442,6 +442,195 @@
   border-top: 1px solid #e2e8f0;
 }
 
+/* ---------- parcours & compétences ---------- */
+
+.ep-acc {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 0.6rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.ep-acc__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  list-style: none;
+  background: #f8fafc;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.ep-acc__summary::-webkit-details-marker {
+  display: none;
+}
+
+.ep-acc__summary::after {
+  content: '▸';
+  color: #a16207;
+  font-size: 0.85rem;
+  transition: transform 0.15s;
+}
+
+.ep-acc[open] > .ep-acc__summary::after {
+  transform: rotate(90deg);
+}
+
+.ep-acc__summary:hover {
+  background: rgba(255, 211, 0, 0.08);
+}
+
+.ep-acc__count {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+}
+
+.ep-acc__body {
+  padding: 0.85rem 0.9rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.ep-input--full {
+  width: 100%;
+}
+
+.ep-sub2 {
+  margin: 0.7rem 0 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ep-entry {
+  position: relative;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #ffd300;
+  border-radius: 10px;
+  padding: 0.7rem 0.75rem;
+  margin-bottom: 0.6rem;
+  background: #fafaf9;
+}
+
+.ep-entry__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.ep-entry__grid .ep-input {
+  min-width: 0;
+  width: 100%;
+}
+
+.ep-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ep-mini span {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.ep-entry__del {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+}
+
+.ep-entry__grid {
+  padding-right: 40px;
+}
+
+.ep-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.ep-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #0f172a;
+  background: rgba(255, 211, 0, 0.2);
+  border: 1px solid rgba(255, 211, 0, 0.55);
+}
+
+.ep-chip--digital {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #3730a3;
+}
+
+.ep-chip__x {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.15);
+  color: #0f172a;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ep-chip__x:hover {
+  background: #b91c1c;
+  color: #fff;
+}
+
+.ep-chip-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ep-chip-input .ep-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.ep-lang-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ep-lang-row .ep-input:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.ep-lang-row select.ep-input {
+  width: 150px;
+  flex-shrink: 0;
+}
+
 /* ---------- checklist ---------- */
 
 .ep-checks {

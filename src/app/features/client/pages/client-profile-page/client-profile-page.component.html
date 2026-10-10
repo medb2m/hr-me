@@ -292,10 +292,271 @@
     </div>
   </section>
 
-  <!-- ============ ÉTAPE 4 : SECTIONS ============ -->
+  <!-- ============ ÉTAPE 4 : PARCOURS & COMPÉTENCES ============ -->
   <section class="ep-card">
     <div class="ep-card__head">
       <span class="ep-step" aria-hidden="true">4</span>
+      <span class="ep-card__icon" aria-hidden="true"><svg lucideListChecks [size]="18"></svg></span>
+      <div>
+        <h2>Parcours &amp; compétences</h2>
+        <p>Accroche, expériences, formations, compétences et langues — reprises automatiquement dans vos CV.</p>
+      </div>
+      <span class="ep-state" [class.ep-state--ok]="workExperiences.length > 0 || skills.length > 0">
+        <svg lucideBadgeCheck [size]="13" aria-hidden="true"></svg>
+        {{ workExperiences.length > 0 || skills.length > 0 ? 'Renseigné' : 'À compléter' }}
+      </span>
+    </div>
+
+    <!-- Accroche -->
+    <details class="ep-acc" open>
+      <summary class="ep-acc__summary">
+        <span>Accroche professionnelle</span>
+        <span class="ep-acc__count">{{ headlineText ? 'Renseignée' : 'Vide' }}</span>
+      </summary>
+      <div class="ep-acc__body">
+        <p class="ep-hint-sm">Titre ou phrase d’introduction affichés en haut de vos CV.</p>
+        <input
+          class="ep-input ep-input--full"
+          type="text"
+          [(ngModel)]="headlineText"
+          name="headline"
+          maxlength="500"
+          placeholder="ex. Développeur full-stack avec 5 ans d’expérience en applications web"
+        />
+      </div>
+    </details>
+
+    <!-- Expériences -->
+    <details class="ep-acc">
+      <summary class="ep-acc__summary">
+        <span>Expériences professionnelles</span>
+        <span class="ep-acc__count">{{ workExperiences.length }} entrée(s)</span>
+      </summary>
+      <div class="ep-acc__body">
+        @for (w of workExperiences; track trackIndex($index)) {
+          <div class="ep-entry">
+            <div class="ep-entry__grid">
+              <input
+                class="ep-input"
+                type="text"
+                [(ngModel)]="w.jobTitle"
+                [name]="'w-title-' + $index"
+                maxlength="120"
+                placeholder="Poste (ex. Développeur)"
+              />
+              <input
+                class="ep-input"
+                type="text"
+                [(ngModel)]="w.employer"
+                [name]="'w-emp-' + $index"
+                maxlength="120"
+                placeholder="Employeur"
+              />
+              <label class="ep-mini">
+                <span>Début</span>
+                <input class="ep-input" type="month" [(ngModel)]="w.startMonth" [name]="'w-s-' + $index" />
+              </label>
+              <label class="ep-mini">
+                <span>Fin</span>
+                <input class="ep-input" type="month" [(ngModel)]="w.endMonth" [name]="'w-e-' + $index" />
+              </label>
+            </div>
+            <app-rich-text-editor
+              [(ngModel)]="w.description"
+              [name]="'w-desc-' + $index"
+              placeholder="Missions, réalisations, bullet points…"
+            />
+            <button
+              type="button"
+              class="ep-icon-btn ep-icon-btn--danger ep-entry__del"
+              (click)="removeWorkExperience($index)"
+              aria-label="Supprimer cette expérience"
+            >
+              <svg lucideTrash2 [size]="14" aria-hidden="true"></svg>
+            </button>
+          </div>
+        }
+        @if (workExperiences.length === 0) {
+          <p class="ep-empty">Aucune expérience ajoutée.</p>
+        }
+        <button type="button" class="ep-add" [disabled]="workExperiences.length >= 20" (click)="addWorkExperience()">
+          <svg lucidePlus [size]="13" aria-hidden="true"></svg> Ajouter une expérience
+        </button>
+      </div>
+    </details>
+
+    <!-- Formations -->
+    <details class="ep-acc">
+      <summary class="ep-acc__summary">
+        <span>Formations &amp; diplômes</span>
+        <span class="ep-acc__count">{{ educations.length }} entrée(s)</span>
+      </summary>
+      <div class="ep-acc__body">
+        @for (e of educations; track trackIndex($index)) {
+          <div class="ep-entry">
+            <div class="ep-entry__grid">
+              <input
+                class="ep-input"
+                type="text"
+                [(ngModel)]="e.title"
+                [name]="'e-title-' + $index"
+                maxlength="120"
+                placeholder="Diplôme / formation"
+              />
+              <input
+                class="ep-input"
+                type="text"
+                [(ngModel)]="e.organization"
+                [name]="'e-org-' + $index"
+                maxlength="120"
+                placeholder="Établissement"
+              />
+              <label class="ep-mini">
+                <span>Début</span>
+                <input class="ep-input" type="month" [(ngModel)]="e.startMonth" [name]="'e-s-' + $index" />
+              </label>
+              <label class="ep-mini">
+                <span>Fin</span>
+                <input class="ep-input" type="month" [(ngModel)]="e.endMonth" [name]="'e-e-' + $index" />
+              </label>
+            </div>
+            <button
+              type="button"
+              class="ep-icon-btn ep-icon-btn--danger ep-entry__del"
+              (click)="removeEducation($index)"
+              aria-label="Supprimer cette formation"
+            >
+              <svg lucideTrash2 [size]="14" aria-hidden="true"></svg>
+            </button>
+          </div>
+        }
+        @if (educations.length === 0) {
+          <p class="ep-empty">Aucune formation ajoutée.</p>
+        }
+        <button type="button" class="ep-add" [disabled]="educations.length >= 20" (click)="addEducation()">
+          <svg lucidePlus [size]="13" aria-hidden="true"></svg> Ajouter une formation
+        </button>
+      </div>
+    </details>
+
+    <!-- Compétences -->
+    <details class="ep-acc">
+      <summary class="ep-acc__summary">
+        <span>Compétences</span>
+        <span class="ep-acc__count">{{ skills.length }} + {{ digitalSkills.length }} num.</span>
+      </summary>
+      <div class="ep-acc__body">
+        <h4 class="ep-sub2">Compétences métiers</h4>
+        <div class="ep-chips">
+          @for (s of skills; track s) {
+            <span class="ep-chip">
+              {{ s }}
+              <button type="button" class="ep-chip__x" (click)="removeSkill('skills', $index)" aria-label="Retirer">×</button>
+            </span>
+          }
+          @if (skills.length === 0) {
+            <span class="ep-empty">Aucune compétence.</span>
+          }
+        </div>
+        <div class="ep-chip-input">
+          <input
+            class="ep-input"
+            type="text"
+            [(ngModel)]="skillInput"
+            name="skillInput"
+            maxlength="60"
+            placeholder="ex. Gestion de projet, Angular…"
+            (keyup.enter)="addSkill('skills')"
+          />
+          <button type="button" class="ep-add" [disabled]="!skillInput.trim()" (click)="addSkill('skills')">
+            <svg lucidePlus [size]="13" aria-hidden="true"></svg>
+          </button>
+        </div>
+
+        <h4 class="ep-sub2">Compétences numériques</h4>
+        <div class="ep-chips">
+          @for (s of digitalSkills; track s) {
+            <span class="ep-chip ep-chip--digital">
+              {{ s }}
+              <button type="button" class="ep-chip__x" (click)="removeSkill('digitalSkills', $index)" aria-label="Retirer">×</button>
+            </span>
+          }
+          @if (digitalSkills.length === 0) {
+            <span class="ep-empty">Aucune compétence numérique.</span>
+          }
+        </div>
+        <div class="ep-chip-input">
+          <input
+            class="ep-input"
+            type="text"
+            [(ngModel)]="digitalSkillInput"
+            name="digitalSkillInput"
+            maxlength="60"
+            placeholder="ex. Excel, Photoshop…"
+            (keyup.enter)="addSkill('digitalSkills')"
+          />
+          <button type="button" class="ep-add" [disabled]="!digitalSkillInput.trim()" (click)="addSkill('digitalSkills')">
+            <svg lucidePlus [size]="13" aria-hidden="true"></svg>
+          </button>
+        </div>
+      </div>
+    </details>
+
+    <!-- Langues -->
+    <details class="ep-acc">
+      <summary class="ep-acc__summary">
+        <span>Langues</span>
+        <span class="ep-acc__count">{{ languagesSpoken.length }} langue(s)</span>
+      </summary>
+      <div class="ep-acc__body">
+        @for (l of languagesSpoken; track trackIndex($index)) {
+          <div class="ep-lang-row">
+            <input
+              class="ep-input"
+              type="text"
+              [(ngModel)]="l.language"
+              [name]="'l-lang-' + $index"
+              maxlength="60"
+              placeholder="Langue (ex. Français)"
+            />
+            <select class="ep-input" [(ngModel)]="l.cefrLevel" [name]="'l-lvl-' + $index">
+              @for (lv of cefrLevels; track lv) {
+                <option [value]="lv">{{ lv }}</option>
+              }
+            </select>
+            <button
+              type="button"
+              class="ep-icon-btn ep-icon-btn--danger"
+              (click)="removeLanguage($index)"
+              aria-label="Supprimer cette langue"
+            >
+              <svg lucideTrash2 [size]="14" aria-hidden="true"></svg>
+            </button>
+          </div>
+        }
+        @if (languagesSpoken.length === 0) {
+          <p class="ep-empty">Aucune langue ajoutée.</p>
+        }
+        <button type="button" class="ep-add" [disabled]="languagesSpoken.length >= 15" (click)="addLanguage()">
+          <svg lucidePlus [size]="13" aria-hidden="true"></svg> Ajouter une langue
+        </button>
+      </div>
+    </details>
+
+    <div class="ep-contact-save">
+      <button type="button" class="ep-btn" [disabled]="savingParcours" (click)="saveParcours($event)">
+        {{ savingParcours ? 'Enregistrement…' : 'Enregistrer le parcours' }}
+      </button>
+      @if (parcoursError) {
+        <p class="ep-birth-err">{{ parcoursError }}</p>
+      }
+    </div>
+  </section>
+
+  <!-- ============ ÉTAPE 5 : SECTIONS ============ -->
+  <section class="ep-card">
+    <div class="ep-card__head">
+      <span class="ep-step" aria-hidden="true">5</span>
       <span class="ep-card__icon" aria-hidden="true"><svg lucideListChecks [size]="18"></svg></span>
       <div>
         <h2>Sections du dossier</h2>

@@ -204,7 +204,7 @@
             }
             @if (state.summary.visible) {
               @if (previewBlockIsHtml('summary')) {
-                <div class="ep-sheet__tagline" [innerHTML]="previewBlockText('summary')"></div>
+                <div class="ep-sheet__tagline" [innerHTML]="previewBlockHtml('summary')"></div>
               } @else {
                 <p class="ep-sheet__tagline">{{ previewBlockText('summary') }}</p>
               }
@@ -215,10 +215,24 @@
           @if (state.personal.visible) {
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Coordonnées</h3>
-              @if (previewBlockIsHtml('personal')) {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockText('personal')"></div>
+              @if (state.personal.useProfile) {
+                <ul class="ep-sheet__contact">
+                  @for (r of contactRows(); track $index) {
+                    <li>
+                      @switch (r.icon) {
+                        @case ('mail') {<svg lucideMail [size]="11" aria-hidden="true"></svg>}
+                        @case ('phone') {<svg lucidePhone [size]="11" aria-hidden="true"></svg>}
+                        @case ('link') {<svg lucideLink [size]="11" aria-hidden="true"></svg>}
+                        @case ('map') {<svg lucideMapPin [size]="11" aria-hidden="true"></svg>}
+                        @case ('flag') {<svg lucideFlag [size]="11" aria-hidden="true"></svg>}
+                        @case ('cake') {<svg lucideCake [size]="11" aria-hidden="true"></svg>}
+                      }
+                      <span>{{ r.text }}</span>
+                    </li>
+                  }
+                </ul>
               } @else {
-                <div class="ep-sheet__text">{{ previewBlockText('personal') }}</div>
+                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('personal')"></div>
               }
             </section>
           }
@@ -226,7 +240,7 @@
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Expérience professionnelle</h3>
               @if (previewBlockIsHtml('experience')) {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockText('experience')"></div>
+                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('experience')"></div>
               } @else {
                 <div class="ep-sheet__text">{{ previewBlockText('experience') }}</div>
               }
@@ -236,7 +250,7 @@
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Formation</h3>
               @if (previewBlockIsHtml('education')) {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockText('education')"></div>
+                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('education')"></div>
               } @else {
                 <div class="ep-sheet__text">{{ previewBlockText('education') }}</div>
               }
@@ -246,7 +260,7 @@
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Compétences</h3>
               @if (previewBlockIsHtml('skills')) {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockText('skills')"></div>
+                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('skills')"></div>
               } @else {
                 <div class="ep-sheet__text">{{ previewBlockText('skills') }}</div>
               }
@@ -256,7 +270,7 @@
             <section class="ep-sheet__block">
               <h3 class="ep-sheet__h3">Langues</h3>
               @if (previewBlockIsHtml('languages')) {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockText('languages')"></div>
+                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('languages')"></div>
               } @else {
                 <div class="ep-sheet__text">{{ previewBlockText('languages') }}</div>
               }

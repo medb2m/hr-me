@@ -47,11 +47,28 @@ export class ClientProfileApiService {
     return this.http.get<{ profile: ClientProfileDto }>(`${this.base}/profile`);
   }
 
-  /** Met à jour le profil : `birthDate` (`YYYY-MM-DD` ou `null`), `phones`, `links` ({label,url}). */
+  /** Met à jour le profil : `birthDate` (`YYYY-MM-DD` ou `null`), `phones`, `links`, `headline`, parcours, compétences. */
   patchProfile(body: {
     birthDate?: string | null;
     phones?: string[];
     links?: Array<{ label: string; url: string }>;
+    headline?: string;
+    workExperiences?: Array<{
+      jobTitle: string;
+      employer: string;
+      startDate?: string | null;
+      endDate?: string | null;
+      description?: string;
+    }>;
+    educations?: Array<{
+      title: string;
+      organization: string;
+      startDate?: string | null;
+      endDate?: string | null;
+    }>;
+    skills?: string[];
+    digitalSkills?: string[];
+    languagesSpoken?: Array<{ language: string; cefrLevel: string }>;
   }): Observable<{ profile: ClientProfileDto }> {
     return this.http.put<{ profile: ClientProfileDto }>(`${this.base}/profile`, body);
   }

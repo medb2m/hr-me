@@ -30,6 +30,7 @@ import {
   type ClientProfileDto,
 } from '../../services/client-profile-api.service';
 import { ProfilePhotoUploadComponent } from '../../../../shared/components/profile-photo-upload/profile-photo-upload.component';
+import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-client-profile-page',
@@ -38,6 +39,7 @@ import { ProfilePhotoUploadComponent } from '../../../../shared/components/profi
     FormsModule,
     RouterLink,
     ProfilePhotoUploadComponent,
+    RichTextEditorComponent,
     BackButtonComponent,
     DatePickerComponent,
     LucideBadgeCheck,
@@ -94,6 +96,25 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
   newLinkLabel = '';
   newLinkUrl = '';
   readonly linkPresets = ['LinkedIn', 'GitHub', 'GitLab', 'Bitbucket', 'Portfolio', 'Facebook'];
+
+  /** Parcours : accroche, expériences, formations, compétences, langues. */
+  headlineText = '';
+  workExperiences: Array<{
+    jobTitle: string;
+    employer: string;
+    startMonth: string;
+    endMonth: string;
+    description: string;
+  }> = [];
+  educations: Array<{ title: string; organization: string; startMonth: string; endMonth: string }> = [];
+  skills: string[] = [];
+  digitalSkills: string[] = [];
+  languagesSpoken: Array<{ language: string; cefrLevel: string }> = [];
+  skillInput = '';
+  digitalSkillInput = '';
+  savingParcours = false;
+  parcoursError = '';
+  readonly cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Langue maternelle'];
 
   /** Une naissance ne peut pas être dans le futur. */
   readonly todayIso = new Date().toISOString().slice(0, 10);
@@ -161,6 +182,33 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
       label: (l.label ?? '').trim(),
       url: (l.url ?? '').trim(),
     }));
+    this.headlineText = (p.headline ?? '').trim();
+    this.workExperiences = (p.workExperiences ?? []).map((w) => ({
+      jobTitle: w.jobTitle ?? '',
+      employer: w.employer ?? '',
+      startMonth: this.toMonth(w.startDate),
+      endMonth: this.toMonth(w.endDate),
+      description: w.description ?? '',
+    }));
+    this.educations = (p.educations ?? []).map((e) => ({
+      title: e.title ?? '',
+      organization: e.organization ?? '',
+      startMonth: this.toMonth(e.startDate),
+      endMonth: this.toMonth(e.endDate),
+    }));
+    this.skills = [...(p.skills ?? [])];
+    this.digitalSkills = [...(p.digitalSkills ?? [])];
+    this.languagesSpoken = (p.languagesSpoken ?? []).map((l) => ({
+      language: l.language ?? '',
+      cefrLevel: l.cefrLevel ?? '',
+    }));
+  }
+
+  /** ISO/date → "YYYY-MM" pour les inputs `type="month"`. */
+  private toMonth(d: string | null | undefined): string {
+    const s = String(d ?? '').trim();
+    const m = s.match(/^(\d{4}-\d{2})/);
+    return m ? m[1] : '';
   }
 
   private syncBirthDateFromState(): void {
@@ -310,6 +358,95 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
         },
         error: (err: { error?: { message?: string } }) => {
           this.contactSaveError = err.error?.message || 'Enregistrement impossible.';
+        },
+      });
+  }
+
+  addWorkExperience(): void {
+    if (this.workExperiences.length < 20) {
+      this.workExperiences.push({ jobTitle: '', employer: '', startMonth: '', endMonth: '', description: '' });
+    }
+  }
+
+  removeWorkExperience(i: number): void {
+    this.workExperiences.splice(i, 1);
+  }
+
+  addEducation(): void {
+    if (this.educations.length < 20) {
+      this.educations.push({ title: '', organization: '', startMonth: '', endMonth: '' });
+    }
+  }
+
+  removeEducation(i: number): void {
+    this.educations.splice(i, 1);
+  }
+
+  addSkill(kind: 'skills' | 'digitalSkills'): void {
+    const input = kind === 'skills' ? this.skillInput : this.digitalSkillInput;
+    const v = input.trim();
+    if (!v || this[kind].length >= 40) {
+      return;
+    }
+    if (!this[kind].includes(v)) {
+      this[kind].push(v);
+    }
+    if (kind === 'skills') {
+      this.skillInput = '';
+    } else {
+      this.digitalSkillInput = '';
+    }
+  }
+
+  removeSkill(kind: 'skills' | 'digitalSkills', i: number): void {
+    this[kind].splice(i, 1);
+  }
+
+  addLanguage(): void {
+    if (this.languagesSpoken.length < 15) {
+      this.languagesSpoken.push({ language: '', cefrLevel: 'B1' });
+    }
+  }
+
+  removeLanguage(i: number): void {
+    this.languagesSpoken.splice(i, 1);
+  }
+
+  saveParcours(event: MouseEvent): void {
+    const anchorX = event.clientX;
+    const anchorY = event.clientY;
+    this.savingParcours = true;
+    this.parcoursError = '';
+    this.profileApi
+      .patchProfile({
+        headline: this.headlineText.trim(),
+        workExperiences: this.workExperiences.map((w) => ({
+          jobTitle: w.jobTitle.trim(),
+          employer: w.employer.trim(),
+          startDate: w.startMonth || null,
+          endDate: w.endMonth || null,
+          description: w.description,
+        })),
+        educations: this.educations.map((e) => ({
+          title: e.title.trim(),
+          organization: e.organization.trim(),
+          startDate: e.startMonth || null,
+          endDate: e.endMonth || null,
+        })),
+        skills: this.skills,
+        digitalSkills: this.digitalSkills,
+        languagesSpoken: this.languagesSpoken
+          .map((l) => ({ language: l.language.trim(), cefrLevel: l.cefrLevel }))
+          .filter((l) => l.language),
+      })
+      .pipe(finalize(() => (this.savingParcours = false)))
+      .subscribe({
+        next: ({ profile }) => {
+          this.applyServerProfile(profile);
+          this.showSuccessNearPointer(anchorX, anchorY, 'Parcours & compétences enregistrés.');
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.parcoursError = err.error?.message || 'Enregistrement impossible.';
         },
       });
   }

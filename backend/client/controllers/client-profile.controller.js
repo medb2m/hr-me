@@ -48,9 +48,18 @@ export async function patchProfile(req, res) {
     const hasBirth = Object.prototype.hasOwnProperty.call(body, 'birthDate');
     const hasPhones = Object.prototype.hasOwnProperty.call(body, 'phones');
     const hasLinks = Object.prototype.hasOwnProperty.call(body, 'links');
-    if (!hasBirth && !hasPhones && !hasLinks) {
+    const hasHeadline = Object.prototype.hasOwnProperty.call(body, 'headline');
+    const hasWork = Object.prototype.hasOwnProperty.call(body, 'workExperiences');
+    const hasEdu = Object.prototype.hasOwnProperty.call(body, 'educations');
+    const hasSkills = Object.prototype.hasOwnProperty.call(body, 'skills');
+    const hasDigital = Object.prototype.hasOwnProperty.call(body, 'digitalSkills');
+    const hasLangs = Object.prototype.hasOwnProperty.call(body, 'languagesSpoken');
+    if (
+      !hasBirth && !hasPhones && !hasLinks && !hasHeadline &&
+      !hasWork && !hasEdu && !hasSkills && !hasDigital && !hasLangs
+    ) {
       return res.status(400).json({
-        message: 'Le corps doit inclure « birthDate », « phones » et/ou « links ».',
+        message: 'Aucun champ modifiable dans le corps de la requête.',
       });
     }
 
@@ -122,6 +131,81 @@ export async function patchProfile(req, res) {
         links.push({ label: label || 'Lien', url });
       }
       profile.links = links;
+    }
+
+    if (hasHeadline) {
+      const v = String(body.headline ?? '').trim();
+      if (v.length > 500) {
+        return res.status(400).json({ message: 'Accroche trop longue (500 caractères max).' });
+      }
+      profile.headline = v;
+    }
+
+    const parseDateOrNull = (v) => {
+      const s = String(v ?? '').trim();
+      if (!s) return null;
+      const dt = new Date(s.length === 7 ? `${s}-15` : s);
+      return Number.isNaN(dt.getTime()) ? null : dt;
+    };
+
+    if (hasWork) {
+      if (!Array.isArray(body.workExperiences) || body.workExperiences.length > 20) {
+        return res.status(400).json({ message: '« workExperiences » : tableau de 20 entrées max.' });
+      }
+      profile.workExperiences = body.workExperiences
+        .filter((w) => w && typeof w === 'object')
+        .map((w) => ({
+          jobTitle: String(w.jobTitle ?? '').trim().slice(0, 120),
+          employer: String(w.employer ?? '').trim().slice(0, 120),
+          startDate: parseDateOrNull(w.startDate),
+          endDate: parseDateOrNull(w.endDate),
+          description: String(w.description ?? '').trim().slice(0, 3000),
+        }))
+        .filter((w) => w.jobTitle || w.employer || w.description);
+    }
+
+    if (hasEdu) {
+      if (!Array.isArray(body.educations) || body.educations.length > 20) {
+        return res.status(400).json({ message: '« educations » : tableau de 20 entrées max.' });
+      }
+      profile.educations = body.educations
+        .filter((e) => e && typeof e === 'object')
+        .map((e) => ({
+          title: String(e.title ?? '').trim().slice(0, 120),
+          organization: String(e.organization ?? '').trim().slice(0, 120),
+          startDate: parseDateOrNull(e.startDate),
+          endDate: parseDateOrNull(e.endDate),
+        }))
+        .filter((e) => e.title || e.organization);
+    }
+
+    if (hasSkills) {
+      if (!Array.isArray(body.skills) || body.skills.length > 40) {
+        return res.status(400).json({ message: '« skills » : 40 compétences max.' });
+      }
+      profile.skills = body.skills.map((s) => String(s ?? '').trim().slice(0, 60)).filter(Boolean);
+    }
+
+    if (hasDigital) {
+      if (!Array.isArray(body.digitalSkills) || body.digitalSkills.length > 40) {
+        return res.status(400).json({ message: '« digitalSkills » : 40 entrées max.' });
+      }
+      profile.digitalSkills = body.digitalSkills
+        .map((s) => String(s ?? '').trim().slice(0, 60))
+        .filter(Boolean);
+    }
+
+    if (hasLangs) {
+      if (!Array.isArray(body.languagesSpoken) || body.languagesSpoken.length > 15) {
+        return res.status(400).json({ message: '« languagesSpoken » : 15 langues max.' });
+      }
+      profile.languagesSpoken = body.languagesSpoken
+        .filter((l) => l && typeof l === 'object')
+        .map((l) => ({
+          language: String(l.language ?? '').trim().slice(0, 60),
+          cefrLevel: String(l.cefrLevel ?? '').trim().slice(0, 10),
+        }))
+        .filter((l) => l.language);
     }
 
     await profile.save();

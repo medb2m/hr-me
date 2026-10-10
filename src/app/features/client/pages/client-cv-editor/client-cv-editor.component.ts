@@ -4,7 +4,17 @@ import { BackButtonComponent } from '../../../../shared/components/back-button/b
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, catchError, finalize } from 'rxjs';
-import { LucideArrowLeft, LucideArrowRight, LucideCheck } from '@lucide/angular';
+import {
+  LucideArrowLeft,
+  LucideArrowRight,
+  LucideCake,
+  LucideCheck,
+  LucideFlag,
+  LucideLink,
+  LucideMail,
+  LucideMapPin,
+  LucidePhone,
+} from '@lucide/angular';
 
 import { AuthService } from '../../../../core/services/auth.service';
 import { ClientCvApiService, ClientCvDto } from '../../services/client-cv-api.service';
@@ -28,7 +38,7 @@ export type CvStepKey = 'infos' | CvBlockKey;
 @Component({
   selector: 'app-client-cv-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackButtonComponent, ProfilePhotoUploadComponent, RichTextEditorComponent, LucideArrowLeft, LucideArrowRight, LucideCheck],
+  imports: [CommonModule, FormsModule, BackButtonComponent, ProfilePhotoUploadComponent, RichTextEditorComponent, LucideArrowLeft, LucideArrowRight, LucideCheck, LucideCake, LucideFlag, LucideLink, LucideMail, LucideMapPin, LucidePhone],
   templateUrl: './client-cv-editor.component.html',
   styleUrl: './client-cv-editor.component.css',
 })
@@ -285,9 +295,60 @@ export class ClientCvEditorComponent implements OnInit {
     return (b.customText || '').trim() || '—';
   }
 
-  /** Texte personnalisé = HTML (éditeur riche) ; données profil = texte brut. */
+  /** Texte personnalisé = HTML (éditeur riche) ; profil = HTML si description riche. */
   previewBlockIsHtml(key: CvBlockKey): boolean {
-    return !this.state[key].useProfile;
+    const b = this.state[key];
+    if (!b.useProfile) {
+      return true;
+    }
+    return /<[a-z][^>]*>/i.test(this.textFromProfile(key));
+  }
+
+  /** Rendu HTML d'un bloc (retours ligne → <br> pour le contenu mixte). */
+  previewBlockHtml(key: CvBlockKey): string {
+    return this.previewBlockText(key).replace(/\n/g, '<br>');
+  }
+
+  /** Coordonnées structurées (lignes icônées) depuis le profil. */
+  contactRows(): { icon: 'mail' | 'phone' | 'link' | 'map' | 'flag' | 'cake'; text: string }[] {
+    const p = this.profileFull;
+    const u = this.auth.user();
+    const rows: { icon: 'mail' | 'phone' | 'link' | 'map' | 'flag' | 'cake'; text: string }[] = [];
+    const email = (u?.email || '').trim();
+    if (email) {
+      rows.push({ icon: 'mail', text: email });
+    }
+    if (p?.phone?.trim()) {
+      rows.push({ icon: 'phone', text: p.phone.trim() });
+    }
+    if (this.state.includePhones) {
+      for (const t of p?.phones ?? []) {
+        const v = t.trim();
+        if (v) {
+          rows.push({ icon: 'phone', text: v });
+        }
+      }
+    }
+    if (this.state.includeLinks) {
+      for (const l of p?.links ?? []) {
+        const url = (l.url || '').trim();
+        if (url) {
+          rows.push({ icon: 'link', text: (l.label || '').trim() ? `${l.label!.trim()} : ${url}` : url });
+        }
+      }
+    }
+    const place = [p?.city, p?.country].filter((x) => x?.trim()).join(', ');
+    if (place) {
+      rows.push({ icon: 'map', text: place });
+    }
+    if (p?.nationality?.trim()) {
+      rows.push({ icon: 'flag', text: `Nationalité : ${p.nationality.trim()}` });
+    }
+    const bd = this.profileState.birthDate();
+    if (bd) {
+      rows.push({ icon: 'cake', text: `Né(e) le : ${bd}` });
+    }
+    return rows;
   }
 
   /** Nom affiché en-tête (profil + compte). */
