@@ -381,3 +381,104 @@
 @media (max-width: 760px) {
   .ap-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- aperçu du CV partagé ---------- */
+
+.ap-cvview {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 0.28rem 0.65rem;
+  border-radius: 8px;
+  border: 1.5px solid rgba(230, 184, 0, 0.55);
+  background: #fff;
+  color: #a16207;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ap-cvview:hover {
+  background: rgba(255, 211, 0, 0.18);
+}
+
+.ap-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3.5rem 1rem 2rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  overflow-y: auto;
+}
+
+.ap-modal__box {
+  width: 100%;
+  max-width: 760px;
+  background: #f8fafc;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.35);
+  animation: ap-modal-in 0.18s ease-out;
+}
+
+@keyframes ap-modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.ap-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-bottom: 3px solid #ffd300;
+}
+
+.ap-modal__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.ap-modal__sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.76rem;
+  color: #cbd5e1;
+}
+
+.ap-modal__close {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ap-modal__close:hover {
+  background: rgba(255, 211, 0, 0.2);
+  border-color: rgba(255, 211, 0, 0.5);
+}
+
+.ap-modal__body {
+  padding: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .ap-modal { padding: 1rem 0.5rem; }
+  .ap-modal__body { padding: 0.75rem; }
+}

@@ -12,6 +12,21 @@ async function loadCvDoc(userId, cvId) {
   return ClientCv.findOne({ _id: cvId, user: userId });
 }
 
+/** Supprime le fichier seulement si aucun autre CV du compte ne le partage (CV dupliqués). */
+async function unlinkIfUnshared(userId, excludeCvId, url) {
+  if (!url || !url.startsWith(CV_PHOTO_PREFIX)) {
+    return;
+  }
+  const shared = await ClientCv.exists({
+    _id: { $ne: excludeCvId },
+    user: userId,
+    customPhotoUrl: url,
+  });
+  if (!shared) {
+    await safeUnlinkUpload(url, { onlyPrefix: CV_PHOTO_PREFIX });
+  }
+}
+
 export async function listCvs(req, res) {
   try {
     const cvs = await ClientCv.find({ user: req.user.id }).sort({ updatedAt: -1 }).lean();
@@ -103,7 +118,7 @@ export async function deleteCv(req, res) {
     if (!cv) {
       return res.status(404).json({ message: 'CV introuvable.' });
     }
-    await safeUnlinkUpload(cv.customPhotoUrl, { onlyPrefix: CV_PHOTO_PREFIX });
+    await unlinkIfUnshared(req.user.id, cv._id, cv.customPhotoUrl);
     await ClientCv.deleteOne({ _id: cv._id });
     return res.status(204).send();
   } catch (err) {
@@ -123,7 +138,7 @@ export async function uploadCvPhoto(req, res) {
     }
     const old = cv.customPhotoUrl;
     const publicPath = uploadsPublicPath('client-cv-photos', req.file.filename);
-    await safeUnlinkUpload(old, { onlyPrefix: CV_PHOTO_PREFIX });
+    await unlinkIfUnshared(req.user.id, cv._id, old);
     cv.customPhotoUrl = publicPath;
     cv.photoSource = 'custom';
     await cv.save();

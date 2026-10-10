@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
   LucideBuilding2,
@@ -40,6 +40,10 @@ const STATUS_META: Record<ApplicationStatus, { label: string; cls: string }> = {
 })
 export class EspaceApplicationsComponent implements OnInit {
   private readonly api = inject(ApplicationsService);
+  private readonly router = inject(Router);
+
+  /** La page est réutilisée dans `/espace` (client) et `/candidat` — liens adaptés à l'espace courant. */
+  readonly offerBase = this.router.url.startsWith('/candidat') ? '/candidat/offres' : '/espace/offres';
 
   applications: MyApplication[] = [];
   loading = false;

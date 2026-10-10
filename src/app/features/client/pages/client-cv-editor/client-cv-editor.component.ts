@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { CommonModule } from '@angular/common';
@@ -7,13 +7,8 @@ import { forkJoin, of, catchError, finalize } from 'rxjs';
 import {
   LucideArrowLeft,
   LucideArrowRight,
-  LucideCake,
   LucideCheck,
-  LucideFlag,
-  LucideLink,
-  LucideMail,
-  LucideMapPin,
-  LucidePhone,
+  LucideCircleCheckBig,
 } from '@lucide/angular';
 
 import { AuthService } from '../../../../core/services/auth.service';
@@ -26,7 +21,9 @@ import { ClientProfileStateService } from '../../services/client-profile-state.s
 import { ProfilePhotoUploadComponent } from '../../../../shared/components/profile-photo-upload/profile-photo-upload.component';
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { CvPreviewComponent } from '../../../../shared/components/cv-preview/cv-preview.component';
 import {
+  CvBlockKey,
   CvEditorState,
   CvSectionBlock,
   CvFormEntry,
@@ -34,17 +31,17 @@ import {
   mergeCvEditorState,
 } from '../../models/cv-editor-state';
 
-export type CvBlockKey = 'summary' | 'personal' | 'experience' | 'education' | 'skills' | 'languages';
-export type CvStepKey = 'infos' | CvBlockKey;
+export type { CvBlockKey };
+export type CvStepKey = 'infos' | 'preview' | CvBlockKey;
 
 @Component({
   selector: 'app-client-cv-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackButtonComponent, DatePickerComponent, ProfilePhotoUploadComponent, RichTextEditorComponent, LucideArrowLeft, LucideArrowRight, LucideCheck, LucideCake, LucideFlag, LucideLink, LucideMail, LucideMapPin, LucidePhone],
+  imports: [CommonModule, FormsModule, BackButtonComponent, DatePickerComponent, ProfilePhotoUploadComponent, RichTextEditorComponent, CvPreviewComponent, LucideArrowLeft, LucideArrowRight, LucideCheck, LucideCircleCheckBig],
   templateUrl: './client-cv-editor.component.html',
   styleUrl: './client-cv-editor.component.css',
 })
-export class ClientCvEditorComponent implements OnInit {
+export class ClientCvEditorComponent implements OnInit, OnDestroy {
   /** Étape courante du parcours guidé (0 = infos & photo). */
   step = 0;
   private readonly route = inject(ActivatedRoute);
@@ -52,7 +49,7 @@ export class ClientCvEditorComponent implements OnInit {
   private readonly cvApi = inject(ClientCvApiService);
   private readonly profileApi = inject(ClientProfileApiService);
   readonly profileState = inject(ClientProfileStateService);
-  private readonly auth = inject(AuthService);
+  readonly auth = inject(AuthService);
 
   cvId = '';
   loading = true;
@@ -66,6 +63,12 @@ export class ClientCvEditorComponent implements OnInit {
   saveMessage = '';
   uploadBusy = false;
 
+  /** Mode « personnaliser pour une candidature » (?from=apply) — l'onglet se referme après enregistrement. */
+  applyMode = false;
+  applySaved = false;
+  private readonly cvChannel =
+    typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('alwassit-cv') : null;
+
   readonly blocks: { key: CvBlockKey; title: string; hint: string }[] = [
     { key: 'summary', title: 'Résumé / accroche', hint: 'Titre ou phrase d’introduction (profil ou texte libre).' },
     { key: 'personal', title: 'Coordonnées & identité', hint: 'Nom, contact, lieu, etc.' },
@@ -75,10 +78,11 @@ export class ClientCvEditorComponent implements OnInit {
     { key: 'languages', title: 'Langues', hint: 'Langues et niveaux CECRL du profil.' },
   ];
 
-  /** Parcours : étape 0 = infos générales, puis une étape par bloc. */
+  /** Parcours : étape 0 = infos générales, puis une étape par bloc, puis l'aperçu final. */
   readonly steps: { key: CvStepKey; title: string }[] = [
     { key: 'infos', title: 'CV & photo' },
     ...this.blocks.map((b) => ({ key: b.key as CvStepKey, title: b.title })),
+    { key: 'preview', title: 'Aperçu final' },
   ];
 
   goStep(i: number): void {
@@ -97,13 +101,6 @@ export class ClientCvEditorComponent implements OnInit {
 
   get lastStep(): number {
     return this.steps.length - 1;
-  }
-
-  /** Entrées du bloc en cours de formulaire (non vides pour l'aperçu). */
-  formEntries(key: CvBlockKey): CvFormEntry[] {
-    return this.state[key].entries.filter(
-      (e) => e.title.trim() || e.org.trim() || e.description.trim(),
-    );
   }
 
   /** « avr. 2023 » — format court lisible sur un CV. */
@@ -128,49 +125,13 @@ export class ClientCvEditorComponent implements OnInit {
     return s || e;
   }
 
-  /** Expériences du profil structurées pour l'aperçu. */
-  profileWorkEntries(): { title: string; org: string; dates: string; html: string }[] {
-    return (this.profileFull?.workExperiences ?? [])
-      .map((w) => ({
-        title: (w.jobTitle || '').trim() || 'Poste',
-        org: (w.employer || '').trim(),
-        dates: this.rangeText(w.startDate, w.endDate, w.current),
-        html: (w.description || '').trim(),
-      }))
-      .filter((w) => w.title || w.org || w.html);
-  }
-
-  profileEduEntries(): { title: string; org: string; dates: string }[] {
-    return (this.profileFull?.educations ?? [])
-      .map((e) => ({
-        title: (e.title || '').trim() || 'Formation',
-        org: (e.organization || '').trim(),
-        dates: this.rangeText(e.startDate, e.endDate, e.current),
-      }))
-      .filter((e) => e.title || e.org);
-  }
-
-  /** Compétences du profil en deux groupes pour l'aperçu. */
-  profileSkillGroups(): { label: string; items: string[] }[] {
-    const p = this.profileFull;
-    const metiers = (p?.skills ?? []).map((s) => s.trim()).filter(Boolean);
-    const digital = (p?.digitalSkills ?? []).map((s) => s.trim()).filter(Boolean);
-    const groups: { label: string; items: string[] }[] = [];
-    if (metiers.length) groups.push({ label: 'Métiers', items: metiers });
-    if (digital.length) groups.push({ label: 'Numériques', items: digital });
-    return groups;
-  }
-
-  profileLangRows(): { name: string; lvl: string }[] {
-    return (this.profileFull?.languagesSpoken ?? [])
-      .map((l) => ({ name: (l.language || '').trim(), lvl: (l.cefrLevel || '').trim() }))
-      .filter((l) => l.name);
-  }
-
   /** Étape considérée "remplie" (pour le point vert dans la navigation). */
   isStepDone(i: number): boolean {
     const s = this.steps[i];
-    if (!s || s.key === 'infos') {
+    if (!s || s.key === 'preview') {
+      return true;
+    }
+    if (s.key === 'infos') {
       return this.cvName.trim().length >= 2 && this.state.jobTitle.trim().length >= 2;
     }
     const b = this.state[s.key as CvBlockKey];
@@ -227,19 +188,12 @@ export class ClientCvEditorComponent implements OnInit {
     this.state[key].entries.splice(i, 1);
   }
 
-  private esc(s: string): string {
-    return s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
   hasCustomPhoto(): boolean {
     return !!(this.cv?.customPhotoUrl && this.photoSource === 'custom');
   }
 
   ngOnInit(): void {
+    this.applyMode = this.route.snapshot.queryParamMap.get('from') === 'apply';
     this.route.paramMap.subscribe((pm) => {
       const id = pm.get('cvId')?.trim();
       if (!id) {
@@ -249,6 +203,15 @@ export class ClientCvEditorComponent implements OnInit {
       this.cvId = id;
       this.load();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.cvChannel?.close();
+  }
+
+  /** Bouton « Fermer l'onglet » — ne marche que si l'onglet a été ouvert par script (window.open). */
+  closeTab(): void {
+    window.close();
   }
 
   load(): void {
@@ -408,106 +371,6 @@ export class ClientCvEditorComponent implements OnInit {
     }
   }
 
-  previewBlockText(key: CvBlockKey): string {
-    const b = this.state[key];
-    if (!b.visible) {
-      return '';
-    }
-    if (b.useForm) {
-      const list = b.entries.filter(
-        (e) => e.title.trim() || e.org.trim() || e.description.trim(),
-      );
-      if (!list.length) {
-        return 'Ajoutez des entrées via le formulaire guidé.';
-      }
-      return list
-        .map((e) => {
-          const head =
-            [e.title.trim(), e.org.trim()].filter(Boolean).join(' — ') || 'Entrée';
-          const dates = this.rangeText(e.startDate, e.endDate, e.current);
-          const parts = [`<strong>${this.esc(head)}</strong>`];
-          if (dates) {
-            parts.push(`<em class="ep-dates">${this.esc(dates)}</em>`);
-          }
-          if (e.description.trim()) {
-            parts.push(e.description);
-          }
-          return parts.join('<br>');
-        })
-        .join('<br><br>');
-    }
-    if (b.useProfile) {
-      return this.textFromProfile(key);
-    }
-    return (b.customText || '').trim() || '—';
-  }
-
-  /** Texte personnalisé / formulaire = HTML ; profil = HTML si description riche. */
-  previewBlockIsHtml(key: CvBlockKey): boolean {
-    const b = this.state[key];
-    if (b.useForm || !b.useProfile) {
-      return true;
-    }
-    return /<[a-z][^>]*>/i.test(this.textFromProfile(key));
-  }
-
-  /** Rendu HTML d'un bloc (retours ligne → <br> pour le contenu mixte). */
-  previewBlockHtml(key: CvBlockKey): string {
-    return this.previewBlockText(key).replace(/\n/g, '<br>');
-  }
-
-  /** Coordonnées structurées (lignes icônées) depuis le profil. */
-  contactRows(): { icon: 'mail' | 'phone' | 'link' | 'map' | 'flag' | 'cake'; text: string }[] {
-    const p = this.profileFull;
-    const u = this.auth.user();
-    const rows: { icon: 'mail' | 'phone' | 'link' | 'map' | 'flag' | 'cake'; text: string }[] = [];
-    const email = (u?.email || '').trim();
-    if (email) {
-      rows.push({ icon: 'mail', text: email });
-    }
-    if (p?.phone?.trim()) {
-      rows.push({ icon: 'phone', text: p.phone.trim() });
-    }
-    if (this.state.includePhones) {
-      for (const t of p?.phones ?? []) {
-        const v = t.trim();
-        if (v) {
-          rows.push({ icon: 'phone', text: v });
-        }
-      }
-    }
-    if (this.state.includeLinks) {
-      for (const l of p?.links ?? []) {
-        const url = (l.url || '').trim();
-        if (url) {
-          rows.push({ icon: 'link', text: (l.label || '').trim() ? `${l.label!.trim()} : ${url}` : url });
-        }
-      }
-    }
-    const place = [p?.city, p?.country].filter((x) => x?.trim()).join(', ');
-    if (place) {
-      rows.push({ icon: 'map', text: place });
-    }
-    if (p?.nationality?.trim()) {
-      rows.push({ icon: 'flag', text: `Nationalité : ${p.nationality.trim()}` });
-    }
-    const bd = this.profileState.birthDate();
-    if (bd) {
-      rows.push({ icon: 'cake', text: `Né(e) le : ${bd}` });
-    }
-    return rows;
-  }
-
-  /** Nom affiché en-tête (profil + compte). */
-  displayName(): string {
-    const p = this.profileFull;
-    const u = this.auth.user();
-    const prenom = (p?.prenom || this.profileState.prenom() || '').trim();
-    const nom = (p?.nom || u?.name || '').trim();
-    const line = [prenom, nom].filter(Boolean).join(' ');
-    return line || u?.name?.trim() || 'Candidat(e)';
-  }
-
   save(): void {
     const name = this.cvName.trim();
     if (name.length < 2) {
@@ -535,6 +398,13 @@ export class ClientCvEditorComponent implements OnInit {
       .subscribe({
         next: ({ cv }) => {
           this.cv = cv;
+          this.cvChannel?.postMessage({ type: 'cv-saved', cvId: this.cvId });
+          if (this.applyMode) {
+            this.applySaved = true;
+            // L'onglet a été ouvert par le script de la page candidature → window.close() autorisé.
+            setTimeout(() => window.close(), 600);
+            return;
+          }
           this.saveMessage = 'Enregistré.';
           setTimeout(() => (this.saveMessage = ''), 2500);
         },

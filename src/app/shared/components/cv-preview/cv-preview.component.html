@@ -1,0 +1,165 @@
+<div class="ep-sheet">
+  <div class="ep-sheet__accent">
+    @if (!state.hidePhoto) {
+      <div class="ep-sheet__photo">
+        @if (photoUrl) {
+          <img [src]="photoUrl" alt="" />
+        }
+      </div>
+    }
+    <div class="ep-sheet__head">
+      <p class="ep-sheet__name">{{ displayName() }}</p>
+      @if (state.jobTitle.trim()) {
+        <p class="ep-sheet__job">{{ state.jobTitle }}</p>
+      }
+      @if (state.summary.visible) {
+        @if (previewBlockIsHtml('summary')) {
+          <div class="ep-sheet__tagline" [innerHTML]="previewBlockHtml('summary')"></div>
+        } @else {
+          <p class="ep-sheet__tagline">{{ previewBlockText('summary') }}</p>
+        }
+      }
+    </div>
+  </div>
+  <div class="ep-sheet__body">
+    @if (state.personal.visible) {
+      <section class="ep-sheet__block">
+        <h3 class="ep-sheet__h3">Coordonnées</h3>
+        @if (state.personal.useProfile) {
+          <ul class="ep-sheet__contact">
+            @for (r of contactRows(); track $index) {
+              <li>
+                @switch (r.icon) {
+                  @case ('mail') {<svg lucideMail [size]="11" aria-hidden="true"></svg>}
+                  @case ('phone') {<svg lucidePhone [size]="11" aria-hidden="true"></svg>}
+                  @case ('link') {<svg lucideLink [size]="11" aria-hidden="true"></svg>}
+                  @case ('map') {<svg lucideMapPin [size]="11" aria-hidden="true"></svg>}
+                  @case ('flag') {<svg lucideFlag [size]="11" aria-hidden="true"></svg>}
+                  @case ('cake') {<svg lucideCake [size]="11" aria-hidden="true"></svg>}
+                }
+                <span>{{ r.text }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('personal')"></div>
+        }
+      </section>
+    }
+    @if (state.experience.visible) {
+      <section class="ep-sheet__block">
+        <h3 class="ep-sheet__h3">Expérience professionnelle</h3>
+        @if (state.experience.useProfile) {
+          @for (w of profileWorkEntries(); track $index) {
+            <div class="ep-sheet__entry">
+              <p class="ep-sheet__etitle">
+                {{ w.title }}@if (w.org) { — <span class="ep-sheet__eorg">{{ w.org }}</span>}
+              </p>
+              @if (w.dates) {
+                <p class="ep-sheet__edates">{{ w.dates }}</p>
+              }
+              @if (w.html) {
+                <div class="ep-sheet__etext" [innerHTML]="w.html"></div>
+              }
+            </div>
+          } @empty {
+            <p class="ep-sheet__text ep-sheet__dim">Aucune expérience renseignée.</p>
+          }
+        } @else if (state.experience.useForm) {
+          @for (e of formEntries('experience'); track $index) {
+            <div class="ep-sheet__entry">
+              <p class="ep-sheet__etitle">
+                {{ e.title || 'Poste' }}@if (e.org) { — <span class="ep-sheet__eorg">{{ e.org }}</span>}
+              </p>
+              @if (e.startDate || e.endDate || e.current) {
+                <p class="ep-sheet__edates">{{ rangeText(e.startDate, e.endDate, e.current) }}</p>
+              }
+              @if (e.description) {
+                <div class="ep-sheet__etext" [innerHTML]="e.description"></div>
+              }
+            </div>
+          } @empty {
+            <p class="ep-sheet__text ep-sheet__dim">Ajoutez des entrées via le formulaire.</p>
+          }
+        } @else {
+          <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('experience')"></div>
+        }
+      </section>
+    }
+    @if (state.education.visible) {
+      <section class="ep-sheet__block">
+        <h3 class="ep-sheet__h3">Formation</h3>
+        @if (state.education.useProfile) {
+          @for (e of profileEduEntries(); track $index) {
+            <div class="ep-sheet__entry">
+              <p class="ep-sheet__etitle">
+                {{ e.title }}@if (e.org) { — <span class="ep-sheet__eorg">{{ e.org }}</span>}
+              </p>
+              @if (e.dates) {
+                <p class="ep-sheet__edates">{{ e.dates }}</p>
+              }
+            </div>
+          } @empty {
+            <p class="ep-sheet__text ep-sheet__dim">Aucune formation renseignée.</p>
+          }
+        } @else if (state.education.useForm) {
+          @for (e of formEntries('education'); track $index) {
+            <div class="ep-sheet__entry">
+              <p class="ep-sheet__etitle">
+                {{ e.title || 'Formation' }}@if (e.org) { — <span class="ep-sheet__eorg">{{ e.org }}</span>}
+              </p>
+              @if (e.startDate || e.endDate || e.current) {
+                <p class="ep-sheet__edates">{{ rangeText(e.startDate, e.endDate, e.current) }}</p>
+              }
+            </div>
+          } @empty {
+            <p class="ep-sheet__text ep-sheet__dim">Ajoutez des entrées via le formulaire.</p>
+          }
+        } @else {
+          <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('education')"></div>
+        }
+      </section>
+    }
+    @if (state.skills.visible) {
+      <section class="ep-sheet__block">
+        <h3 class="ep-sheet__h3">Compétences</h3>
+        @if (state.skills.useProfile) {
+          @for (g of profileSkillGroups(); track g.label) {
+            <p class="ep-sheet__glabel">{{ g.label }}</p>
+            <div class="ep-sheet__chips">
+              @for (s of g.items; track s) {
+                <span class="ep-sheet__chip">{{ s }}</span>
+              }
+            </div>
+          } @empty {
+            <p class="ep-sheet__text ep-sheet__dim">Aucune compétence renseignée.</p>
+          }
+        } @else {
+          <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('skills')"></div>
+        }
+      </section>
+    }
+    @if (state.languages.visible) {
+      <section class="ep-sheet__block">
+        <h3 class="ep-sheet__h3">Langues</h3>
+        @if (state.languages.useProfile) {
+          <div class="ep-sheet__langs">
+            @for (l of profileLangRows(); track $index) {
+              <span class="ep-sheet__lang">
+                {{ l.name }}
+                @if (l.lvl) {
+                  <span class="ep-sheet__lvl">{{ l.lvl }}</span>
+                }
+              </span>
+            }
+            @if (profileLangRows().length === 0) {
+              <span class="ep-sheet__text ep-sheet__dim">Aucune langue renseignée.</span>
+            }
+          </div>
+        } @else {
+          <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('languages')"></div>
+        }
+      </section>
+    }
+  </div>
+</div>

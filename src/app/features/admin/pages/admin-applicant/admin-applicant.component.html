@@ -78,6 +78,11 @@
                 <svg lucideFileText [size]="15"></svg>
                 <span class="ap-file-name">{{ app.sharedCv.name }}</span>
                 <em class="ap-tag-shared">CV partagé · plateforme</em>
+                @if (app.sharedCvDoc) {
+                  <button type="button" class="ap-cvview" (click)="cvPreviewOpen = true">
+                    <svg lucideEye [size]="13"></svg> Aperçu
+                  </button>
+                }
               </li>
             }
             @if (app.cv) {
@@ -209,6 +214,32 @@
             }
           </ul>
         </section>
+      </div>
+    </div>
+  }
+
+  <!-- ======== Aperçu du CV partagé ======== -->
+  @if (app && cvPreviewOpen && app.sharedCvDoc) {
+    <div class="ap-modal" (click)="cvPreviewOpen = false" role="dialog" aria-modal="true">
+      <div class="ap-modal__box" (click)="$event.stopPropagation()">
+        <header class="ap-modal__head">
+          <div>
+            <h3 class="ap-modal__title">{{ app.sharedCvDoc.name }}</h3>
+            <p class="ap-modal__sub">Aperçu du CV tel que partagé par le candidat</p>
+          </div>
+          <button type="button" class="ap-modal__close" (click)="cvPreviewOpen = false" aria-label="Fermer">
+            <svg lucideX [size]="16"></svg>
+          </button>
+        </header>
+        <div class="ap-modal__body">
+          <app-cv-preview
+            [state]="sharedCvState()"
+            [profile]="app.profile"
+            [userName]="app.user?.name || app.applicantName || ''"
+            [userEmail]="app.user?.email || app.applicantEmail || ''"
+            [photoUrl]="sharedCvPhoto()"
+          />
+        </div>
       </div>
     </div>
   }

@@ -174,22 +174,26 @@
                         <strong>{{ cv.name }}</strong>
                         <em>modifié le {{ fmtDate(cv.updatedAt || null) }}</em>
                       </span>
-                      <a
+                      <button
+                        type="button"
                         class="od-cv-edit"
-                        [routerLink]="['/candidat/editor/cv', cv._id]"
-                        target="_blank"
-                        (click)="$event.stopPropagation()"
-                        title="Personnaliser ce CV dans l'éditeur (nouvel onglet)">
-                        <svg lucidePenLine [size]="13"></svg> Personnaliser
-                      </a>
+                        [disabled]="customizingId === cv._id"
+                        (click)="$event.stopPropagation(); customizeCv(cv)"
+                        title="Créer une copie personnalisée de ce CV (nouvel onglet)">
+                        <svg lucidePenLine [size]="13"></svg>
+                        {{ customizingId === cv._id ? 'Duplication…' : 'Personnaliser' }}
+                      </button>
                     </label>
                   }
                 </div>
+                @if (customizeError) {
+                  <p class="od-cv-note od-cv-note--err">{{ customizeError }}</p>
+                }
                 @if (sharedCvId) {
                   <p class="od-cv-note">
                     <svg lucidePenLine [size]="12"></svg>
-                    Tu peux personnaliser le CV choisi — il s&rsquo;ouvre dans un nouvel onglet,
-                    reviens ensuite ici pour envoyer.
+                    Tu peux personnaliser le CV choisi — une copie s&rsquo;ouvre dans un nouvel onglet,
+                    enregistre-la là-bas puis reviens ici pour envoyer.
                   </p>
                 }
               }

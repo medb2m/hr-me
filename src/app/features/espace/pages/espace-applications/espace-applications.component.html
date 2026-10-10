@@ -38,7 +38,7 @@
         <svg lucideSearch [size]="32" aria-hidden="true"></svg>
         <p>{{ filter ? 'Aucune candidature avec ce statut.' : 'Tu n\u2019as pas encore postulé.' }}</p>
         @if (!filter) {
-          <a routerLink="/espace/offres" class="ma-cta">Voir les offres disponibles</a>
+          <a [routerLink]="offerBase" class="ma-cta">Voir les offres disponibles</a>
         }
       </div>
     }
@@ -74,7 +74,7 @@
           </span>
         </div>
         @if (a.offer) {
-          <a class="ma-view" [routerLink]="['/espace/offres', a.offer.id]">Voir l&rsquo;offre</a>
+          <a class="ma-view" [routerLink]="[offerBase, a.offer.id]">Voir l&rsquo;offre</a>
         }
       </article>
     }

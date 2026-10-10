@@ -586,18 +586,22 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  font-family: inherit;
   font-size: 0.72rem;
   font-weight: 700;
   color: #a16207;
   text-decoration: none;
+  background: #fff;
   border: 1.5px solid rgba(230, 184, 0, 0.5);
   border-radius: 8px;
   padding: 0.3rem 0.6rem;
   white-space: nowrap;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
-.od-cv-edit:hover { background: rgba(255, 211, 0, 0.18); }
+.od-cv-edit:hover:not(:disabled) { background: rgba(255, 211, 0, 0.18); }
+.od-cv-edit:disabled { opacity: 0.6; cursor: wait; }
 
 .od-cv-note {
   display: flex;
@@ -609,6 +613,7 @@
 }
 
 .od-cv-note svg { color: #a16207; flex-shrink: 0; }
+.od-cv-note--err { color: #b91c1c; }
 
 /* docs picker */
 

@@ -224,105 +224,6 @@
   color: #64748b;
 }
 
-.ep-sheet {
-  background: #fff;
-  border: 1px solid #94a3b8;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
-}
-
-.ep-sheet__accent {
-  display: flex;
-  gap: 1rem;
-  padding: 1.25rem 1.25rem 1rem;
-  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-  color: #fff;
-}
-
-.ep-sheet__photo {
-  width: 100px;
-  height: 120px;
-  flex-shrink: 0;
-  border: 3px solid rgba(255, 255, 255, 0.85);
-  border-radius: 2px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.ep-sheet__photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.ep-sheet__head {
-  flex: 1;
-  min-width: 0;
-}
-
-.ep-sheet__name {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.ep-sheet__tagline {
-  margin: 0.5rem 0 0;
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: #e2e8f0;
-  white-space: pre-wrap;
-}
-
-.ep-sheet__tagline ::ng-deep ul,
-.ep-sheet__tagline ::ng-deep ol {
-  margin: 0.3rem 0;
-  padding-left: 1.2rem;
-  list-style: disc;
-}
-
-.ep-sheet__tagline ::ng-deep ol {
-  list-style: decimal;
-}
-
-.ep-sheet__tagline ::ng-deep li {
-  color: #e2e8f0;
-}
-
-.ep-sheet__body {
-  padding: 1rem 1.25rem 1.25rem;
-}
-
-.ep-sheet__block {
-  margin-bottom: 1rem;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.ep-sheet__block:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-.ep-sheet__h3 {
-  margin: 0 0 0.35rem;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #0f172a;
-}
-
-.ep-sheet__text {
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: #1e293b;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
 /* ---------- parcours par étapes ---------- */
 
 .ep-steps {
@@ -417,34 +318,6 @@
   outline: none;
   border-color: #0f172a;
   box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.35);
-}
-
-.ep-sheet__contact {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.ep-sheet__contact li {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.8rem;
-  line-height: 1.4;
-  color: #1e293b;
-  word-break: break-word;
-}
-
-.ep-sheet__contact li svg {
-  flex-shrink: 0;
-  color: #a16207;
-}
-
-.ep-sheet__contact li span {
-  min-width: 0;
 }
 
 /* ---------- formulaire guidé ---------- */
@@ -569,135 +442,72 @@
   background: rgba(255, 211, 0, 0.08);
 }
 
-.ep-dates {
-  color: #64748b;
-  font-size: 0.85em;
-}
 
-.ep-sheet__entry {
-  margin-bottom: 0.65rem;
-}
+/* ---------- mode candidature (onglet dédié) ---------- */
 
-.ep-sheet__entry:last-child {
-  margin-bottom: 0;
-}
-
-.ep-sheet__etitle {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.ep-sheet__eorg {
-  font-weight: 600;
-  color: #475569;
-}
-
-.ep-sheet__edates {
-  margin: 0.1rem 0 0.15rem;
-  font-size: 0.74rem;
-  font-style: italic;
-  color: #64748b;
-}
-
-.ep-sheet__etext {
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: #1e293b;
-  word-break: break-word;
-}
-
-/* [innerHTML] n'a pas d'attributs _ngcontent → ::ng-deep requis.
-   Restaure les puces (reset global : list-style none). */
-.ep-sheet__text ::ng-deep ul,
-.ep-sheet__etext ::ng-deep ul,
-.ep-sheet__text ::ng-deep ol,
-.ep-sheet__etext ::ng-deep ol {
-  margin: 0.25rem 0;
-  padding-left: 1.2rem;
-  list-style: disc;
-}
-
-.ep-sheet__text ::ng-deep ol,
-.ep-sheet__etext ::ng-deep ol {
-  list-style: decimal;
-}
-
-/* Listes toujours en gris foncé dans la feuille (jamais blanc hérité). */
-.ep-sheet__text ::ng-deep li,
-.ep-sheet__etext ::ng-deep li {
-  color: #1e293b;
-}
-
-.ep-sheet__dim {
-  color: #94a3b8;
-  font-style: italic;
-}
-
-.ep-sheet__glabel {
-  margin: 0.4rem 0 0.25rem;
-  font-size: 0.68rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #64748b;
-}
-
-.ep-sheet__glabel:first-of-type {
-  margin-top: 0;
-}
-
-.ep-sheet__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.ep-sheet__chip {
+.ep-applybadge {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.55rem;
+  gap: 6px;
+  padding: 0.4rem 0.85rem;
   border-radius: 999px;
   font-size: 0.74rem;
-  font-weight: 600;
-  color: #0f172a;
-  background: rgba(255, 211, 0, 0.18);
-  border: 1px solid rgba(255, 211, 0, 0.5);
-}
-
-.ep-sheet__langs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.ep-sheet__lang {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #1e293b;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-}
-
-.ep-sheet__lvl {
-  padding: 0.05rem 0.4rem;
-  border-radius: 999px;
-  font-size: 0.66rem;
   font-weight: 800;
   color: #0f172a;
-  background: #ffd300;
+  background: rgba(255, 211, 0, 0.16);
+  border: 1.5px solid rgba(255, 211, 0, 0.55);
 }
 
-.ep-sheet__job {
-  margin: 0.25rem 0 0;
-  font-size: 0.92rem;
+.ep-msg {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ep-msg--ok {
+  border-color: rgba(34, 197, 94, 0.4) !important;
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+}
+
+.ep-msg--ok svg {
+  flex-shrink: 0;
+}
+
+.ep-linkbtn {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
   font-weight: 700;
-  color: #ffd300;
-  letter-spacing: 0.01em;
+  color: #0f172a;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- checklist de l'étape aperçu ---------- */
+
+.ep-checklist {
+  list-style: none;
+  margin: 0.6rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ep-checklist li {
+  position: relative;
+  padding-left: 1.35rem;
+  font-size: 0.84rem;
+  color: #1e293b;
+}
+
+.ep-checklist li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  font-weight: 800;
+  color: #eab308;
 }

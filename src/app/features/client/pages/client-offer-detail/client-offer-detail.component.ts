@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { finalize, forkJoin, of, switchMap } from 'rxjs';
 import {
   LucideArrowLeft,
   LucideAward,
@@ -32,6 +32,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { FlagComponent } from '../../../../shared/components/flag/flag.component';
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import { ClientCvApiService, ClientCvDto } from '../../services/client-cv-api.service';
+import { mergeCvEditorState } from '../../models/cv-editor-state';
 import {
   ClientDocumentDto,
   ClientDocumentsApiService,
@@ -86,8 +87,9 @@ const KIND_LABELS: Record<ClientDocKind, string> = {
   templateUrl: './client-offer-detail.component.html',
   styleUrl: './client-offer-detail.component.css',
 })
-export class ClientOfferDetailComponent implements OnInit {
+export class ClientOfferDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly offers = inject(OfferService);
   private readonly apps = inject(ApplicationsService);
   private readonly cvsApi = inject(ClientCvApiService);
@@ -115,6 +117,17 @@ export class ClientOfferDetailComponent implements OnInit {
   assetsLoaded = false;
   sharedCvId = '';
   sharedDocIds = new Set<string>();
+  // Personnalisation : copie du CV en cours de création / fraîchement créée
+  customizingId = '';
+  pendingCvId = '';
+  customizeError = '';
+  private readonly cvChannel =
+    typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('alwassit-cv') : null;
+  private readonly onWindowFocus = () => {
+    if (this.applyOpen) {
+      this.loadAssets(true);
+    }
+  };
 
   readonly kindLabels = KIND_LABELS;
 
@@ -122,6 +135,14 @@ export class ClientOfferDetailComponent implements OnInit {
     const u = this.auth.user();
     this.appName = u?.name || '';
     this.appEmail = u?.email || '';
+    if (this.cvChannel) {
+      this.cvChannel.onmessage = (e: MessageEvent) => {
+        if ((e.data as { type?: string })?.type === 'cv-saved') {
+          this.loadAssets(true);
+        }
+      };
+    }
+    window.addEventListener('focus', this.onWindowFocus);
     const id = this.route.snapshot.paramMap.get('id') || '';
     this.offers
       .getPublicOffer(id)
@@ -137,9 +158,14 @@ export class ClientOfferDetailComponent implements OnInit {
       });
   }
 
-  /** Charge CV + bibliothèque quand le panneau s'ouvre la première fois. */
-  loadAssets(): void {
-    if (this.assetsLoaded || this.assetsLoading) return;
+  ngOnDestroy(): void {
+    this.cvChannel?.close();
+    window.removeEventListener('focus', this.onWindowFocus);
+  }
+
+  /** Charge CV + bibliothèque quand le panneau s'ouvre la première fois ; `force` = re-fetch. */
+  loadAssets(force = false): void {
+    if (this.assetsLoading || (!force && this.assetsLoaded)) return;
     this.assetsLoading = true;
     forkJoin({ cvs: this.cvsApi.listCvs(), docs: this.docsApi.list() })
       .pipe(
@@ -152,7 +178,69 @@ export class ClientOfferDetailComponent implements OnInit {
         next: ({ cvs, docs }) => {
           this.cvs = cvs.cvs;
           this.docs = docs.documents;
-          if (this.cvs.length === 1) this.sharedCvId = this.cvs[0]._id;
+          // Un CV personnalisé vient d'être enregistré dans l'autre onglet → sélection auto.
+          if (this.pendingCvId && this.cvs.some((c) => c._id === this.pendingCvId)) {
+            this.sharedCvId = this.pendingCvId;
+            this.pendingCvId = '';
+          } else if (!this.sharedCvId && this.cvs.length === 1) {
+            this.sharedCvId = this.cvs[0]._id;
+          }
+        },
+      });
+  }
+
+  /**
+   * « Personnaliser » : duplique le CV (`nom — JJ/MM/AAAA HH:mm`) puis ouvre l'éditeur
+   * sur la copie dans un nouvel onglet (window.open → l'éditeur pourra le refermer).
+   */
+  customizeCv(cv: ClientCvDto): void {
+    if (this.customizingId) {
+      return;
+    }
+    this.customizingId = cv._id;
+    this.customizeError = '';
+    this.cvsApi
+      .getCv(cv._id)
+      .pipe(
+        switchMap(({ cv: src }) => {
+          const stamp = new Intl.DateTimeFormat('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }).format(new Date());
+          const base = src.name.slice(0, 88);
+          return this.cvsApi
+            .createCv({ name: `${base} — ${stamp}`, editorState: mergeCvEditorState(src.editorState) })
+            .pipe(
+              switchMap(({ cv: created }) =>
+                src.photoSource === 'custom' && src.customPhotoUrl
+                  ? this.cvsApi
+                      .saveCv(created._id, {
+                        photoSource: 'custom',
+                        customPhotoUrl: src.customPhotoUrl,
+                      })
+                      .pipe(switchMap(() => of(created)))
+                  : of(created),
+              ),
+            );
+        }),
+        finalize(() => (this.customizingId = '')),
+      )
+      .subscribe({
+        next: (created) => {
+          this.pendingCvId = created._id;
+          const url = this.router.serializeUrl(
+            this.router.createUrlTree(['/candidat/editor/cv', created._id], {
+              queryParams: { from: 'apply' },
+            }),
+          );
+          window.open(url, '_blank');
+          this.loadAssets(true);
+        },
+        error: () => {
+          this.customizeError = 'Impossible de dupliquer ce CV — réessaie.';
         },
       });
   }

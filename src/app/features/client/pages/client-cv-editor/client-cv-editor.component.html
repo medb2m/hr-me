@@ -2,15 +2,28 @@
   <p class="ep-muted">Chargement du CV…</p>
 } @else if (cv) {
   <div class="ep-toolbar">
-    <app-back-button link="/candidat/editor/cv" label="Mes CV" class="ep-toolbar__back"></app-back-button>
+    @if (applyMode) {
+      <span class="ep-applybadge">Personnalisation pour une candidature</span>
+    } @else {
+      <app-back-button link="/candidat/editor/cv" label="Mes CV" class="ep-toolbar__back"></app-back-button>
+    }
     <div class="ep-toolbar__actions">
-      <button type="button" class="ep-btn ep-btn--ghost" (click)="deleteCv()">Supprimer</button>
+      @if (!applyMode) {
+        <button type="button" class="ep-btn ep-btn--ghost" (click)="deleteCv()">Supprimer</button>
+      }
       <button type="button" class="ep-btn ep-btn--primary" [disabled]="saving" (click)="save()">
         {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
       </button>
     </div>
   </div>
-  @if (saveMessage) {
+  @if (applySaved) {
+    <p class="ep-msg ep-msg--ok">
+      <svg lucideCircleCheckBig [size]="14" aria-hidden="true"></svg>
+      CV enregistré — cet onglet va se fermer. Sinon, retournez à l&rsquo;onglet de votre candidature :
+      le nouveau CV « {{ cv.name }} » est en haut de la liste.
+      <button type="button" class="ep-linkbtn" (click)="closeTab()">Fermer l&rsquo;onglet</button>
+    </p>
+  } @else if (saveMessage) {
     <p class="ep-msg">{{ saveMessage }}</p>
   }
 
@@ -244,6 +257,26 @@
         }
       }
 
+      <!-- ============ ÉTAPE FINALE : APERÇU ============ -->
+      @if (steps[step].key === 'preview') {
+        <section class="ep-card ep-card--step">
+          <h2 class="ep-h2">Dernier aperçu</h2>
+          <p class="ep-hint">
+            Relisez le CV dans l&rsquo;aperçu : tout doit être exact avant
+            {{ applyMode ? 'le partage avec l&rsquo;agence' : 'l&rsquo;enregistrement' }}.
+          </p>
+          <ul class="ep-checklist">
+            <li>Nom et titre du poste visé</li>
+            <li>Coordonnées complètes et à jour</li>
+            <li>Expériences et formations pertinentes pour l&rsquo;offre</li>
+            <li>Compétences et langues mises en avant</li>
+          </ul>
+          <p class="ep-hint">
+            Tout est bon ? Cliquez sur « Enregistrer le CV »{{ applyMode ? ' — l&rsquo;onglet se refermera tout seul' : '' }}.
+          </p>
+        </section>
+      }
+
       <!-- ============ PRÉCÉDENT / SUIVANT ============ -->
       <div class="ep-stepnav">
         <button
@@ -269,171 +302,13 @@
     <!-- ============ APERÇU EN DIRECT ============ -->
     <div class="ep-col ep-col--preview">
       <h2 class="ep-preview-title">Aperçu</h2>
-      <div class="ep-sheet">
-        <div class="ep-sheet__accent">
-          @if (!state.hidePhoto) {
-            <div class="ep-sheet__photo">
-              @if (previewPhotoUrl()) {
-                <img [src]="previewPhotoUrl()!" alt="" />
-              }
-            </div>
-          }
-          <div class="ep-sheet__head">
-            <p class="ep-sheet__name">{{ displayName() }}</p>
-            @if (state.jobTitle.trim()) {
-              <p class="ep-sheet__job">{{ state.jobTitle }}</p>
-            }
-            @if (state.summary.visible) {
-              @if (previewBlockIsHtml('summary')) {
-                <div class="ep-sheet__tagline" [innerHTML]="previewBlockHtml('summary')"></div>
-              } @else {
-                <p class="ep-sheet__tagline">{{ previewBlockText('summary') }}</p>
-              }
-            }
-          </div>
-        </div>
-        <div class="ep-sheet__body">
-          @if (state.personal.visible) {
-            <section class="ep-sheet__block">
-              <h3 class="ep-sheet__h3">Coordonnées</h3>
-              @if (state.personal.useProfile) {
-                <ul class="ep-sheet__contact">
-                  @for (r of contactRows(); track $index) {
-                    <li>
-                      @switch (r.icon) {
-                        @case ('mail') {<svg lucideMail [size]="11" aria-hidden="true"></svg>}
-                        @case ('phone') {<svg lucidePhone [size]="11" aria-hidden="true"></svg>}
-                        @case ('link') {<svg lucideLink [size]="11" aria-hidden="true"></svg>}
-                        @case ('map') {<svg lucideMapPin [size]="11" aria-hidden="true"></svg>}
-                        @case ('flag') {<svg lucideFlag [size]="11" aria-hidden="true"></svg>}
-                        @case ('cake') {<svg lucideCake [size]="11" aria-hidden="true"></svg>}
-                      }
-                      <span>{{ r.text }}</span>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('personal')"></div>
-              }
-            </section>
-          }
-          @if (state.experience.visible) {
-            <section class="ep-sheet__block">
-              <h3 class="ep-sheet__h3">Expérience professionnelle</h3>
-              @if (state.experience.useProfile) {
-                @for (w of profileWorkEntries(); track $index) {
-                  <div class="ep-sheet__entry">
-                    <p class="ep-sheet__etitle">
-                      {{ w.title }}@if (w.org) { — <span class="ep-sheet__eorg">{{ w.org }}</span>}
-                    </p>
-                    @if (w.dates) {
-                      <p class="ep-sheet__edates">{{ w.dates }}</p>
-                    }
-                    @if (w.html) {
-                      <div class="ep-sheet__etext" [innerHTML]="w.html"></div>
-                    }
-                  </div>
-                } @empty {
-                  <p class="ep-sheet__text ep-sheet__dim">Ajoutez des expériences dans votre dossier.</p>
-                }
-              } @else if (state.experience.useForm) {
-                @for (e of formEntries('experience'); track $index) {
-                  <div class="ep-sheet__entry">
-                    <p class="ep-sheet__etitle">
-                      {{ e.title || 'Poste' }}@if (e.org) { — <span class="ep-sheet__eorg">{{ e.org }}</span>}
-                    </p>
-                    @if (e.startDate || e.endDate || e.current) {
-                      <p class="ep-sheet__edates">{{ rangeText(e.startDate, e.endDate, e.current) }}</p>
-                    }
-                    @if (e.description) {
-                      <div class="ep-sheet__etext" [innerHTML]="e.description"></div>
-                    }
-                  </div>
-                } @empty {
-                  <p class="ep-sheet__text ep-sheet__dim">Ajoutez des entrées via le formulaire.</p>
-                }
-              } @else {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('experience')"></div>
-              }
-            </section>
-          }
-          @if (state.education.visible) {
-            <section class="ep-sheet__block">
-              <h3 class="ep-sheet__h3">Formation</h3>
-              @if (state.education.useProfile) {
-                @for (e of profileEduEntries(); track $index) {
-                  <div class="ep-sheet__entry">
-                    <p class="ep-sheet__etitle">
-                      {{ e.title }}@if (e.org) { — <span class="ep-sheet__eorg">{{ e.org }}</span>}
-                    </p>
-                    @if (e.dates) {
-                      <p class="ep-sheet__edates">{{ e.dates }}</p>
-                    }
-                  </div>
-                } @empty {
-                  <p class="ep-sheet__text ep-sheet__dim">Ajoutez des formations dans votre dossier.</p>
-                }
-              } @else if (state.education.useForm) {
-                @for (e of formEntries('education'); track $index) {
-                  <div class="ep-sheet__entry">
-                    <p class="ep-sheet__etitle">
-                      {{ e.title || 'Formation' }}@if (e.org) { — <span class="ep-sheet__eorg">{{ e.org }}</span>}
-                    </p>
-                    @if (e.startDate || e.endDate || e.current) {
-                      <p class="ep-sheet__edates">{{ rangeText(e.startDate, e.endDate, e.current) }}</p>
-                    }
-                  </div>
-                } @empty {
-                  <p class="ep-sheet__text ep-sheet__dim">Ajoutez des entrées via le formulaire.</p>
-                }
-              } @else {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('education')"></div>
-              }
-            </section>
-          }
-          @if (state.skills.visible) {
-            <section class="ep-sheet__block">
-              <h3 class="ep-sheet__h3">Compétences</h3>
-              @if (state.skills.useProfile) {
-                @for (g of profileSkillGroups(); track g.label) {
-                  <p class="ep-sheet__glabel">{{ g.label }}</p>
-                  <div class="ep-sheet__chips">
-                    @for (s of g.items; track s) {
-                      <span class="ep-sheet__chip">{{ s }}</span>
-                    }
-                  </div>
-                } @empty {
-                  <p class="ep-sheet__text ep-sheet__dim">Ajoutez des compétences dans votre dossier.</p>
-                }
-              } @else {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('skills')"></div>
-              }
-            </section>
-          }
-          @if (state.languages.visible) {
-            <section class="ep-sheet__block">
-              <h3 class="ep-sheet__h3">Langues</h3>
-              @if (state.languages.useProfile) {
-                <div class="ep-sheet__langs">
-                  @for (l of profileLangRows(); track $index) {
-                    <span class="ep-sheet__lang">
-                      {{ l.name }}
-                      @if (l.lvl) {
-                        <span class="ep-sheet__lvl">{{ l.lvl }}</span>
-                      }
-                    </span>
-                  }
-                  @if (profileLangRows().length === 0) {
-                    <span class="ep-sheet__text ep-sheet__dim">Ajoutez des langues dans votre dossier.</span>
-                  }
-                </div>
-              } @else {
-                <div class="ep-sheet__text" [innerHTML]="previewBlockHtml('languages')"></div>
-              }
-            </section>
-          }
-        </div>
-      </div>
+      <app-cv-preview
+        [state]="state"
+        [profile]="profileFull"
+        [userName]="auth.user()?.name || ''"
+        [userEmail]="auth.user()?.email || ''"
+        [photoUrl]="previewPhotoUrl()"
+      />
     </div>
   </div>
 }

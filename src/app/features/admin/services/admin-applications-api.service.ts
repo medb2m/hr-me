@@ -19,6 +19,8 @@ export interface SharedDoc extends AppFile {
 
 export interface ApplicantProfile {
   name: string;
+  prenom?: string;
+  nom?: string;
   phone?: string;
   phones?: string[];
   links?: { label: string; url: string }[];
@@ -29,6 +31,7 @@ export interface ApplicantProfile {
   photoUrl?: string;
   headline?: string;
   skills?: string[];
+  digitalSkills?: string[];
   languagesSpoken?: { language: string; cefrLevel: string }[];
   workExperiences?: {
     jobTitle: string;
@@ -79,6 +82,14 @@ export interface AdminApplication {
   user: { id: string; email: string; role: string; name: string; avatarUrl: string } | null;
   profile: ApplicantProfile | null;
   offer?: ApplicationOffer | null;
+  /** Document CV partagé complet — présent sur le détail (`GET /admin/applications/:id`). */
+  sharedCvDoc?: {
+    _id: string;
+    name: string;
+    editorState: Record<string, unknown>;
+    photoSource: string;
+    customPhotoUrl: string;
+  } | null;
 }
 
 export interface OfferApplicationsResult {

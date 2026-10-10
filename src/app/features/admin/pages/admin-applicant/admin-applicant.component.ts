@@ -8,6 +8,7 @@ import {
   LucideBriefcase,
   LucideCheckCircle,
   LucideClock,
+  LucideEye,
   LucideFileText,
   LucideGraduationCap,
   LucideLanguages,
@@ -20,6 +21,7 @@ import {
   LucideTimer,
   LucideUserCheck,
   LucideWrench,
+  LucideX,
   LucideXCircle,
 } from '@lucide/angular';
 import {
@@ -28,6 +30,8 @@ import {
   AdminApplicationsApiService,
   AppSource,
 } from '../../services/admin-applications-api.service';
+import { CvPreviewComponent } from '../../../../shared/components/cv-preview/cv-preview.component';
+import { CvEditorState, mergeCvEditorState } from '../../../client/models/cv-editor-state';
 
 const STATUS_META: Record<AdminAppStatus, { label: string; cls: string }> = {
   pending: { label: 'Envoyée', cls: 'pending' },
@@ -48,10 +52,12 @@ const SOURCE_META: Record<AppSource, string> = {
     CommonModule,
     RouterLink,
     FormsModule,
+    CvPreviewComponent,
     LucideArrowLeft,
     LucideBriefcase,
     LucideCheckCircle,
     LucideClock,
+    LucideEye,
     LucideFileText,
     LucideGraduationCap,
     LucideLanguages,
@@ -64,6 +70,7 @@ const SOURCE_META: Record<AppSource, string> = {
     LucideTimer,
     LucideUserCheck,
     LucideWrench,
+    LucideX,
     LucideXCircle,
   ],
   templateUrl: './admin-applicant.component.html',
@@ -80,6 +87,22 @@ export class AdminApplicantComponent implements OnInit {
   noteSaving = false;
   noteSaved = false;
   notes = '';
+  cvPreviewOpen = false;
+
+  /** `editorState` fusionné du CV partagé — pour `app-cv-preview`. */
+  sharedCvState(): CvEditorState {
+    return mergeCvEditorState(this.app?.sharedCvDoc?.editorState);
+  }
+
+  /** Photo du CV : dédiée au CV si « custom », sinon photo du dossier. */
+  sharedCvPhoto(): string | null {
+    const doc = this.app?.sharedCvDoc;
+    if (!doc) return null;
+    if (doc.photoSource === 'custom' && doc.customPhotoUrl) {
+      return doc.customPhotoUrl;
+    }
+    return this.app?.profile?.photoUrl || this.app?.user?.avatarUrl || null;
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id') || '';

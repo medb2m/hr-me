@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Application } from '../models/application.js';
 import { Offer } from '../models/offer.js';
 import { ClientProfile } from '../models/client-profile.model.js';
+import { ClientCv } from '../models/client-cv.model.js';
 import { User } from '../models/user.model.js';
 
 const STATUS_VALUES = new Set(['pending', 'review', 'accepted', 'rejected']);
@@ -141,16 +142,19 @@ export const getApplication = async (req, res) => {
       .lean();
     if (!a) return res.status(404).json({ message: 'Candidature introuvable.' });
 
-    const [user, profile] = await Promise.all([
+    const [user, profile, sharedCvDoc] = await Promise.all([
       a.appliedBy
         ? User.findById(a.appliedBy).select('email role name avatarUrl createdAt').lean()
         : null,
       a.appliedBy ? ClientProfile.findOne({ user: a.appliedBy }).lean() : null,
+      a.sharedCv?.id ? ClientCv.findById(a.sharedCv.id).lean() : null,
     ]);
 
     const prof = profile
       ? {
           name: `${profile.prenom || ''} ${profile.nom || ''}`.trim(),
+          prenom: profile.prenom || '',
+          nom: profile.nom || '',
           phone: profile.phone || '',
           phones: profile.phones || [],
           links: profile.links || [],
@@ -161,13 +165,29 @@ export const getApplication = async (req, res) => {
           photoUrl: profile.profilePhotoUrl || '',
           headline: profile.headline || '',
           skills: profile.skills || [],
+          digitalSkills: profile.digitalSkills || [],
           languagesSpoken: profile.languagesSpoken || [],
           workExperiences: (profile.workExperiences || []).slice(0, 10),
           educations: (profile.educations || []).slice(0, 10),
         }
       : null;
 
-    res.json({ application: { ...appDto(a, prof, user), offer: offerDto(a.offer) } });
+    res.json({
+      application: {
+        ...appDto(a, prof, user),
+        offer: offerDto(a.offer),
+        // Document CV partagé complet (editorState) — pour l'aperçu « feuille CV » admin.
+        sharedCvDoc: sharedCvDoc
+          ? {
+              _id: sharedCvDoc._id,
+              name: sharedCvDoc.name || '',
+              editorState: sharedCvDoc.editorState || {},
+              photoSource: sharedCvDoc.photoSource || 'profile',
+              customPhotoUrl: sharedCvDoc.customPhotoUrl || '',
+            }
+          : null,
+      },
+    });
   } catch (error) {
     console.error('[admin-applications/get]', error);
     res.status(500).json({ message: 'Impossible de charger la candidature.' });

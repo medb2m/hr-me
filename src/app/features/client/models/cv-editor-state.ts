@@ -1,6 +1,9 @@
 /** État éditeur CV  — versionné pour évolutions futures. */
 export const CV_EDITOR_VERSION = 1;
 
+/** Clés des blocs sectionnables du CV. */
+export type CvBlockKey = 'summary' | 'personal' | 'experience' | 'education' | 'skills' | 'languages';
+
 /** Entrée structurée du formulaire guidé (expérience, formation…). */
 export interface CvFormEntry {
   /** Poste / diplôme. */
