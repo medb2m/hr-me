@@ -35,6 +35,7 @@ import {
   LucideShield,
   LucideUserCog,
   LucideUserCircle,
+  LucideInbox,
 } from '@lucide/angular';
 
 @Component({
@@ -47,6 +48,7 @@ import {
     LucideNetwork, LucideTicket, LucidePlusCircle, LucideSparkles,
     LucideLogOut, LucideLogIn, LucideBell, LucideSettings, LucideX,
     LucideCalendar, LucideMic2, LucideShield, LucideUserCog, LucideUserCircle,
+    LucideInbox,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'

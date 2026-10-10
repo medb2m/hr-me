@@ -78,6 +78,16 @@
             <span class="nav-label">Utilisateurs</span>
           </a>
         </li>
+        <li>
+          <a
+            class="nav-item"
+            routerLink="/admin/contacts"
+            routerLinkActive="active"
+            (click)="navigateAndCloseSidebar()">
+            <span class="nav-icon"><svg lucideInbox class="lc-icon"></svg></span>
+            <span class="nav-label">Contacts</span>
+          </a>
+        </li>
       </ul>
     }
 
@@ -257,6 +267,7 @@
       <a routerLink="/jobs" routerLinkActive="active" class="topnav-link">Jobs</a>
       <a routerLink="/services" routerLinkActive="active" class="topnav-link">Services</a>
       <a routerLink="/about" routerLinkActive="active" class="topnav-link">About</a>
+      <a routerLink="/contact" routerLinkActive="active" class="topnav-link">Contact</a>
     </nav>
 
     <div class="topnav-end">
@@ -338,6 +349,9 @@
               </a>
               <a class="pd-item" routerLink="/admin/users" (click)="isUserDropdownOpen = false">
                 <svg lucideUserCog class="lc-icon lc-icon--sm"></svg> Utilisateurs
+              </a>
+              <a class="pd-item" routerLink="/admin/contacts" (click)="isUserDropdownOpen = false">
+                <svg lucideInbox class="lc-icon lc-icon--sm"></svg> Contacts
               </a>
             }
             <a class="pd-item" routerLink="/candidat/overview" (click)="isUserDropdownOpen = false">
