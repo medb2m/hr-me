@@ -40,6 +40,11 @@ export class ClientCvApiService {
     return this.http.delete<void>(`${this.base}/cvs/${cvId}`);
   }
 
+  /** Export PDF du CV (rendu feuille, généré côté serveur). */
+  downloadPdf(cvId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/cvs/${cvId}/pdf`, { responseType: 'blob' });
+  }
+
   uploadCvPhoto(cvId: string, file: File): Observable<{ customPhotoUrl: string; cv: ClientCvDto }> {
     const fd = new FormData();
     fd.append('photo', file);

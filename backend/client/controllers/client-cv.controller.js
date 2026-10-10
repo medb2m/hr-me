@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
 import { ClientCv } from '../../models/client-cv.model.js';
+import { ClientProfile } from '../../models/client-profile.model.js';
+import { User } from '../../models/user.model.js';
 import { uploadsPublicPath } from '../../helpers/upload-basics.js';
 import { safeUnlinkUpload } from '../../helpers/upload-fs.js';
+import { htmlToPdf } from '../../services/pdf.service.js';
+import { cvPdfDocument, pdfFilename } from '../../helpers/doc-pdf.js';
 
 const CV_PHOTO_PREFIX = '/uploads/client-cv-photos/';
 
@@ -109,6 +113,30 @@ export async function patchCv(req, res) {
     }
     console.error('[client/cv] patchCv', err);
     return res.status(500).json({ message: err.message || 'Mise à jour impossible.' });
+  }
+}
+
+/** Téléchargement PDF du CV (rendu feuille identique à l'aperçu). */
+export async function downloadCvPdf(req, res) {
+  try {
+    const cv = await loadCvDoc(req.user.id, req.params.cvId);
+    if (!cv) {
+      return res.status(404).json({ message: 'CV introuvable.' });
+    }
+    const [profile, user] = await Promise.all([
+      ClientProfile.findOne({ user: req.user.id }).lean(),
+      User.findById(req.user.id).lean(),
+    ]);
+    const pdf = await htmlToPdf(cvPdfDocument(cv.toObject(), profile, user));
+    const fname = pdfFilename('CV', cv.name);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(fname)}`,
+    });
+    return res.send(Buffer.from(pdf));
+  } catch (err) {
+    console.error('[client/cv] downloadCvPdf', err);
+    return res.status(500).json({ message: 'Export PDF impossible.' });
   }
 }
 

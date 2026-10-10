@@ -37,6 +37,8 @@ router.delete('/offers/:id', offers.deleteOffer);
 
 // Candidatures (admin) — par offre, détail, changement de statut
 router.get('/offers/:id/applications', applications.listOfferApplications);
+router.get('/applications/:id/cv.pdf', applications.downloadSharedCvPdf);
+router.get('/applications/:id/letter.pdf', applications.downloadSharedClPdf);
 router.get('/applications/:id', applications.getApplication);
 router.put('/applications/:id', applications.updateApplication);
 

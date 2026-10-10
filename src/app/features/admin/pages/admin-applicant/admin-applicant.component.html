@@ -83,6 +83,14 @@
                     <svg lucideEye [size]="13"></svg> Aperçu
                   </button>
                 }
+                <button type="button" class="ap-cvview ap-cvview--dl" (click)="downloadPdf('cv')" [disabled]="pdfDownloading === 'cv'">
+                  @if (pdfDownloading === 'cv') {
+                    <svg lucideLoaderCircle [size]="13" class="spin"></svg>
+                  } @else {
+                    <svg lucideDownload [size]="13"></svg>
+                  }
+                  PDF
+                </button>
               </li>
             }
             @if (app.sharedCl) {
@@ -95,6 +103,14 @@
                     <svg lucideEye [size]="13"></svg> Aperçu
                   </button>
                 }
+                <button type="button" class="ap-cvview ap-cvview--dl" (click)="downloadPdf('letter')" [disabled]="pdfDownloading === 'letter'">
+                  @if (pdfDownloading === 'letter') {
+                    <svg lucideLoaderCircle [size]="13" class="spin"></svg>
+                  } @else {
+                    <svg lucideDownload [size]="13"></svg>
+                  }
+                  PDF
+                </button>
               </li>
             }
             @if (app.cv) {
@@ -127,7 +143,38 @@
           </ul>
         </section>
 
-        <!-- lettre de motivation -->
+        <!-- lettre de motivation partagée (lettre complète) -->
+        @if (app.letterMode === 'letter' && app.sharedCl) {
+          <section class="ap-card ap-card--letter">
+            <h2><svg lucideMail [size]="15"></svg> Lettre de motivation</h2>
+            <div class="ap-letter">
+              <div class="ap-letter__info">
+                <span class="ap-letter__icon"><svg lucideMail [size]="18"></svg></span>
+                <div>
+                  <strong>{{ app.sharedClDoc?.name || app.sharedCl.name }}</strong>
+                  <span class="ap-letter__meta">Lettre plateforme jointe à la candidature</span>
+                </div>
+              </div>
+              <div class="ap-letter__actions">
+                @if (app.sharedClDoc) {
+                  <button type="button" class="ap-cvview" (click)="clPreviewOpen = true">
+                    <svg lucideEye [size]="13"></svg> Aperçu
+                  </button>
+                }
+                <button type="button" class="ap-cvview ap-cvview--dl" (click)="downloadPdf('letter')" [disabled]="pdfDownloading === 'letter'">
+                  @if (pdfDownloading === 'letter') {
+                    <svg lucideLoaderCircle [size]="13" class="spin"></svg>
+                  } @else {
+                    <svg lucideDownload [size]="13"></svg>
+                  }
+                  PDF
+                </button>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- message de motivation -->
         @if (app.message) {
           <section class="ap-card">
             <h2><svg lucideMessageSquare [size]="15"></svg> Message de motivation</h2>

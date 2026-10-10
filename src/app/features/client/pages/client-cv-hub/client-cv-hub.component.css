@@ -334,6 +334,40 @@
   background: #fef2f2;
 }
 
+.hub-card__pdf {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #a16207;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.hub-card__pdf:hover:not(:disabled) {
+  background: #fef3c7;
+  border-color: #fbbf24;
+}
+
+.hub-card__pdf:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.hub-card__pdf .spin,
+.spin {
+  animation: hub-spin 0.9s linear infinite;
+}
+
+@keyframes hub-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ============ divers ============ */
 .hub-muted {
   font-size: 0.9rem;

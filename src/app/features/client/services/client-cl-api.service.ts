@@ -40,4 +40,9 @@ export class ClientClApiService {
   deleteCl(clId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/cls/${clId}`);
   }
+
+  /** Export PDF de la lettre (rendu feuille, généré côté serveur). */
+  downloadPdf(clId: string): Observable<Blob> {
+    return this.http.get(`${this.base}/cls/${clId}/pdf`, { responseType: 'blob' });
+  }
 }

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
+  LucideDownload,
+  LucideLoaderCircle,
   LucideMail,
   LucidePenLine,
   LucidePlus,
@@ -22,6 +24,8 @@ import { createDefaultClEditorState } from '../../models/cl-editor-state';
     FormsModule,
     RouterLink,
     BackButtonComponent,
+    LucideDownload,
+    LucideLoaderCircle,
     LucideMail,
     LucidePenLine,
     LucidePlus,
@@ -44,6 +48,7 @@ export class ClientClHubComponent implements OnInit {
   newCompany = '';
   creating = false;
   createError = '';
+  readonly downloadingIds = new Set<string>();
 
   ngOnInit(): void {
     this.reload();
@@ -105,6 +110,31 @@ export class ClientClHubComponent implements OnInit {
     return this.cls.filter(
       (c) => c.name.toLowerCase().includes(q) || this.clCompany(c).toLowerCase().includes(q),
     );
+  }
+
+  /** Téléchargement du PDF (rendu feuille généré côté serveur). */
+  downloadPdf(ev: MouseEvent, cl: ClientClDto): void {
+    ev.preventDefault();
+    if (this.downloadingIds.has(cl._id)) {
+      return;
+    }
+    this.downloadingIds.add(cl._id);
+    this.api
+      .downloadPdf(cl._id)
+      .pipe(finalize(() => this.downloadingIds.delete(cl._id)))
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Lettre - ${cl.name || 'document'}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+        error: () => {
+          alert('Export PDF impossible pour le moment.');
+        },
+      });
   }
 
   deleteCl(ev: MouseEvent, cl: ClientClDto): void {

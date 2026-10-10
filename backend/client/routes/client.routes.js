@@ -31,6 +31,7 @@ router.patch('/profile/photo/active', clientProfile.activateProfilePhotoFromHist
 
 router.get('/cvs', clientCv.listCvs);
 router.post('/cvs', clientCv.createCv);
+router.get('/cvs/:cvId/pdf', clientCv.downloadCvPdf);
 router.get('/cvs/:cvId', clientCv.getCv);
 router.patch('/cvs/:cvId', clientCv.patchCv);
 router.put('/cvs/:cvId', clientCv.patchCv);
@@ -43,6 +44,7 @@ router.post(
 
 router.get('/cls', clientCl.listCls);
 router.post('/cls', clientCl.createCl);
+router.get('/cls/:clId/pdf', clientCl.downloadClPdf);
 router.get('/cls/:clId', clientCl.getCl);
 router.patch('/cls/:clId', clientCl.patchCl);
 router.put('/cls/:clId', clientCl.patchCl);

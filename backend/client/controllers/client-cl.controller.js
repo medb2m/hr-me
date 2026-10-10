@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 import { ClientCl } from '../../models/client-cl.model.js';
+import { ClientProfile } from '../../models/client-profile.model.js';
+import { User } from '../../models/user.model.js';
+import { htmlToPdf } from '../../services/pdf.service.js';
+import { clPdfDocument, pdfFilename } from '../../helpers/doc-pdf.js';
 
 async function loadClDoc(userId, clId) {
   if (!mongoose.isValidObjectId(clId)) {
@@ -93,6 +97,30 @@ export async function patchCl(req, res) {
     if (dup) return dup;
     console.error('[client/cl] patchCl', err);
     return res.status(500).json({ message: err.message || 'Mise à jour impossible.' });
+  }
+}
+
+/** Téléchargement PDF de la lettre (rendu feuille identique à l'aperçu). */
+export async function downloadClPdf(req, res) {
+  try {
+    const cl = await loadClDoc(req.user.id, req.params.clId);
+    if (!cl) {
+      return res.status(404).json({ message: 'Lettre introuvable.' });
+    }
+    const [profile, user] = await Promise.all([
+      ClientProfile.findOne({ user: req.user.id }).lean(),
+      User.findById(req.user.id).lean(),
+    ]);
+    const pdf = await htmlToPdf(clPdfDocument(cl.toObject(), profile, user));
+    const fname = pdfFilename('Lettre', cl.name);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(fname)}`,
+    });
+    return res.send(Buffer.from(pdf));
+  } catch (err) {
+    console.error('[client/cl] downloadClPdf', err);
+    return res.status(500).json({ message: 'Export PDF impossible.' });
   }
 }
 

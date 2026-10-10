@@ -5,6 +5,8 @@ import { ClientProfile } from '../models/client-profile.model.js';
 import { ClientCv } from '../models/client-cv.model.js';
 import { ClientCl } from '../models/client-cl.model.js';
 import { User } from '../models/user.model.js';
+import { htmlToPdf } from '../services/pdf.service.js';
+import { cvPdfDocument, clPdfDocument, pdfFilename } from '../helpers/doc-pdf.js';
 
 const STATUS_VALUES = new Set(['pending', 'review', 'accepted', 'rejected']);
 
@@ -231,3 +233,44 @@ export const updateApplication = async (req, res) => {
     res.status(500).json({ message: 'Mise à jour impossible.' });
   }
 };
+
+/** Fabrique un endpoint PDF pour la pièce jointe « plateforme » (CV ou lettre). */
+const sharedPdfHandler = (kind) => async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'Candidature introuvable.' });
+    }
+    const a = await Application.findById(req.params.id).lean();
+    if (!a) return res.status(404).json({ message: 'Candidature introuvable.' });
+
+    const ref = kind === 'cv' ? a.sharedCv?.id : a.sharedCl?.id;
+    if (!ref || !mongoose.isValidObjectId(ref)) {
+      return res.status(404).json({ message: 'Aucune pièce jointe de ce type.' });
+    }
+    const doc =
+      kind === 'cv' ? await ClientCv.findById(ref).lean() : await ClientCl.findById(ref).lean();
+    if (!doc) return res.status(404).json({ message: 'Le document lié a été supprimé.' });
+
+    const [user, profile] = await Promise.all([
+      a.appliedBy ? User.findById(a.appliedBy).lean() : null,
+      a.appliedBy ? ClientProfile.findOne({ user: a.appliedBy }).lean() : null,
+    ]);
+    const html =
+      kind === 'cv' ? cvPdfDocument(doc, profile, user) : clPdfDocument(doc, profile, user);
+    const pdf = await htmlToPdf(html);
+    const fname = pdfFilename(kind === 'cv' ? 'CV' : 'Lettre', doc.name || a.applicantName);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(fname)}`,
+    });
+    res.send(Buffer.from(pdf));
+  } catch (error) {
+    console.error(`[admin-applications/pdf-${kind}]`, error);
+    res.status(500).json({ message: 'Export PDF impossible.' });
+  }
+};
+
+/** GET /api/admin/applications/:id/cv.pdf — CV plateforme partagé. */
+export const downloadSharedCvPdf = sharedPdfHandler('cv');
+/** GET /api/admin/applications/:id/letter.pdf — lettre de motivation partagée. */
+export const downloadSharedClPdf = sharedPdfHandler('letter');

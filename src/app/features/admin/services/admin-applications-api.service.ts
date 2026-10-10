@@ -134,4 +134,14 @@ export class AdminApplicationsApiService {
   ): Observable<{ application: AdminApplication }> {
     return this.http.put<{ application: AdminApplication }>(`${this.base}/applications/${id}`, body);
   }
+
+  /** PDF du CV plateforme partagé dans la candidature. */
+  downloadSharedCvPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.base}/applications/${id}/cv.pdf`, { responseType: 'blob' });
+  }
+
+  /** PDF de la lettre de motivation partagée dans la candidature. */
+  downloadSharedClPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.base}/applications/${id}/letter.pdf`, { responseType: 'blob' });
+  }
 }

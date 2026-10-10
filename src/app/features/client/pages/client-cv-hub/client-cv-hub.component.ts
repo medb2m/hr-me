@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
+  LucideDownload,
   LucideFileText,
+  LucideLoaderCircle,
   LucidePenLine,
   LucidePlus,
   LucideSearch,
@@ -22,7 +24,9 @@ import { createDefaultCvEditorState } from '../../models/cv-editor-state';
     FormsModule,
     RouterLink,
     BackButtonComponent,
+    LucideDownload,
     LucideFileText,
+    LucideLoaderCircle,
     LucidePenLine,
     LucidePlus,
     LucideSearch,
@@ -44,6 +48,7 @@ export class ClientCvHubComponent implements OnInit {
   newJobTitle = '';
   creating = false;
   createError = '';
+  readonly downloadingIds = new Set<string>();
 
   ngOnInit(): void {
     this.reload();
@@ -106,6 +111,31 @@ export class ClientCvHubComponent implements OnInit {
       (c) =>
         c.name.toLowerCase().includes(q) || this.cvJobTitle(c).toLowerCase().includes(q),
     );
+  }
+
+  /** Téléchargement du PDF (rendu feuille généré côté serveur). */
+  downloadPdf(ev: MouseEvent, cv: ClientCvDto): void {
+    ev.preventDefault();
+    if (this.downloadingIds.has(cv._id)) {
+      return;
+    }
+    this.downloadingIds.add(cv._id);
+    this.api
+      .downloadPdf(cv._id)
+      .pipe(finalize(() => this.downloadingIds.delete(cv._id)))
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `CV - ${cv.name || 'document'}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+        error: () => {
+          alert('Export PDF impossible pour le moment.');
+        },
+      });
   }
 
   deleteCv(ev: MouseEvent, cv: ClientCvDto): void {

@@ -88,6 +88,19 @@
             <a [routerLink]="['/candidat/editor/cl', cl._id]" class="hub-card__open" title="Ouvrir dans l’éditeur">
               <svg lucidePenLine [size]="14" aria-hidden="true"></svg> Modifier
             </a>
+            <button
+              type="button"
+              class="hub-card__pdf"
+              (click)="downloadPdf($event, cl)"
+              [disabled]="downloadingIds.has(cl._id)"
+              title="Télécharger en PDF"
+            >
+              @if (downloadingIds.has(cl._id)) {
+                <svg lucideLoaderCircle [size]="14" class="spin" aria-hidden="true"></svg>
+              } @else {
+                <svg lucideDownload [size]="14" aria-hidden="true"></svg>
+              }
+            </button>
             <button type="button" class="hub-card__del" (click)="deleteCl($event, cl)" title="Supprimer">
               <svg lucideTrash2 [size]="14" aria-hidden="true"></svg>
             </button>

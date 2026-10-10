@@ -8,7 +8,9 @@ import {
   LucideBriefcase,
   LucideCheckCircle,
   LucideClock,
+  LucideDownload,
   LucideEye,
+  LucideLoaderCircle,
   LucideFileText,
   LucideGraduationCap,
   LucideLanguages,
@@ -60,7 +62,9 @@ const SOURCE_META: Record<AppSource, string> = {
     LucideBriefcase,
     LucideCheckCircle,
     LucideClock,
+    LucideDownload,
     LucideEye,
+    LucideLoaderCircle,
     LucideFileText,
     LucideGraduationCap,
     LucideLanguages,
@@ -92,6 +96,33 @@ export class AdminApplicantComponent implements OnInit {
   notes = '';
   cvPreviewOpen = false;
   clPreviewOpen = false;
+  /** Export PDF en cours — 'cv' | 'letter' | ''. */
+  pdfDownloading = '';
+
+  /** Télécharge le PDF de la pièce jointe plateforme (CV ou lettre). */
+  downloadPdf(kind: 'cv' | 'letter'): void {
+    if (!this.app || this.pdfDownloading) return;
+    const name =
+      kind === 'cv' ? this.app.sharedCv?.name || 'CV' : this.app.sharedCl?.name || 'lettre';
+    const req =
+      kind === 'cv'
+        ? this.api.downloadSharedCvPdf(this.app.id)
+        : this.api.downloadSharedClPdf(this.app.id);
+    this.pdfDownloading = kind;
+    req.pipe(finalize(() => (this.pdfDownloading = ''))).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${kind === 'cv' ? 'CV' : 'Lettre'} - ${name}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.errorMsg = 'Export PDF impossible pour le moment.';
+      },
+    });
+  }
 
   /** `editorState` fusionné du CV partagé — pour `app-cv-preview`. */
   sharedCvState(): CvEditorState {
