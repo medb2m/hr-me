@@ -566,6 +566,26 @@
   right: 0.55rem;
 }
 
+.ep-entry__err {
+  margin: 0.45rem 0 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.ep-entry__foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.ep-add--solid {
+  border-style: solid;
+  border-color: #e2e8f0;
+  font-size: 0.72rem;
+  padding: 0.4rem 0.75rem;
+}
+
 .ep-entry__grid {
   padding-right: 40px;
 }

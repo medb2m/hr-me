@@ -99,6 +99,58 @@ export class ClientCvEditorComponent implements OnInit {
     return this.steps.length - 1;
   }
 
+  /** Entrées du bloc en cours de formulaire (non vides pour l'aperçu). */
+  formEntries(key: CvBlockKey): CvFormEntry[] {
+    return this.state[key].entries.filter(
+      (e) => e.title.trim() || e.org.trim() || e.description.trim(),
+    );
+  }
+
+  /** Expériences du profil structurées pour l'aperçu. */
+  profileWorkEntries(): { title: string; org: string; dates: string; html: string }[] {
+    return (this.profileFull?.workExperiences ?? [])
+      .map((w) => ({
+        title: (w.jobTitle || '').trim() || 'Poste',
+        org: (w.employer || '').trim(),
+        dates: [w.startDate, w.endDate]
+          .map((d) => (d ? String(d).slice(0, 10) : ''))
+          .filter(Boolean)
+          .join(' → '),
+        html: (w.description || '').trim(),
+      }))
+      .filter((w) => w.title || w.org || w.html);
+  }
+
+  profileEduEntries(): { title: string; org: string; dates: string }[] {
+    return (this.profileFull?.educations ?? [])
+      .map((e) => ({
+        title: (e.title || '').trim() || 'Formation',
+        org: (e.organization || '').trim(),
+        dates: [e.startDate, e.endDate]
+          .map((d) => (d ? String(d).slice(0, 10) : ''))
+          .filter(Boolean)
+          .join(' → '),
+      }))
+      .filter((e) => e.title || e.org);
+  }
+
+  /** Compétences du profil en deux groupes pour l'aperçu. */
+  profileSkillGroups(): { label: string; items: string[] }[] {
+    const p = this.profileFull;
+    const metiers = (p?.skills ?? []).map((s) => s.trim()).filter(Boolean);
+    const digital = (p?.digitalSkills ?? []).map((s) => s.trim()).filter(Boolean);
+    const groups: { label: string; items: string[] }[] = [];
+    if (metiers.length) groups.push({ label: 'Compétences', items: metiers });
+    if (digital.length) groups.push({ label: 'Numériques', items: digital });
+    return groups;
+  }
+
+  profileLangRows(): { name: string; lvl: string }[] {
+    return (this.profileFull?.languagesSpoken ?? [])
+      .map((l) => ({ name: (l.language || '').trim(), lvl: (l.cefrLevel || '').trim() }))
+      .filter((l) => l.name);
+  }
+
   /** Étape considérée "remplie" (pour le point vert dans la navigation). */
   isStepDone(i: number): boolean {
     const s = this.steps[i];
@@ -431,6 +483,15 @@ export class ClientCvEditorComponent implements OnInit {
     if (name.length < 2) {
       this.saveMessage = 'Nom du CV : au moins 2 caractères.';
       return;
+    }
+    // Validation des dates des entrées guidées (expérience / formation).
+    for (const key of ['experience', 'education'] as CvBlockKey[]) {
+      for (const e of this.state[key].entries) {
+        if (e.startDate && e.endDate && e.startDate > e.endDate) {
+          this.saveMessage = `Dates invalides dans « ${key === 'experience' ? 'Expérience' : 'Formation'} » : la date de début doit être avant la fin.`;
+          return;
+        }
+      }
     }
     this.saving = true;
     this.saveMessage = '';

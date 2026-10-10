@@ -113,6 +113,7 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
   skillInput = '';
   digitalSkillInput = '';
   savingParcours = false;
+  savingEntryIdx = -1;
   parcoursError = '';
   readonly cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Langue maternelle'];
 
@@ -412,9 +413,54 @@ export class ClientProfilePageComponent implements OnInit, OnDestroy {
     this.languagesSpoken.splice(i, 1);
   }
 
+  /** début > fin = invalide (les chaînes YYYY-MM[-DD] se comparent directement). */
+  datesInvalid(start: string, end: string): boolean {
+    return !!(start && end && start > end);
+  }
+
+  /** Enregistre toutes les expériences (bouton par entrée). */
+  saveWorkEntry(i: number, event: MouseEvent): void {
+    const w = this.workExperiences[i];
+    if (!w) return;
+    if (this.datesInvalid(w.startMonth, w.endMonth)) {
+      this.parcoursError = 'Expérience invalide : la date de début doit être avant la date de fin.';
+      return;
+    }
+    this.parcoursError = '';
+    this.savingEntryIdx = i;
+    const anchorX = event.clientX;
+    const anchorY = event.clientY;
+    this.profileApi
+      .patchProfile({
+        workExperiences: this.workExperiences.map((x) => ({
+          jobTitle: x.jobTitle.trim(),
+          employer: x.employer.trim(),
+          startDate: x.startMonth || null,
+          endDate: x.endMonth || null,
+          description: x.description,
+        })),
+      })
+      .pipe(finalize(() => (this.savingEntryIdx = -1)))
+      .subscribe({
+        next: ({ profile }) => {
+          this.applyServerProfile(profile);
+          this.showSuccessNearPointer(anchorX, anchorY, 'Expérience enregistrée.');
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.parcoursError = err.error?.message || 'Enregistrement impossible.';
+        },
+      });
+  }
+
   saveParcours(event: MouseEvent): void {
     const anchorX = event.clientX;
     const anchorY = event.clientY;
+    const badWork = this.workExperiences.some((w) => this.datesInvalid(w.startMonth, w.endMonth));
+    const badEdu = this.educations.some((e) => this.datesInvalid(e.startMonth, e.endMonth));
+    if (badWork || badEdu) {
+      this.parcoursError = 'Vérifiez les dates : le début doit précéder la fin (expériences & formations).';
+      return;
+    }
     this.savingParcours = true;
     this.parcoursError = '';
     this.profileApi

@@ -373,6 +373,19 @@
               [name]="'w-desc-' + $index"
               placeholder="Missions, réalisations, bullet points…"
             />
+            @if (datesInvalid(w.startMonth, w.endMonth)) {
+              <p class="ep-entry__err">La date de début doit être avant la date de fin.</p>
+            }
+            <div class="ep-entry__foot">
+              <button
+                type="button"
+                class="ep-add ep-add--solid"
+                [disabled]="savingEntryIdx !== -1 || datesInvalid(w.startMonth, w.endMonth)"
+                (click)="saveWorkEntry($index, $event)"
+              >
+                {{ savingEntryIdx === $index ? 'Enregistrement…' : 'Enregistrer cette expérience' }}
+              </button>
+            </div>
             <button
               type="button"
               class="ep-icon-btn ep-icon-btn--danger ep-entry__del"
@@ -437,6 +450,9 @@
                 />
               </label>
             </div>
+            @if (datesInvalid(e.startMonth, e.endMonth)) {
+              <p class="ep-entry__err">La date de début doit être avant la date de fin.</p>
+            }
             <button
               type="button"
               class="ep-icon-btn ep-icon-btn--danger ep-entry__del"
