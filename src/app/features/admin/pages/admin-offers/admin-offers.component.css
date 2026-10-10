@@ -372,7 +372,13 @@
   margin-top: 2px;
 }
 
-.ao-country { white-space: nowrap; }
+.ao-country {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
 
 .ao-mode {
   display: inline-flex;

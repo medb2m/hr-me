@@ -76,7 +76,7 @@
       <select [(ngModel)]="countryFilter" (change)="applyFilters()">
         <option value="">Tous</option>
         @for (c of countries; track c.code) {
-          <option [value]="c.code">{{ flag(c.code) }} {{ c.name }}</option>
+          <option [value]="c.code">{{ c.name }}</option>
         }
       </select>
     </label>
@@ -138,7 +138,7 @@
             </div>
             <span class="ao-meta">
               {{ o.partner }}
-              @if (o.country.name) { · <span class="ao-country">{{ flag(o.country.code) }} {{ o.country.name }}</span> }
+              @if (o.country.name) { · <span class="ao-country"><app-flag [code]="o.country.code" /> {{ o.country.name }}</span> }
               @if (o.city) { · {{ o.city }} }
             </span>
           </div>

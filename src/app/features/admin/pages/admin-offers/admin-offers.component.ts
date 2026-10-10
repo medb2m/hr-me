@@ -30,7 +30,8 @@ import {
   OfferStatusFilter,
   OfferWorkMode,
 } from '../../services/admin-offers-api.service';
-import { COUNTRIES, flagEmoji } from '../../../../shared/data/countries.data';
+import { COUNTRIES } from '../../../../shared/data/countries.data';
+import { FlagComponent } from '../../../../shared/components/flag/flag.component';
 
 type SortKey = 'recent' | 'deadline' | 'name';
 
@@ -40,6 +41,7 @@ type SortKey = 'recent' | 'deadline' | 'name';
     CommonModule,
     FormsModule,
     RouterLink,
+    FlagComponent,
     LucideBriefcase,
     LucideBuilding2,
     LucideCalendar,
@@ -190,10 +192,6 @@ export class AdminOffersComponent implements OnInit {
   }
 
   // ---------- helpers d'affichage ----------
-
-  flag(code: string): string {
-    return flagEmoji(code);
-  }
 
   modeLabel(m: OfferWorkMode): string {
     return m === 'remote' ? 'Remote' : m === 'hybrid' ? 'Hybride' : 'Sur site';

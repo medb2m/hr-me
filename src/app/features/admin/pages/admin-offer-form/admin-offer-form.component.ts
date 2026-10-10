@@ -8,8 +8,11 @@ import {
   LucideBuilding2,
   LucideCheck,
   LucideChevronDown,
+  LucideFilePen,
+  LucideGlobe,
   LucideImagePlus,
   LucideLaptop,
+  LucideLock,
   LucideMapPin,
   LucideMinus,
   LucidePlus,
@@ -24,8 +27,10 @@ import {
   OfferStatus,
   OfferWorkMode,
 } from '../../services/admin-offers-api.service';
-import { COUNTRIES, CountryOption, flagEmoji } from '../../../../shared/data/countries.data';
+import { COUNTRIES, CountryOption } from '../../../../shared/data/countries.data';
+import { CITIES_BY_COUNTRY } from '../../../../shared/data/cities.data';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { FlagComponent } from '../../../../shared/components/flag/flag.component';
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 
 @Component({
@@ -35,13 +40,17 @@ import { RichTextEditorComponent } from '../../../../shared/components/rich-text
     FormsModule,
     RouterLink,
     DatePickerComponent,
+    FlagComponent,
     RichTextEditorComponent,
     LucideArrowLeft,
     LucideBuilding2,
     LucideCheck,
     LucideChevronDown,
+    LucideFilePen,
+    LucideGlobe,
     LucideImagePlus,
     LucideLaptop,
+    LucideLock,
     LucideMapPin,
     LucideMinus,
     LucidePlus,
@@ -87,6 +96,18 @@ export class AdminOfferFormComponent implements OnInit {
   countryOpen = false;
   countryActive = 0;
   readonly allCountries = COUNTRIES;
+
+  // Ville — suggestions selon le pays (saisie libre conservée)
+  cityOpen = false;
+  cityActive = 0;
+
+  // Statut — dropdown custom avec icônes
+  statusOpen = false;
+  readonly statusOptions: { value: OfferStatus; label: string; icon: 'globe' | 'filepen' | 'lock' }[] = [
+    { value: 'published', label: 'Publiée', icon: 'globe' },
+    { value: 'draft', label: 'Brouillon', icon: 'filepen' },
+    { value: 'closed', label: 'Clôturée', icon: 'lock' },
+  ];
 
   // Logo
   logoUploading = false;
@@ -167,8 +188,18 @@ export class AdminOfferFormComponent implements OnInit {
     return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   }
 
-  flag(code: string): string {
-    return flagEmoji(code);
+  /** Options de statut — « Clôturée » masquée à la création. */
+  get visibleStatusOptions() {
+    return this.isEdit ? this.statusOptions : this.statusOptions.filter((o) => o.value !== 'closed');
+  }
+
+  get statusOption() {
+    return this.statusOptions.find((o) => o.value === this.status) || this.statusOptions[0];
+  }
+
+  pickStatus(s: OfferStatus): void {
+    this.status = s;
+    this.statusOpen = false;
   }
 
   openCountry(): void {
@@ -206,10 +237,57 @@ export class AdminOfferFormComponent implements OnInit {
     }
   }
 
+  // ---------- ville ----------
+
+  /** Villes suggérées — filtrées par ce que l'utilisateur tape. */
+  get filteredCities(): string[] {
+    const base = this.country ? CITIES_BY_COUNTRY[this.country.code] || [] : [];
+    const q = this.norm(this.city);
+    if (!q) return base;
+    return base.filter((c) => this.norm(c).includes(q));
+  }
+
+  get hasCitySuggestions(): boolean {
+    return !!this.country && (CITIES_BY_COUNTRY[this.country.code] || []).length > 0;
+  }
+
+  openCity(): void {
+    if (this.hasCitySuggestions) {
+      this.cityOpen = true;
+      this.cityActive = 0;
+    }
+  }
+
+  pickCity(c: string): void {
+    this.city = c;
+    this.cityOpen = false;
+  }
+
+  onCityKey(ev: KeyboardEvent): void {
+    const list = this.filteredCities;
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      this.cityOpen = this.hasCitySuggestions;
+      if (list.length) this.cityActive = (this.cityActive + 1) % list.length;
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      if (list.length) this.cityActive = (this.cityActive - 1 + list.length) % list.length;
+    } else if (ev.key === 'Enter') {
+      if (this.cityOpen && list[this.cityActive]) {
+        ev.preventDefault();
+        this.pickCity(list[this.cityActive]);
+      }
+    } else if (ev.key === 'Escape') {
+      this.cityOpen = false;
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   onDocClick(ev: Event): void {
     const t = ev.target as HTMLElement;
     if (!t.closest('.aof-country')) this.countryOpen = false;
+    if (!t.closest('.aof-city')) this.cityOpen = false;
+    if (!t.closest('.aof-status')) this.statusOpen = false;
   }
 
   // ---------- logo ----------
@@ -242,6 +320,12 @@ export class AdminOfferFormComponent implements OnInit {
 
   bumpOpenings(delta: number): void {
     this.openings = Math.min(500, Math.max(1, this.openings + delta));
+  }
+
+  /** Saisie directe dans le stepper — clamp 1..500 au blur / entrée non numérique. */
+  onOpeningsInput(ev: Event): void {
+    const v = parseInt((ev.target as HTMLInputElement).value, 10);
+    this.openings = Number.isFinite(v) ? Math.min(500, Math.max(1, v)) : 1;
   }
 
   // ---------- compétences ----------

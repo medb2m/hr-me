@@ -269,6 +269,9 @@
 }
 
 .aof-country-sel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.88rem;
   font-weight: 600;
   color: #0f172a;
@@ -334,8 +337,129 @@
 
 .aof-country-item.on { background: rgba(255, 211, 0, 0.22); }
 
-.aof-flag { font-size: 1.05rem; line-height: 1; }
+.aof-flag { font-size: 1.05rem; line-height: 0; display: inline-flex; }
 .aof-country-check { margin-left: auto; color: #a16207; }
+
+/* ---------- ville (suggestions) ---------- */
+
+.aof-city { position: relative; }
+
+.aof-icon-field.open {
+  border-color: #ffd300;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.25);
+}
+
+.aof-city-caret { color: #94a3b8; flex-shrink: 0; }
+.aof-icon-field.open .aof-city-caret { transform: rotate(180deg); }
+
+.aof-city-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.16);
+  padding: 5px;
+  z-index: 900;
+}
+
+.aof-city-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.85rem;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+}
+
+.aof-city-item svg { color: #94a3b8; flex-shrink: 0; }
+.aof-city-item.on { background: rgba(255, 211, 0, 0.22); }
+.aof-city-item.on svg { color: #a16207; }
+.aof-city-check { margin-left: auto; color: #a16207 !important; }
+
+/* ---------- statut (dropdown custom) ---------- */
+
+.aof-status { position: relative; }
+
+.aof-status-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  background: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+
+.aof-status-btn:hover { border-color: #cbd5e1; }
+
+.aof-status-btn.open {
+  border-color: #ffd300;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.25);
+}
+
+.aof-status-btn span { flex: 1; text-align: left; }
+
+.aof-status-caret { color: #94a3b8; margin-left: auto; flex-shrink: 0; }
+.aof-status-btn.open .aof-status-caret { transform: rotate(180deg); }
+
+.aof-status-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.16);
+  padding: 5px;
+  z-index: 900;
+}
+
+.aof-status-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.aof-status-item:hover { background: #f1f5f9; }
+.aof-status-item.on { background: rgba(255, 211, 0, 0.22); }
+.aof-status-item span { flex: 1; }
+
+.aof-status-check { color: #a16207; }
+
+.aof-status-icon { flex-shrink: 0; }
+.aof-status-icon--published { color: #15803d; }
+.aof-status-icon--draft { color: #b45309; }
+.aof-status-icon--closed { color: #64748b; }
 
 .aof-country-empty {
   margin: 0;
@@ -401,12 +525,31 @@
 .aof-stepper button:hover:not(:disabled) { background: rgba(255, 211, 0, 0.3); }
 .aof-stepper button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.aof-stepper strong {
-  min-width: 52px;
+.aof-stepper-input {
+  width: 56px;
+  border: none;
+  outline: none;
   text-align: center;
   font-size: 0.95rem;
   font-weight: 800;
+  font-family: inherit;
   color: #0f172a;
+  background: #fff;
+  padding: 0;
+  height: 40px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.aof-stepper-input::-webkit-outer-spin-button,
+.aof-stepper-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.aof-stepper:focus-within {
+  border-color: #ffd300;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.25);
 }
 
 /* ---------- IA ---------- */

@@ -17,7 +17,7 @@
   </header>
 
   @if (loadingOffer) {
-    <p class="aof-loading">Chargement de l\u2019offre…</p>
+    <p class="aof-loading">Chargement de l&rsquo;offre…</p>
   } @else {
     <div class="aof-grid">
       <!-- ================= colonne principale ================= -->
@@ -45,7 +45,7 @@
                 id="f-partner"
                 type="text"
                 [(ngModel)]="partner"
-                placeholder="Nom de l\u2019entreprise"
+                placeholder="Nom de l&rsquo;entreprise"
                 [class.err]="fieldErrors['partner']"
               />
               @if (fieldErrors['partner']) { <p class="aof-err">{{ fieldErrors['partner'] }}</p> }
@@ -78,10 +78,10 @@
           <div class="aof-row">
             <!-- Pays : dropdown recherchable + drapeaux -->
             <div class="aof-field aof-country">
-              <label>Pays de l\u2019offre</label>
+              <label>Pays de l&rsquo;offre</label>
               <div class="aof-country-box" [class.open]="countryOpen">
                 @if (country && !countryOpen) {
-                  <span class="aof-country-sel">{{ flag(country.code) }} {{ country.name }}</span>
+                  <span class="aof-country-sel"><app-flag [code]="country.code" /> {{ country.name }}</span>
                 }
                 <input
                   #countryInput
@@ -110,7 +110,7 @@
                       (click)="pickCountry(c)"
                       (mouseenter)="countryActive = i"
                     >
-                      <span class="aof-flag">{{ flag(c.code) }}</span>
+                      <span class="aof-flag"><app-flag [code]="c.code" /></span>
                       {{ c.name }}
                       @if (country?.code === c.code) {
                         <svg lucideCheck [size]="14" class="aof-country-check"></svg>
@@ -122,12 +122,44 @@
                 </div>
               }
             </div>
-            <div class="aof-field">
+            <div class="aof-field aof-city">
               <label for="f-city">Ville</label>
-              <div class="aof-icon-field">
+              <div class="aof-icon-field" [class.open]="cityOpen">
                 <svg lucideMapPin [size]="14"></svg>
-                <input id="f-city" type="text" [(ngModel)]="city" placeholder="Ex. Lyon, Doha…" />
+                <input
+                  id="f-city"
+                  type="text"
+                  [(ngModel)]="city"
+                  (focus)="openCity()"
+                  (keydown)="onCityKey($event)"
+                  (input)="cityOpen = hasCitySuggestions"
+                  [placeholder]="country ? 'Ville en ' + country.name + '…' : 'Ex. Lyon, Doha…'"
+                  autocomplete="off"
+                />
+                @if (hasCitySuggestions) {
+                  <svg lucideChevronDown [size]="14" class="aof-city-caret"></svg>
+                }
               </div>
+              @if (cityOpen && filteredCities.length) {
+                <div class="aof-city-list" role="listbox">
+                  @for (ct of filteredCities; track ct; let i = $index) {
+                    <button
+                      type="button"
+                      class="aof-city-item"
+                      [class.on]="i === cityActive"
+                      (mousedown)="$event.preventDefault()"
+                      (click)="pickCity(ct)"
+                      (mouseenter)="cityActive = i"
+                    >
+                      <svg lucideMapPin [size]="13"></svg>
+                      {{ ct }}
+                      @if (city === ct) {
+                        <svg lucideCheck [size]="13" class="aof-city-check"></svg>
+                      }
+                    </button>
+                  }
+                </div>
+              }
             </div>
           </div>
 
@@ -152,19 +184,59 @@
                 <button type="button" (click)="bumpOpenings(-1)" [disabled]="openings <= 1" aria-label="Moins">
                   <svg lucideMinus [size]="14"></svg>
                 </button>
-                <strong>{{ openings }}</strong>
+                <input
+                  type="number"
+                  class="aof-stepper-input"
+                  min="1"
+                  max="500"
+                  [ngModel]="openings"
+                  (input)="onOpeningsInput($event)"
+                  aria-label="Nombre de postes"
+                />
                 <button type="button" (click)="bumpOpenings(1)" aria-label="Plus">
                   <svg lucidePlus [size]="14"></svg>
                 </button>
               </div>
             </div>
-            <div class="aof-field">
-              <label for="f-status">Statut</label>
-              <select id="f-status" [(ngModel)]="status">
-                <option value="published">Publiée</option>
-                <option value="draft">Brouillon</option>
-                <option value="closed">Clôturée</option>
-              </select>
+            <div class="aof-field aof-status">
+              <label>Statut</label>
+              <button
+                type="button"
+                class="aof-status-btn"
+                [class.open]="statusOpen"
+                (click)="statusOpen = !statusOpen"
+                aria-haspopup="listbox"
+              >
+                @switch (statusOption.icon) {
+                  @case ('globe') { <svg lucideGlobe [size]="14" class="aof-status-icon aof-status-icon--published"></svg> }
+                  @case ('filepen') { <svg lucideFilePen [size]="14" class="aof-status-icon aof-status-icon--draft"></svg> }
+                  @case ('lock') { <svg lucideLock [size]="14" class="aof-status-icon aof-status-icon--closed"></svg> }
+                }
+                <span>{{ statusOption.label }}</span>
+                <svg lucideChevronDown [size]="14" class="aof-status-caret"></svg>
+              </button>
+              @if (statusOpen) {
+                <div class="aof-status-list" role="listbox">
+                  @for (o of visibleStatusOptions; track o.value) {
+                    <button
+                      type="button"
+                      class="aof-status-item"
+                      [class.on]="o.value === status"
+                      (click)="pickStatus(o.value)"
+                    >
+                      @switch (o.icon) {
+                        @case ('globe') { <svg lucideGlobe [size]="14" class="aof-status-icon aof-status-icon--published"></svg> }
+                        @case ('filepen') { <svg lucideFilePen [size]="14" class="aof-status-icon aof-status-icon--draft"></svg> }
+                        @case ('lock') { <svg lucideLock [size]="14" class="aof-status-icon aof-status-icon--closed"></svg> }
+                      }
+                      <span>{{ o.label }}</span>
+                      @if (o.value === status) {
+                        <svg lucideCheck [size]="14" class="aof-status-check"></svg>
+                      }
+                    </button>
+                  }
+                </div>
+              }
             </div>
           </div>
         </section>
@@ -175,14 +247,14 @@
             <h2 class="aof-card-title">Description du poste</h2>
             <button type="button" class="aof-ai-btn" (click)="aiPanelOpen = !aiPanelOpen">
               <svg lucideSparkles [size]="14"></svg>
-              Générer avec l\u2019IA
+              Générer avec l&rsquo;IA
             </button>
           </div>
 
           @if (aiPanelOpen) {
             <div class="aof-ai-panel">
               <p class="aof-ai-hint">
-                L\u2019IA rédige une description structurée (accroche, missions, profil, avantages)
+                L&rsquo;IA rédige une description structurée (accroche, missions, profil, avantages)
                 à partir du titre, du pays et des compétences. Ajoute une consigne pour guider le ton.
               </p>
               <textarea
