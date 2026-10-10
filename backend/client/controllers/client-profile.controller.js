@@ -135,8 +135,8 @@ export async function patchProfile(req, res) {
 
     if (hasHeadline) {
       const v = String(body.headline ?? '').trim();
-      if (v.length > 500) {
-        return res.status(400).json({ message: 'Accroche trop longue (500 caractères max).' });
+      if (v.length > 2000) {
+        return res.status(400).json({ message: 'Accroche trop longue (2000 caractères max).' });
       }
       profile.headline = v;
     }

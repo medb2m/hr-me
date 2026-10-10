@@ -134,8 +134,8 @@
                   <input
                     type="radio"
                     [name]="b.key + '-src'"
-                    [checked]="state[b.key].useProfile"
-                    (change)="setBlockUseProfile(b.key, true)"
+                    [checked]="blockSource(b.key) === 'profile'"
+                    (change)="setBlockSource(b.key, 'profile')"
                   />
                   Reprendre les données du profil
                 </label>
@@ -143,14 +143,83 @@
                   <input
                     type="radio"
                     [name]="b.key + '-src'"
-                    [checked]="!state[b.key].useProfile"
-                    (change)="setBlockUseProfile(b.key, false)"
+                    [checked]="blockSource(b.key) === 'custom'"
+                    (change)="setBlockSource(b.key, 'custom')"
                   />
                   Texte personnalisé pour ce CV
                 </label>
+                @if (supportsForm(b.key)) {
+                  <label class="ep-radio">
+                    <input
+                      type="radio"
+                      [name]="b.key + '-src'"
+                      [checked]="blockSource(b.key) === 'form'"
+                      (change)="setBlockSource(b.key, 'form')"
+                    />
+                    Saisie guidée — formulaire
+                  </label>
+                }
               </fieldset>
-              @if (state[b.key].useProfile) {
+              @if (blockSource(b.key) === 'profile') {
                 <pre class="ep-snippet">{{ textFromProfile(b.key) }}</pre>
+              } @else if (blockSource(b.key) === 'form') {
+                @for (en of state[b.key].entries; track $index) {
+                  <div class="ep-entry-form">
+                    <div class="ep-entry-form__grid">
+                      <input
+                        class="ep-input"
+                        type="text"
+                        [(ngModel)]="en.title"
+                        [name]="b.key + '-t-' + $index"
+                        maxlength="120"
+                        [placeholder]="formLabels(b.key).title"
+                      />
+                      <input
+                        class="ep-input"
+                        type="text"
+                        [(ngModel)]="en.org"
+                        [name]="b.key + '-o-' + $index"
+                        maxlength="120"
+                        [placeholder]="formLabels(b.key).org"
+                      />
+                      <label class="ep-mini">
+                        <span>Début</span>
+                        <app-date-picker
+                          [(ngModel)]="en.startDate"
+                          [name]="b.key + '-sd-' + $index"
+                          placeholder="JJ mois AAAA"
+                        />
+                      </label>
+                      <label class="ep-mini">
+                        <span>Fin</span>
+                        <app-date-picker
+                          [(ngModel)]="en.endDate"
+                          [name]="b.key + '-ed-' + $index"
+                          placeholder="JJ mois AAAA"
+                        />
+                      </label>
+                    </div>
+                    <app-rich-text-editor
+                      [(ngModel)]="en.description"
+                      [name]="b.key + '-d-' + $index"
+                      placeholder="Missions, réalisations, bullet points…"
+                    />
+                    <button
+                      type="button"
+                      class="ep-entry-form__del"
+                      (click)="removeEntry(b.key, $index)"
+                      aria-label="Supprimer cette entrée"
+                    >
+                      ×
+                    </button>
+                  </div>
+                }
+                @if (state[b.key].entries.length === 0) {
+                  <p class="ep-hint">Aucune entrée — cliquez ci-dessous pour en ajouter.</p>
+                }
+                <button type="button" class="ep-add-entry" (click)="addEntry(b.key)">
+                  + Ajouter une {{ formLabels(b.key).entry }}
+                </button>
               } @else {
                 <app-rich-text-editor
                   [(ngModel)]="state[b.key].customText"

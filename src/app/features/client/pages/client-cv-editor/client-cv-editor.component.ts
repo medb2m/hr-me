@@ -23,14 +23,16 @@ import {
   ClientProfileDto,
 } from '../../services/client-profile-api.service';
 import { ClientProfileStateService } from '../../services/client-profile-state.service';
+import { ProfilePhotoUploadComponent } from '../../../../shared/components/profile-photo-upload/profile-photo-upload.component';
+import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import {
   CvEditorState,
   CvSectionBlock,
+  CvFormEntry,
   createDefaultCvEditorState,
   mergeCvEditorState,
 } from '../../models/cv-editor-state';
-import { ProfilePhotoUploadComponent } from '../../../../shared/components/profile-photo-upload/profile-photo-upload.component';
-import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 
 export type CvBlockKey = 'summary' | 'personal' | 'experience' | 'education' | 'skills' | 'languages';
 export type CvStepKey = 'infos' | CvBlockKey;
@@ -38,7 +40,7 @@ export type CvStepKey = 'infos' | CvBlockKey;
 @Component({
   selector: 'app-client-cv-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, BackButtonComponent, ProfilePhotoUploadComponent, RichTextEditorComponent, LucideArrowLeft, LucideArrowRight, LucideCheck, LucideCake, LucideFlag, LucideLink, LucideMail, LucideMapPin, LucidePhone],
+  imports: [CommonModule, FormsModule, BackButtonComponent, DatePickerComponent, ProfilePhotoUploadComponent, RichTextEditorComponent, LucideArrowLeft, LucideArrowRight, LucideCheck, LucideCake, LucideFlag, LucideLink, LucideMail, LucideMapPin, LucidePhone],
   templateUrl: './client-cv-editor.component.html',
   styleUrl: './client-cv-editor.component.css',
 })
@@ -104,7 +106,51 @@ export class ClientCvEditorComponent implements OnInit {
       return this.cvName.trim().length >= 2 && this.state.jobTitle.trim().length >= 2;
     }
     const b = this.state[s.key as CvBlockKey];
-    return b.visible && (b.useProfile || (b.customText || '').trim().length > 0);
+    return (
+      b.visible &&
+      (b.useProfile || (b.customText || '').trim().length > 0 || b.entries.length > 0)
+    );
+  }
+
+  /** Blocs qui proposent la saisie guidée par formulaire. */
+  supportsForm(key: CvBlockKey): boolean {
+    return key === 'experience' || key === 'education';
+  }
+
+  /** Libellés des champs du formulaire guidé selon le bloc. */
+  formLabels(key: CvBlockKey): { title: string; org: string; entry: string } {
+    if (key === 'education') {
+      return { title: 'Diplôme / formation', org: 'Établissement', entry: 'formation' };
+    }
+    return { title: 'Poste', org: 'Entreprise / employeur', entry: 'expérience' };
+  }
+
+  /** Troisième source : formulaire guidé (entries). */
+  setBlockSource(key: CvBlockKey, source: 'profile' | 'custom' | 'form'): void {
+    const b = this.state[key];
+    b.useForm = source === 'form';
+    b.useProfile = source === 'profile';
+  }
+
+  blockSource(key: CvBlockKey): 'profile' | 'custom' | 'form' {
+    const b = this.state[key];
+    return b.useForm ? 'form' : b.useProfile ? 'profile' : 'custom';
+  }
+
+  addEntry(key: CvBlockKey): void {
+    this.state[key].entries.push({ title: '', org: '', startDate: '', endDate: '', description: '' });
+  }
+
+  removeEntry(key: CvBlockKey, i: number): void {
+    this.state[key].entries.splice(i, 1);
+  }
+
+  private esc(s: string): string {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   hasCustomPhoto(): boolean {
@@ -153,10 +199,6 @@ export class ClientCvEditorComponent implements OnInit {
 
   block(key: CvBlockKey): CvSectionBlock {
     return this.state[key];
-  }
-
-  setBlockUseProfile(key: CvBlockKey, useProfile: boolean): void {
-    this.state[key].useProfile = useProfile;
   }
 
   previewPhotoUrl(): string | null {
@@ -289,16 +331,39 @@ export class ClientCvEditorComponent implements OnInit {
     if (!b.visible) {
       return '';
     }
+    if (b.useForm) {
+      const list = b.entries.filter(
+        (e) => e.title.trim() || e.org.trim() || e.description.trim(),
+      );
+      if (!list.length) {
+        return 'Ajoutez des entrées via le formulaire guidé.';
+      }
+      return list
+        .map((e) => {
+          const head =
+            [e.title.trim(), e.org.trim()].filter(Boolean).join(' — ') || 'Entrée';
+          const dates = [e.startDate, e.endDate].filter(Boolean).join(' → ');
+          const parts = [`<strong>${this.esc(head)}</strong>`];
+          if (dates) {
+            parts.push(`<em class="ep-dates">${this.esc(dates)}</em>`);
+          }
+          if (e.description.trim()) {
+            parts.push(e.description);
+          }
+          return parts.join('<br>');
+        })
+        .join('<br><br>');
+    }
     if (b.useProfile) {
       return this.textFromProfile(key);
     }
     return (b.customText || '').trim() || '—';
   }
 
-  /** Texte personnalisé = HTML (éditeur riche) ; profil = HTML si description riche. */
+  /** Texte personnalisé / formulaire = HTML ; profil = HTML si description riche. */
   previewBlockIsHtml(key: CvBlockKey): boolean {
     const b = this.state[key];
-    if (!b.useProfile) {
+    if (b.useForm || !b.useProfile) {
       return true;
     }
     return /<[a-z][^>]*>/i.test(this.textFromProfile(key));

@@ -315,12 +315,9 @@
       </summary>
       <div class="ep-acc__body">
         <p class="ep-hint-sm">Titre ou phrase d’introduction affichés en haut de vos CV.</p>
-        <input
-          class="ep-input ep-input--full"
-          type="text"
+        <app-rich-text-editor
           [(ngModel)]="headlineText"
           name="headline"
-          maxlength="500"
           placeholder="ex. Développeur full-stack avec 5 ans d’expérience en applications web"
         />
       </div>
@@ -354,11 +351,19 @@
               />
               <label class="ep-mini">
                 <span>Début</span>
-                <input class="ep-input" type="month" [(ngModel)]="w.startMonth" [name]="'w-s-' + $index" />
+                <app-date-picker
+                  [(ngModel)]="w.startMonth"
+                  [name]="'w-s-' + $index"
+                  placeholder="JJ mois AAAA"
+                />
               </label>
               <label class="ep-mini">
                 <span>Fin</span>
-                <input class="ep-input" type="month" [(ngModel)]="w.endMonth" [name]="'w-e-' + $index" />
+                <app-date-picker
+                  [(ngModel)]="w.endMonth"
+                  [name]="'w-e-' + $index"
+                  placeholder="JJ mois AAAA"
+                />
               </label>
             </div>
             <app-rich-text-editor
@@ -413,11 +418,19 @@
               />
               <label class="ep-mini">
                 <span>Début</span>
-                <input class="ep-input" type="month" [(ngModel)]="e.startMonth" [name]="'e-s-' + $index" />
+                <app-date-picker
+                  [(ngModel)]="e.startMonth"
+                  [name]="'e-s-' + $index"
+                  placeholder="JJ mois AAAA"
+                />
               </label>
               <label class="ep-mini">
                 <span>Fin</span>
-                <input class="ep-input" type="month" [(ngModel)]="e.endMonth" [name]="'e-e-' + $index" />
+                <app-date-picker
+                  [(ngModel)]="e.endMonth"
+                  [name]="'e-e-' + $index"
+                  placeholder="JJ mois AAAA"
+                />
               </label>
             </div>
             <button

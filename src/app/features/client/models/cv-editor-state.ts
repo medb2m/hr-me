@@ -1,12 +1,29 @@
 /** État éditeur CV  — versionné pour évolutions futures. */
 export const CV_EDITOR_VERSION = 1;
 
+/** Entrée structurée du formulaire guidé (expérience, formation…). */
+export interface CvFormEntry {
+  /** Poste / diplôme. */
+  title: string;
+  /** Employeur / établissement. */
+  org: string;
+  /** YYYY-MM-DD via le date picker partagé. */
+  startDate: string;
+  endDate: string;
+  /** Description HTML (éditeur riche). */
+  description: string;
+}
+
 export interface CvSectionBlock {
   visible: boolean;
   /** true = reprendre les données du profil ; false = utiliser `customText` (ou vide). */
   useProfile: boolean;
+  /** Troisième source : saisie guidée par formulaire (`entries`). */
+  useForm: boolean;
   /** Texte libre si `useProfile` est false (ex. résumé personnalisé). */
   customText: string;
+  /** Entrées du formulaire guidé (expérience/formation). */
+  entries: CvFormEntry[];
 }
 
 export interface CvEditorState {
@@ -28,7 +45,7 @@ export interface CvEditorState {
 }
 
 export function defaultCvSectionBlock(): CvSectionBlock {
-  return { visible: true, useProfile: true, customText: '' };
+  return { visible: true, useProfile: true, useForm: false, customText: '', entries: [] };
 }
 
 export function createDefaultCvEditorState(): CvEditorState {
@@ -52,10 +69,21 @@ function mergeBlock(base: CvSectionBlock, raw: unknown): CvSectionBlock {
     return { ...base };
   }
   const o = raw as Record<string, unknown>;
+  const entries = Array.isArray(o['entries'])
+    ? (o['entries'] as Record<string, unknown>[]).map((e) => ({
+        title: typeof e?.['title'] === 'string' ? e['title'] : '',
+        org: typeof e?.['org'] === 'string' ? e['org'] : '',
+        startDate: typeof e?.['startDate'] === 'string' ? e['startDate'] : '',
+        endDate: typeof e?.['endDate'] === 'string' ? e['endDate'] : '',
+        description: typeof e?.['description'] === 'string' ? e['description'] : '',
+      }))
+    : base.entries;
   return {
     visible: typeof o['visible'] === 'boolean' ? o['visible'] : base.visible,
     useProfile: typeof o['useProfile'] === 'boolean' ? o['useProfile'] : base.useProfile,
+    useForm: typeof o['useForm'] === 'boolean' ? o['useForm'] : base.useForm,
     customText: typeof o['customText'] === 'string' ? o['customText'] : base.customText,
+    entries,
   };
 }
 
