@@ -1,6 +1,6 @@
 <div class="ap">
   @if (app?.offer) {
-    <a class="ap-back" [routerLink]="['/admin/offres', app!.offer!.id, 'applications']">
+    <a class="ap-back" [routerLink]="['/admin/offers', app!.offer!.id, 'applications']">
       <svg lucideArrowLeft [size]="15"></svg> Candidatures — {{ app!.offer!.name }}
     </a>
   }
