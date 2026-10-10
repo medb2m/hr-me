@@ -114,3 +114,14 @@ body.sidebar-open { overflow: hidden; }
 @media (max-width: 576px) {
   :root { --navbar-h: 56px; }
 }
+
+/* Sélection de texte : gris clair au lieu du bleu par défaut */
+::selection {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+::-moz-selection {
+  background: #e2e8f0;
+  color: #0f172a;
+}
