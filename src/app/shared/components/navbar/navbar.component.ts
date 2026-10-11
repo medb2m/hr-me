@@ -13,6 +13,7 @@ import {
   LucideUsers,
   LucideBriefcase,
   LucideLayoutGrid,
+  LucideLifeBuoy,
   LucideInfo,
   LucideGauge,
   LucideChevronRight,
@@ -51,7 +52,7 @@ import {
   selector: 'app-navbar',
   imports: [
     CommonModule, RouterLink, RouterLinkActive,
-    LucideUsers, LucideBriefcase, LucideLayoutGrid, LucideInfo,
+    LucideUsers, LucideBriefcase, LucideLayoutGrid, LucideLifeBuoy, LucideInfo,
     LucideGauge, LucideChevronRight, LucideChevronDown, LucideUserPlus,
     LucideList, LucideBot, LucideVideo, LucidePlaySquare,
     LucideNetwork, LucideTicket, LucidePlusCircle, LucideSparkles,

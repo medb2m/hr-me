@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import {
   CdkDragDrop,
@@ -74,6 +74,7 @@ interface ColumnDef {
 export class AdminTicketsComponent implements OnInit {
   private readonly api = inject(TicketsApiService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly columns: ColumnDef[] = [
     { key: 'open', label: 'Ouvert' },
@@ -118,6 +119,8 @@ export class AdminTicketsComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    const kind = this.route.snapshot.queryParamMap.get('kind');
+    if (kind === 'support' || kind === 'internal') this.filterKind = kind;
     this.refresh();
     this.api.assignees().subscribe({
       next: (r) => this.assignees.set(r.assignees || []),

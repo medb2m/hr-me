@@ -111,6 +111,17 @@
             <span class="nav-label">Offres</span>
           </a>
         </li>
+        <li>
+          <a
+            class="nav-item"
+            routerLink="/admin/tickets"
+            routerLinkActive="active"
+            (click)="navigateAndCloseSidebar()">
+            <span class="nav-icon"><svg lucideTicket class="lc-icon"></svg></span>
+            <span class="nav-label">Tickets</span>
+            <span class="nav-badge-new">Kanban</span>
+          </a>
+        </li>
       </ul>
     }
 
@@ -223,13 +234,18 @@
         </button>
         <ul class="nav-submenu" [class.open]="dropdowns['ticket']">
           <li>
-            <a class="nav-subitem" routerLink="/add-ticket" (click)="navigateAndCloseSidebar()">
-              <svg lucidePlusCircle class="lc-icon lc-icon--sm"></svg> New Ticket
+            <a class="nav-subitem" routerLink="/admin/tickets" (click)="navigateAndCloseSidebar()">
+              <svg lucideLayoutGrid class="lc-icon lc-icon--sm"></svg> Kanban board
             </a>
           </li>
           <li>
-            <a class="nav-subitem" routerLink="/list-ticket" (click)="navigateAndCloseSidebar()">
-              <svg lucideList class="lc-icon lc-icon--sm"></svg> All Tickets
+            <a class="nav-subitem" routerLink="/admin/tickets" [queryParams]="{kind:'support'}" (click)="navigateAndCloseSidebar()">
+              <svg lucideLifeBuoy class="lc-icon lc-icon--sm"></svg> Demandes support
+            </a>
+          </li>
+          <li>
+            <a class="nav-subitem" routerLink="/admin/tickets" [queryParams]="{kind:'internal'}" (click)="navigateAndCloseSidebar()">
+              <svg lucideList class="lc-icon lc-icon--sm"></svg> Tickets internes
             </a>
           </li>
         </ul>
