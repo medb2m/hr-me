@@ -1,48 +1,317 @@
-<div class="cal-page">
-  <header class="cal-toolbar">
-    <h1>Calendrier</h1>
-    <div class="cal-nav">
-      <button type="button" (click)="prevMonth()" aria-label="Mois précédent"><svg lucideChevronLeft [size]="16" aria-hidden="true"></svg></button>
-      <button type="button" (click)="today()">Aujourd’hui</button>
-      <button type="button" (click)="nextMonth()" aria-label="Mois suivant"><svg lucideChevronRight [size]="16" aria-hidden="true"></svg></button>
+<div class="cal">
+  <!-- Rail gauche — style Teams -->
+  <aside class="cal-rail">
+    <button class="cal-new" type="button" (click)="openCreate()">
+      <svg lucidePlus [size]="17"></svg> Nouvel événement
+    </button>
+
+    <div class="cal-mini">
+      <div class="cal-mini-head">
+        <strong>{{ anchor().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) }}</strong>
+      </div>
+      <div class="cal-mini-grid">
+        @for (d of dayNames; track d) {
+          <span class="cal-mini-dow">{{ d }}</span>
+        }
+        @for (c of miniMonthCells(); track c.date.getTime()) {
+          <button
+            type="button"
+            class="cal-mini-day"
+            [class.out]="!c.inMonth"
+            [class.today]="c.today"
+            (click)="pickDay(c.date)">
+            {{ c.date.getDate() }}
+          </button>
+        }
+      </div>
     </div>
-    <a routerLink="/meetings/new" class="cal-link">Nouvel entretien</a>
-  </header>
-  <h2 class="cal-title">{{ title() }}</h2>
 
-  @if (socketHint()) {
-    <p class="cal-warn">{{ socketHint() }}</p>
-  }
+    <div class="cal-legend">
+      <span class="cal-legend-title">Types d'événements</span>
+      @for (t of typeDefs; track t.value) {
+        <button
+          type="button"
+          class="cal-legend-item"
+          [class.off]="!typeFilters().has(t.value)"
+          (click)="toggleType(t.value)">
+          <span class="cal-legend-dot" [style.background]="t.color"></span>
+          {{ t.label }}
+        </button>
+      }
+    </div>
+  </aside>
 
-  @if (loading()) {
-    <p>Chargement des événements…</p>
-  }
+  <!-- Zone principale -->
+  <main class="cal-main">
+    <div class="cal-toolbar">
+      <div class="cal-nav">
+        <button class="cal-btn" type="button" (click)="prev()" aria-label="Précédent">
+          <svg lucideChevronLeft [size]="17"></svg>
+        </button>
+        <button class="cal-btn" type="button" (click)="next()" aria-label="Suivant">
+          <svg lucideChevronRight [size]="17"></svg>
+        </button>
+        <button class="cal-btn cal-btn--today" type="button" (click)="today()">Aujourd'hui</button>
+      </div>
+      <h1 class="cal-title">{{ title() }}</h1>
+      <div class="cal-views">
+        <button type="button" [class.on]="viewMode() === 'week'" (click)="setView('week')">Semaine</button>
+        <button type="button" [class.on]="viewMode() === 'month'" (click)="setView('month')">Mois</button>
+        <button type="button" [class.on]="viewMode() === 'agenda'" (click)="setView('agenda')">Agenda</button>
+      </div>
+    </div>
 
-  <div class="cal-grid">
-    <div class="cal-dow">Lun</div>
-    <div class="cal-dow">Mar</div>
-    <div class="cal-dow">Mer</div>
-    <div class="cal-dow">Jeu</div>
-    <div class="cal-dow">Ven</div>
-    <div class="cal-dow">Sam</div>
-    <div class="cal-dow">Dim</div>
-    @for (week of gridWeeks(); track $index) {
-      @for (day of week; track dayKey(day)) {
-        <div
-          class="cal-cell"
-          [class.out]="day.getMonth() !== viewMonth().getMonth()">
-          <div class="cal-daynum">{{ day.getDate() }}</div>
-          @for (ev of eventsFor(day); track ev.id) {
-            <div
-              class="cal-pill"
-              [style.background]="ev.color"
-              [title]="ev.title">
-              {{ truncate(ev.title, 22) }}
-              <button type="button" class="ics" (click)="downloadIcs(ev); $event.stopPropagation()">.ics</button>
+    @if (loading()) {
+      <div class="cal-loading"><svg lucideLoaderCircle [size]="26" class="spin"></svg></div>
+    }
+
+    <!-- ══ Vue Semaine (Teams) ══ -->
+    @if (viewMode() === 'week' && !loading()) {
+      <div class="cal-week">
+        <div class="cal-week-head">
+          <div class="cal-week-gutter"></div>
+          @for (d of weekDays(); track d.getTime()) {
+            <div class="cal-week-dayhead" [class.today]="isToday(d)">
+              <span class="cal-week-dow">{{ d.toLocaleDateString('fr-FR', { weekday: 'short' }) }}</span>
+              <span class="cal-week-num">{{ d.getDate() }}</span>
             </div>
           }
         </div>
-      }
+        <div class="cal-week-body">
+          <div class="cal-week-gutter cal-week-gutter--times">
+            @for (h of hours; track h) {
+              <div class="cal-time">{{ h }}h00</div>
+            }
+          </div>
+          @for (d of weekDays(); track d.getTime()) {
+            <div class="cal-week-col" [class.today]="isToday(d)">
+              @for (h of hours; track h) {
+                <div class="cal-slot" (click)="openCreate()"></div>
+              }
+              @if (isToday(d)) {
+                <div class="cal-now" [style.top.px]="nowTop()"><span></span></div>
+              }
+              @for (e of dayEvents(d); track e.id) {
+                <button
+                  type="button"
+                  class="cal-ev"
+                  [class.cal-ev--allday]="e.allDay"
+                  [style.top.px]="evTop(e)"
+                  [style.height.px]="evHeight(e)"
+                  [style.--evc]="evColor(e)"
+                  (click)="openDetail(e)">
+                  <strong>{{ e.title }}</strong>
+                  <span>{{ fmtTime(e.startsAt) }}{{ e.endsAt ? ' – ' + fmtTime(e.endsAt) : '' }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
     }
-  </div>
+
+    <!-- ══ Vue Mois ══ -->
+    @if (viewMode() === 'month' && !loading()) {
+      <div class="cal-month">
+        <div class="cal-month-head">
+          @for (d of dayNames; track d) {
+            <span>{{ d }}</span>
+          }
+        </div>
+        <div class="cal-month-grid">
+          @for (c of monthCells(); track c.date.getTime()) {
+            <div class="cal-mcell" [class.out]="!c.inMonth" [class.today]="c.today">
+              <span class="cal-mnum">{{ c.date.getDate() }}</span>
+              <div class="cal-mevs">
+                @for (e of c.events.slice(0, 3); track e.id) {
+                  <button
+                    type="button"
+                    class="cal-mev"
+                    [style.--evc]="evColor(e)"
+                    (click)="openDetail(e)">
+                    {{ e.title }}
+                  </button>
+                }
+                @if (c.events.length > 3) {
+                  <span class="cal-mmore">+{{ c.events.length - 3 }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ══ Vue Agenda ══ -->
+    @if (viewMode() === 'agenda' && !loading()) {
+      <div class="cal-agenda">
+        @for (g of agendaGroups(); track g.date.getTime()) {
+          <div class="cal-ag-day">
+            <h3 [class.today]="isToday(g.date)">{{ fmtDayLabel(g.date) }}</h3>
+            @for (e of g.items; track e.id) {
+              <button type="button" class="cal-ag-item" [style.--evc]="evColor(e)" (click)="openDetail(e)">
+                <span class="cal-ag-time">
+                  {{ e.allDay ? 'Journée' : fmtTime(e.startsAt) }}
+                  @if (!e.allDay && e.endsAt) { <em>– {{ fmtTime(e.endsAt) }}</em> }
+                </span>
+                <span class="cal-ag-bar"></span>
+                <span class="cal-ag-body">
+                  <strong>{{ e.title }}</strong>
+                  <span class="cal-ag-meta">
+                    {{ typeDef(e.type).label }}
+                    @if (e.location) { · <svg lucideMapPin [size]="11"></svg> {{ e.location }} }
+                    @if (e.videoLink) { · <svg lucideVideo [size]="11"></svg> Visio }
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
+        } @empty {
+          <div class="cal-empty">
+            <svg lucideCalendarDays [size]="40"></svg>
+            <p>Aucun événement sur cette période.</p>
+            <button class="cal-btn cal-btn--today" type="button" (click)="openCreate()">Créer un événement</button>
+          </div>
+        }
+      </div>
+    }
+  </main>
 </div>
+
+<!-- ══ Modal détail ══ -->
+@if (selected(); as ev) {
+  <div class="cal-modal" (click)="closeDetail()">
+    <div class="cal-modal-card" (click)="$event.stopPropagation()">
+      <div class="cal-modal-hero" [style.--evc]="evColor(ev)">
+        <div class="cal-modal-hero-row">
+          <span class="cal-modal-type">{{ typeDef(ev.type).label }}</span>
+          <button class="cal-x" type="button" (click)="closeDetail()"><svg lucideX [size]="16"></svg></button>
+        </div>
+        <h2>{{ ev.title }}</h2>
+        <p><svg lucideClock [size]="14"></svg> {{ fmtDateTime(ev.startsAt) }}</p>
+      </div>
+      <div class="cal-modal-body">
+        @if (ev.location) {
+          <div class="cal-row"><svg lucideMapPin [size]="15"></svg> {{ ev.location }}</div>
+        }
+        @if (ev.videoLink) {
+          <div class="cal-row">
+            <svg lucideVideo [size]="15"></svg>
+            <a [href]="ev.videoLink" target="_blank" rel="noopener" class="cal-link">Rejoindre la visioconférence</a>
+          </div>
+        }
+        @if (ev.participants?.length) {
+          <div class="cal-row"><svg lucideUsers [size]="15"></svg> {{ ev.participants!.length }} invité(s)</div>
+        }
+        @if (ev.description) {
+          <p class="cal-desc">{{ ev.description }}</p>
+        }
+      </div>
+      <div class="cal-modal-foot">
+        <a class="cal-btn" [href]="icsUrl(ev)"><svg lucideDownload [size]="14"></svg> .ics</a>
+        @if (canEdit(ev)) {
+          <button class="cal-btn" type="button" (click)="openEdit(ev)">
+            <svg lucidePencil [size]="14"></svg> Modifier
+          </button>
+          <button class="cal-btn cal-btn--danger" type="button" (click)="cancelEvent(ev)">
+            <svg lucideTrash2 [size]="14"></svg> Annuler l'événement
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ Modal création / édition ══ -->
+@if (showForm()) {
+  <div class="cal-modal" (click)="closeForm()">
+    <div class="cal-modal-card cal-modal-card--form" (click)="$event.stopPropagation()">
+      <div class="cal-modal-head">
+        <h3><svg lucideCalendarDays [size]="18"></svg> {{ editing() ? 'Modifier' : 'Nouvel' }} événement</h3>
+        <button class="cal-x" type="button" (click)="closeForm()"><svg lucideX [size]="16"></svg></button>
+      </div>
+      <div class="cal-form">
+        <label class="cal-field">Titre *
+          <input [(ngModel)]="fTitle" maxlength="160" placeholder="Ex. Entretien — Chahida Jouini" />
+        </label>
+        <div class="cal-field-row">
+          <label class="cal-field">Type
+            <select [(ngModel)]="fType">
+              @for (t of typeDefs; track t.value) {
+                <option [value]="t.value">{{ t.label }}</option>
+              }
+            </select>
+          </label>
+          <span class="cal-type-dot" [style.background]="typeDef(fType).color"></span>
+        </div>
+        <div class="cal-field-row3">
+          <label class="cal-field">Date
+            <input type="date" [(ngModel)]="fDate" />
+          </label>
+          @if (!fAllDay) {
+            <label class="cal-field">Début
+              <input type="time" [(ngModel)]="fStart" />
+            </label>
+            <label class="cal-field">Fin
+              <input type="time" [(ngModel)]="fEnd" />
+            </label>
+          }
+        </div>
+        <label class="cal-check">
+          <input type="checkbox" [(ngModel)]="fAllDay" /> Toute la journée
+        </label>
+        <div class="cal-field-row">
+          <label class="cal-field">Lieu
+            <input [(ngModel)]="fLocation" placeholder="Bureau, ambassade…" />
+          </label>
+          <label class="cal-field">Lien visio
+            <input [(ngModel)]="fVideoLink" placeholder="https://meet…" />
+          </label>
+        </div>
+        @if (fCandidateId) {
+          <div class="cal-cand">
+            <svg lucideUser [size]="14"></svg> Candidat lié : <strong>{{ fCandidateName || fCandidateId }}</strong>
+          </div>
+        }
+        @if (isStaff()) {
+          <label class="cal-field">Invités
+            <input
+              [(ngModel)]="attendeeQuery"
+              (ngModelChange)="searchAttendees()"
+              placeholder="Rechercher un utilisateur (nom ou e-mail)…" />
+          </label>
+          @if (searching()) {
+            <p class="cal-hint"><svg lucideLoaderCircle [size]="13" class="spin"></svg> Recherche…</p>
+          }
+          @if (attendeeResults().length) {
+            <ul class="cal-att-results">
+              @for (a of attendeeResults(); track a.id) {
+                <li><button type="button" (click)="addAttendee(a)">{{ a.name }} <em>{{ a.role }}</em></button></li>
+              }
+            </ul>
+          }
+          @if (fAttendees.length) {
+            <ul class="cal-att-chips">
+              @for (a of fAttendees; track a.id) {
+                <li>{{ a.name }} <button type="button" (click)="removeAttendee(a.id)">×</button></li>
+              }
+            </ul>
+          }
+        }
+        <label class="cal-field">Description
+          <textarea [(ngModel)]="fDescription" rows="3" placeholder="Ordre du jour, consignes…"></textarea>
+        </label>
+        <p class="cal-hint"><svg lucideBell [size]="13"></svg> Les invités et le candidat lié sont notifiés automatiquement.</p>
+        @if (formError()) {
+          <div class="cal-error">{{ formError() }}</div>
+        }
+      </div>
+      <div class="cal-modal-foot">
+        <button class="cal-btn" type="button" (click)="closeForm()">Annuler</button>
+        <button class="cal-btn cal-btn--primary" type="button" (click)="save()" [disabled]="saving()">
+          {{ saving() ? 'Enregistrement…' : editing() ? 'Enregistrer' : 'Créer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

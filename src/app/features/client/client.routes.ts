@@ -84,6 +84,11 @@ export const CLIENT_ROUTES: Routes = [
           ),
       },
       {
+        path: 'calendrier',
+        loadComponent: () =>
+          import('../calendar/calendar-page.component').then((m) => m.CalendarPageComponent),
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import('../../shared/pages/notifications-center/notifications-center.component').then(

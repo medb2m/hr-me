@@ -176,6 +176,8 @@
 .ap-btn.act-review { border-color: #93c5fd; background: #dbeafe; color: #1d4ed8; }
 .ap-btn.act-accept { border-color: #86efac; background: #dcfce7; color: #15803d; }
 .ap-btn--danger.act-reject { border-color: #fca5a5; background: #fecaca; color: #b91c1c; }
+.ap-btn--cal { text-decoration: none; }
+.ap-btn--cal:hover { border-color: #ffd300; color: #a16207; }
 
 /* ---------- grille ---------- */
 

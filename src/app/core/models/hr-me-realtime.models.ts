@@ -58,6 +58,7 @@ export interface CalendarEventDto {
   color: string;
   status: string;
   priority: string;
+  participants?: { userId?: string | null; email?: string; role?: string; rsvpStatus?: string }[];
   agentId: string;
   candidateId?: string | null;
   offerId?: string | null;

@@ -29,4 +29,24 @@ export class CalendarApiService {
   downloadIcsUrl(eventId: string): string {
     return `${this.base}/events/${eventId}/ics`;
   }
+
+  create(body: Partial<CalendarEventDto> & { participants?: unknown[] }): Observable<{ event: CalendarEventDto }> {
+    return this.http.post<{ event: CalendarEventDto }>(`${this.base}/events`, body);
+  }
+
+  update(id: string, body: Partial<CalendarEventDto> & { participants?: unknown[] }): Observable<{ event: CalendarEventDto }> {
+    return this.http.patch<{ event: CalendarEventDto }>(`${this.base}/events/${id}`, body);
+  }
+
+  cancel(id: string): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(`${this.base}/events/${id}`);
+  }
+
+  attendees(q = ''): Observable<{ attendees: { id: string; name: string; email: string; role: string }[] }> {
+    const params = q ? new HttpParams().set('q', q) : undefined;
+    return this.http.get<{ attendees: { id: string; name: string; email: string; role: string }[] }>(
+      `${this.base}/attendees`,
+      { params },
+    );
+  }
 }

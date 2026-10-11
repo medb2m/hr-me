@@ -6,6 +6,7 @@ import { finalize } from 'rxjs';
 import {
   LucideArrowLeft,
   LucideBriefcase,
+  LucideCalendar,
   LucideCheckCircle,
   LucideClock,
   LucideDownload,
@@ -60,6 +61,7 @@ const SOURCE_META: Record<AppSource, string> = {
     ClPreviewComponent,
     LucideArrowLeft,
     LucideBriefcase,
+    LucideCalendar,
     LucideCheckCircle,
     LucideClock,
     LucideDownload,

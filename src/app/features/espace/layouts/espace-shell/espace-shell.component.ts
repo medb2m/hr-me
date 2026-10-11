@@ -4,6 +4,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import {
   LucideBell,
   LucideBriefcase,
+  LucideCalendar,
   LucideChevronDown,
   LucideCrown,
   LucideHome,
@@ -30,6 +31,7 @@ import { NotifBellComponent } from '../../../../shared/components/notif-bell/not
     NotifBellComponent,
     LucideBell,
     LucideBriefcase,
+    LucideCalendar,
     LucideChevronDown,
     LucideCrown,
     LucideHome,

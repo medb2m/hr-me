@@ -8,6 +8,7 @@ import {
   cancelEvent,
   downloadIcs,
   conflicts,
+  listAttendees,
 } from '../controllers/calendar.controller.js';
 
 const router = Router();
@@ -15,6 +16,7 @@ router.use(requireAuth);
 
 router.get('/events', listEvents);
 router.get('/conflicts', conflicts);
+router.get('/attendees', listAttendees);
 router.post('/events', createEvent);
 router.get('/events/:id/ics', downloadIcs);
 router.get('/events/:id', getEvent);

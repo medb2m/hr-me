@@ -59,6 +59,14 @@
             <svg lucideClock [size]="14"></svg> Remettre en attente
           </button>
         }
+        @if (app.user?.id) {
+          <a
+            class="ap-btn ap-btn--cal"
+            [routerLink]="['/calendar']"
+            [queryParams]="{ new: '1', candidate: app.user?.id, cname: displayName() }">
+            <svg lucideCalendar [size]="14"></svg> Planifier un entretien
+          </a>
+        }
       </div>
     </header>
 
