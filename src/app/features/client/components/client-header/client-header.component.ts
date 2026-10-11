@@ -2,6 +2,7 @@ import { Component, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
+  LucideBell,
   LucideChevronDown,
   LucideLayoutGrid,
   LucideLifeBuoy,
@@ -18,6 +19,7 @@ import { NotifBellComponent } from '../../../../shared/components/notif-bell/not
     CommonModule,
     RouterLink,
     NotifBellComponent,
+    LucideBell,
     LucideChevronDown,
     LucideLayoutGrid,
     LucideLifeBuoy,

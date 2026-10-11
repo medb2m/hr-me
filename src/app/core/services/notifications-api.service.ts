@@ -22,8 +22,14 @@ export class NotificationsApiService {
 
   constructor(private readonly http: HttpClient) {}
 
-  list(page = 1, limit = 20): Observable<NotificationListResponse> {
-    const params = new HttpParams().set('page', String(page)).set('limit', String(limit));
+  list(
+    page = 1,
+    limit = 20,
+    filters: { category?: string; read?: boolean } = {},
+  ): Observable<NotificationListResponse> {
+    let params = new HttpParams().set('page', String(page)).set('limit', String(limit));
+    if (filters.category) params = params.set('category', filters.category);
+    if (filters.read !== undefined) params = params.set('read', String(filters.read));
     return this.http.get<NotificationListResponse>(this.base, { params });
   }
 

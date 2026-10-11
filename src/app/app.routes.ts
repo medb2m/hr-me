@@ -85,6 +85,16 @@ export const routes: Routes = [
       canActivate: [authRequiredGuard],
     },
 
+    /** Centre de notifications — tous les rôles connectés. */
+    {
+      path: 'notifications',
+      canActivate: [authRequiredGuard],
+      loadComponent: () =>
+        import('./shared/pages/notifications-center/notifications-center.component').then(
+          (m) => m.NotificationsCenterComponent,
+        ),
+    },
+
     /** Espace admin (login sur `/adminlog`) — dashboard, gestion des utilisateurs, etc. */
     {
       path: 'admin',

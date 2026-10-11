@@ -1,0 +1,165 @@
+<div class="nc-page">
+  <header class="nc-hero">
+    <div class="nc-hero-inner">
+      <div class="nc-hero-icon"><svg lucideBell [size]="30"></svg></div>
+      <div class="nc-hero-txt">
+        <h1>Notifications</h1>
+        <p>
+          {{ hub.unreadTotal() ? hub.unreadTotal() + ' non lue(s)' : 'Vous êtes à jour' }}
+          <span class="nc-live" [class.nc-live--on]="hub.socketStatus() === 'CONNECTED'"></span>
+        </p>
+      </div>
+      <div class="nc-hero-actions">
+        <button class="nc-btn-ghost-dark" type="button" (click)="load()">
+          <svg lucideRefreshCw [size]="15"></svg> Actualiser
+        </button>
+        <button class="nc-btn-primary" type="button" (click)="markAllRead()" [disabled]="!hub.unreadTotal()">
+          <svg lucideCheckCheck [size]="16"></svg> Tout marquer lu
+        </button>
+      </div>
+    </div>
+    <div class="nc-hero-circles" aria-hidden="true"><span></span><span></span></div>
+  </header>
+
+  <!-- Barre de filtres -->
+  <section class="nc-toolbar">
+    <div class="nc-search">
+      <svg lucideSearch [size]="16"></svg>
+      <input [(ngModel)]="filterQ" placeholder="Rechercher dans les notifications…" />
+    </div>
+    <div class="nc-seg">
+      <button
+        type="button"
+        [class.on]="filterRead === 'all'"
+        (click)="setReadFilter('all')">Toutes</button>
+      <button
+        type="button"
+        [class.on]="filterRead === 'unread'"
+        (click)="setReadFilter('unread')">Non lues</button>
+      <button
+        type="button"
+        [class.on]="filterRead === 'read'"
+        (click)="setReadFilter('read')">Lues</button>
+    </div>
+    <button
+      class="nc-btn-ghost"
+      type="button"
+      (click)="clearRead()"
+      [disabled]="clearing() || !hasRead()">
+      <svg lucideTrash2 [size]="15"></svg>
+      {{ clearing() ? 'Suppression…' : 'Effacer les lues' }}
+    </button>
+  </section>
+
+  <section class="nc-chips">
+    @for (c of categories; track c.value) {
+      <button
+        type="button"
+        class="nc-chip"
+        [class.on]="filterCategory === c.value"
+        (click)="setCategory(c.value)">
+        {{ c.label }}
+      </button>
+    }
+  </section>
+
+  <!-- Liste groupée par jour -->
+  @if (loading()) {
+    <div class="nc-loading"><svg lucideLoaderCircle [size]="28" class="spin"></svg> Chargement…</div>
+  } @else {
+    @for (g of groups(); track g.label) {
+      <section class="nc-group">
+        <h2 class="nc-group-label">{{ g.label }}</h2>
+        <div class="nc-list">
+          @for (n of g.items; track trackId($index, n)) {
+            <article
+              class="nc-item"
+              [class.nc-item--unread]="!n.read"
+              (click)="open(n)"
+              role="button"
+              tabindex="0"
+              (keydown.enter)="open(n)">
+              <span class="nc-ico" [attr.data-icon]="n.icon">
+                @switch (n.icon) {
+                  @case ('send') { <svg lucideSend [size]="19"></svg> }
+                  @case ('user-plus') { <svg lucideUserPlus [size]="19"></svg> }
+                  @case ('check-circle') { <svg lucideCheckCircle [size]="19"></svg> }
+                  @case ('x-circle') { <svg lucideXCircle [size]="19"></svg> }
+                  @case ('clock') { <svg lucideClock [size]="19"></svg> }
+                  @case ('briefcase') { <svg lucideBriefcase [size]="19"></svg> }
+                  @case ('mail') { <svg lucideMail [size]="19"></svg> }
+                  @case ('file-check') { <svg lucideFileCheck [size]="19"></svg> }
+                  @case ('file-warning') { <svg lucideFileWarning [size]="19"></svg> }
+                  @case ('calendar') { <svg lucideCalendar [size]="19"></svg> }
+                  @case ('ticket') { <svg lucideTicket [size]="19"></svg> }
+                  @case ('sparkles') { <svg lucideSparkles [size]="19"></svg> }
+                  @default { <svg lucideBell [size]="19"></svg> }
+                }
+              </span>
+              <div class="nc-body">
+                <div class="nc-top">
+                  <strong class="nc-title">{{ n.title }}</strong>
+                  @if (n.priority === 'URGENT') {
+                    <span class="nc-prio">Urgent</span>
+                  }
+                  @if (!n.read) { <span class="nc-dot" aria-label="Non lue"></span> }
+                </div>
+                @if (n.body) {
+                  <p class="nc-desc">{{ n.body }}</p>
+                }
+                <div class="nc-meta">
+                  <span class="nc-cat">{{ categoryLabel(n.category) }}</span>
+                  <time>{{ timeAgo(n.createdAt) }}</time>
+                  @if (n.actionUrl) {
+                    <span class="nc-action">
+                      <svg lucideExternalLink [size]="12"></svg>
+                      {{ n.actionLabel || 'Ouvrir' }}
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="nc-actions">
+                @if (!n.read) {
+                  <button
+                    type="button"
+                    class="nc-act"
+                    title="Marquer comme lu"
+                    (click)="markRead(n, $event)">
+                    <svg lucideCheck [size]="15"></svg>
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="nc-act nc-act--danger"
+                  title="Supprimer"
+                  (click)="remove(n, $event)">
+                  <svg lucideTrash2 [size]="15"></svg>
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    } @empty {
+      <div class="nc-empty">
+        <svg lucideBellOff [size]="44"></svg>
+        <h3>Aucune notification</h3>
+        <p>
+          @if (filterQ || filterCategory || filterRead !== 'all') {
+            Aucun résultat pour ces filtres.
+          } @else {
+            Candidatures, offres, documents et tickets apparaîtront ici.
+          }
+        </p>
+      </div>
+    }
+
+    @if (hasMore()) {
+      <div class="nc-more">
+        <button class="nc-btn-ghost" type="button" (click)="loadMore()" [disabled]="loadingMore()">
+          {{ loadingMore() ? 'Chargement…' : 'Charger plus' }}
+        </button>
+      </div>
+    }
+  }
+</div>

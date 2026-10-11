@@ -544,6 +544,19 @@
   overflow-y: auto;
 }
 
+.notif-all {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #a16207;
+  text-decoration: none;
+  border-top: 1px solid v.$clr-border-light;
+  background: #fafbfd;
+  &:hover { background: rgba(255, 211, 0, 0.14); color: #0f172a; }
+}
+
 .notif-item {
   position: relative;
   display: flex;

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   LucideBell,
   LucideBriefcase,
@@ -27,6 +28,7 @@ import type { AppNotificationDto } from '../../../core/models/hr-me-realtime.mod
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     LucideBell,
     LucideBriefcase,
     LucideCalendar,
