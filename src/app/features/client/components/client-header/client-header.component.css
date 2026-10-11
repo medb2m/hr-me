@@ -87,6 +87,26 @@
   color: #ffd300;
 }
 
+.ch-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.ch-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 211, 0, 0.5);
+  color: #ffd300;
+  transform: translateY(-1px);
+}
+
 .client-header__actions {
   display: flex;
   align-items: center;

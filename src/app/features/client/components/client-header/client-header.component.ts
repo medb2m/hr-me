@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
   LucideBell,
+  LucideCalendar,
   LucideChevronDown,
   LucideLayoutGrid,
   LucideLifeBuoy,
@@ -20,6 +21,7 @@ import { NotifBellComponent } from '../../../../shared/components/notif-bell/not
     RouterLink,
     NotifBellComponent,
     LucideBell,
+    LucideCalendar,
     LucideChevronDown,
     LucideLayoutGrid,
     LucideLifeBuoy,

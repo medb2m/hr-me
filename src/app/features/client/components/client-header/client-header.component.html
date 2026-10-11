@@ -12,6 +12,9 @@
     <a routerLink="/candidat/profile" routerLinkActive="is-active">Profil</a>
   </nav>
   <div class="client-header__actions">
+    <a class="ch-icon-btn" routerLink="/candidat/calendrier" title="Calendrier" aria-label="Calendrier">
+      <svg lucideCalendar [size]="17"></svg>
+    </a>
     <app-notif-bell />
     @if (user(); as u) {
       <div class="ch-user">

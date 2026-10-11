@@ -23,6 +23,9 @@
   </nav>
 
   <div class="user-area">
+    <a class="u-icon-btn" routerLink="/espace/calendrier" title="Calendrier" aria-label="Calendrier">
+      <svg lucideCalendar [size]="17"></svg>
+    </a>
     <app-notif-bell />
     <button type="button" class="user-trigger" (click)="dropdownOpen = !dropdownOpen"
             aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen">

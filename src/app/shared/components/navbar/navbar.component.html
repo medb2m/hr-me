@@ -387,6 +387,13 @@
       }
 
       @if (isUserConnected) {
+        <a
+          class="topnav-icon-btn"
+          routerLink="/calendar"
+          title="Calendrier"
+          aria-label="Calendrier">
+          <svg lucideCalendar class="lc-icon"></svg>
+        </a>
         <div class="notif-panel-wrap">
           <button
             type="button"
