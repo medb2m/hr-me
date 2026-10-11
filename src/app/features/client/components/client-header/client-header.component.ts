@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import {
   LucideChevronDown,
   LucideLayoutGrid,
+  LucideLifeBuoy,
   LucideLogOut,
   LucideSettings,
   LucideUserRound,
@@ -19,6 +20,7 @@ import { NotifBellComponent } from '../../../../shared/components/notif-bell/not
     NotifBellComponent,
     LucideChevronDown,
     LucideLayoutGrid,
+    LucideLifeBuoy,
     LucideLogOut,
     LucideSettings,
     LucideUserRound,

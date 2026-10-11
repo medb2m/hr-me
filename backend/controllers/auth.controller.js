@@ -561,9 +561,9 @@ export async function adminLogin(req, res) {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
-    if (user.role !== 'admin') {
+    if (!['admin', 'agent', 'director', 'recruiter'].includes(user.role)) {
       return res.status(403).json({
-        message: 'This account is not an administrator.',
+        message: 'This account does not have staff access.',
         code: 'NOT_ADMIN',
       });
     }

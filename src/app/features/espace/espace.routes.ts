@@ -35,6 +35,13 @@ export const ESPACE_ROUTES: Routes = [
           ),
       },
       {
+        path: 'support',
+        loadComponent: () =>
+          import('../../shared/pages/support/support-page.component').then(
+            (m) => m.SupportPageComponent,
+          ),
+      },
+      {
         path: 'profil',
         loadComponent: () =>
           import('./pages/espace-profile/espace-profile.component').then(

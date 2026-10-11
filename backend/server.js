@@ -16,6 +16,7 @@ import offerRoutes from './routes/offer.routes.js';
 import positionRoutes from './routes/position.routes.js';
 import applicationRoutes from './routes/application.routes.js';
 import ticketRoutes from './routes/ticket.routes.js';
+import ticketsRoutes from './routes/tickets.routes.js';
 import skillRoutes from './routes/skill.routes.js';
 import interviewRoutes from './routes/interview.routes.js';
 import ttsRoutes from './routes/tts.routes.js';
@@ -98,6 +99,7 @@ app.use('/api/position', positionRoutes);
 app.use('/api/application', applicationRoutes);
 // Ticket Routes
 app.use('/api/ticket', ticketRoutes);
+app.use('/api/tickets', ticketsRoutes);
 // Skill Routes
 app.use('/api/skill', skillRoutes);
 // AI Interview sessions

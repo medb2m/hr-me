@@ -83,6 +83,13 @@ export const CLIENT_ROUTES: Routes = [
             (m) => m.EspaceApplicationsComponent,
           ),
       },
+      {
+        path: 'support',
+        loadComponent: () =>
+          import('../../shared/pages/support/support-page.component').then(
+            (m) => m.SupportPageComponent,
+          ),
+      },
       { path: 'explore', redirectTo: 'offres' },
     ],
   },

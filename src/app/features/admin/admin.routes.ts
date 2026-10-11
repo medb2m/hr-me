@@ -7,6 +7,7 @@ import { AdminOfferFormComponent } from './pages/admin-offer-form/admin-offer-fo
 import { AdminOffersComponent } from './pages/admin-offers/admin-offers.component';
 import { AdminUsersComponent } from './pages/admin-users/admin-users.component';
 import { adminRequiredGuard } from '../../core/guards/admin-required.guard';
+import { staffRequiredGuard } from '../../core/guards/staff-required.guard';
 
 /** Espace admin : login dédié sur `/adminlog` ; l'espace (`/admin/*`) utilise le chrome du site. */
 export const ADMIN_ROUTES: Routes = [
@@ -51,5 +52,21 @@ export const ADMIN_ROUTES: Routes = [
     path: 'applications/:id',
     component: AdminApplicantComponent,
     canActivate: [adminRequiredGuard],
+  },
+  {
+    path: 'tickets',
+    loadComponent: () =>
+      import('./pages/admin-tickets/admin-tickets.component').then(
+        (m) => m.AdminTicketsComponent,
+      ),
+    canActivate: [staffRequiredGuard],
+  },
+  {
+    path: 'tickets/:id',
+    loadComponent: () =>
+      import('./pages/admin-ticket-detail/admin-ticket-detail.component').then(
+        (m) => m.AdminTicketDetailComponent,
+      ),
+    canActivate: [staffRequiredGuard],
   },
 ];

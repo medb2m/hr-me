@@ -11,6 +11,7 @@ import {
   LucideMail,
   LucideSend,
   LucideSparkles,
+  LucideTicket,
   LucideUserPlus,
   LucideXCircle,
 } from '@lucide/angular';
@@ -36,6 +37,7 @@ import type { AppNotificationDto } from '../../../core/models/hr-me-realtime.mod
     LucideMail,
     LucideSend,
     LucideSparkles,
+    LucideTicket,
     LucideUserPlus,
     LucideXCircle,
   ],

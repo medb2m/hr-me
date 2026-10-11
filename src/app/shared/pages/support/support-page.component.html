@@ -1,0 +1,184 @@
+<div class="sp-page">
+  <header class="sp-hero">
+    <div class="sp-hero-inner">
+      <div class="sp-hero-icon"><svg lucideLifeBuoy [size]="30"></svg></div>
+      <div>
+        <h1>Support Al Wassit</h1>
+        <p>Une question, un souci ? Notre équipe vous répond ici — suivi en temps réel.</p>
+      </div>
+      <button class="sp-new" type="button" (click)="showForm.set(!showForm())">
+        <svg lucideTicket [size]="17"></svg>
+        {{ showForm() ? 'Fermer' : 'Nouvelle demande' }}
+      </button>
+    </div>
+    <div class="sp-hero-circles" aria-hidden="true"><span></span><span></span></div>
+  </header>
+
+  @if (sentOk()) {
+    <div class="sp-ok">
+      <svg lucideCheckCircle2 [size]="18"></svg>
+      Demande envoyée — l’équipe a été notifiée et vous répondra ici.
+    </div>
+  }
+
+  <!-- Formulaire nouvelle demande -->
+  @if (showForm()) {
+    <section class="sp-card sp-form">
+      <h2><svg lucideMessageSquare [size]="18"></svg> Décrivez votre demande</h2>
+      <div class="sp-row">
+        <label class="sp-field">Catégorie
+          <select [(ngModel)]="category">
+            @for (c of supportCategories; track c.value) {
+              <option [value]="c.value">{{ c.label }}</option>
+            }
+          </select>
+        </label>
+        <label class="sp-field sp-field--grow">Sujet *
+          <input [(ngModel)]="subject" maxlength="180" placeholder="Ex. Impossible de modifier mon CV" />
+        </label>
+      </div>
+      <label class="sp-field">Description *
+        <textarea
+          [(ngModel)]="description"
+          rows="5"
+          placeholder="Expliquez votre demande en détail : que faisiez-vous, quelle erreur voyez-vous, quel résultat attendez-vous…"
+        ></textarea>
+      </label>
+      <label class="sp-field sp-files">
+        Pièces jointes (optionnel — max 5 fichiers, 10 Mo)
+        <input type="file" multiple (change)="onFiles($event)" />
+      </label>
+      @if (files.length) {
+        <ul class="sp-filelist">
+          @for (f of files; track f.name) {
+            <li><svg lucidePaperclip [size]="13"></svg> {{ f.name }}</li>
+          }
+        </ul>
+      }
+      @if (sendError()) {
+        <div class="sp-error">{{ sendError() }}</div>
+      }
+      <div class="sp-actions">
+        <button class="sp-btn-ghost" type="button" (click)="showForm.set(false)">Annuler</button>
+        <button class="sp-btn-primary" type="button" (click)="submit()" [disabled]="sending()">
+          <svg lucideSend [size]="15"></svg>
+          {{ sending() ? 'Envoi…' : 'Envoyer la demande' }}
+        </button>
+      </div>
+    </section>
+  }
+
+  <!-- Chatbot — section à venir -->
+  <section class="sp-chatbot">
+    <div class="sp-chatbot-icon"><svg lucideBot [size]="34"></svg></div>
+    <div class="sp-chatbot-body">
+      <div class="sp-chatbot-title">
+        <h2>Assistant IA — bientôt disponible</h2>
+        <span class="sp-tag">À venir</span>
+      </div>
+      <p>
+        Un chatbot Al Wassit répondra instantanément aux questions fréquentes :
+        statut de candidature, documents requis par pays, aide CV &amp; lettre…
+        et transférera vers l’équipe si nécessaire.
+      </p>
+    </div>
+  </section>
+
+  <!-- Mes demandes -->
+  <section class="sp-card">
+    <div class="sp-list-head">
+      <h2><svg lucideTicket [size]="18"></svg> Mes demandes</h2>
+      <span class="sp-count">{{ tickets().length }}</span>
+    </div>
+
+    @if (loadError()) {
+      <div class="sp-error">{{ loadError() }}</div>
+    }
+    @if (loading()) {
+      <div class="sp-loading"><svg lucideLoaderCircle [size]="26" class="spin"></svg> Chargement…</div>
+    } @else {
+      @for (t of tickets(); track t.id) {
+        <article class="sp-ticket" [class.open]="selected()?.id === t.id">
+          <button class="sp-ticket-head" type="button" (click)="openTicket(t)">
+            <span class="sp-status" [attr.data-s]="t.status">{{ statusLabel(t.status) }}</span>
+            <span class="sp-ticket-subject">{{ t.subject }}</span>
+            <span class="sp-ticket-cat">{{ categoryLabel(t.category) }}</span>
+            <span class="sp-ticket-time"><svg lucideClock [size]="13"></svg>{{ fmt(t.createdAt) }}</span>
+            <svg class="sp-chev" lucideChevronDown [size]="16"></svg>
+          </button>
+
+          @if (selected()?.id === t.id; as sel) {
+            <div class="sp-thread">
+              @if (selected()?.description) {
+                <p class="sp-thread-desc">{{ selected()?.description }}</p>
+              }
+              @if (selected()?.attachments?.length) {
+                <div class="sp-thread-att">
+                  @for (f of selected()!.attachments; track f.path) {
+                    <a [href]="fileUrl(f.path)" target="_blank" rel="noopener">
+                      <svg lucidePaperclip [size]="13"></svg>{{ f.name }}
+                    </a>
+                  }
+                </div>
+              }
+              <div class="sp-comments">
+                @for (c of selected()?.comments || []; track c.id) {
+                  <div class="sp-comment">
+                    <div class="sp-comment-head">
+                      <strong>{{ c.authorName || '—' }}</strong>
+                      @if (c.authorRole !== 'candidate' && c.authorRole !== 'client') {
+                        <span class="sp-team">Équipe</span>
+                      }
+                      <time>{{ fmt(c.createdAt) }}</time>
+                    </div>
+                    <p>{{ c.body }}</p>
+                  </div>
+                } @empty {
+                  <p class="sp-empty">Pas encore de réponse — vous serez notifié.</p>
+                }
+              </div>
+              <div class="sp-reply">
+                <textarea [(ngModel)]="replyBody" rows="2" placeholder="Ajouter un message…"></textarea>
+                <button class="sp-btn-primary" type="button" (click)="sendReply()" [disabled]="replySending() || replyBody.trim().length < 2">
+                  <svg lucideSend [size]="14"></svg> {{ replySending() ? 'Envoi…' : 'Répondre' }}
+                </button>
+              </div>
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="sp-empty-block">
+          <svg lucideTicket [size]="34"></svg>
+          <p>Aucune demande pour l’instant.</p>
+          <button class="sp-btn-primary" type="button" (click)="showForm.set(true)">Créer ma première demande</button>
+        </div>
+      }
+    }
+  </section>
+
+  <!-- Idées & prochaines sections (statique, à valider) -->
+  <section class="sp-ideas">
+    <h2><svg lucideLightbulb [size]="18"></svg> Prochainement sur votre espace support</h2>
+    <div class="sp-ideas-grid">
+      @for (idea of ideas; track idea.title) {
+        <div class="sp-idea">
+          <div class="sp-idea-icon">
+            @switch (idea.icon) {
+              @case ('book') { <svg lucideBookOpen [size]="20"></svg> }
+              @case ('timer') { <svg lucideTimer [size]="20"></svg> }
+              @case ('mail') { <svg lucideMail [size]="20"></svg> }
+              @case ('phone') { <svg lucidePhone [size]="20"></svg> }
+            }
+          </div>
+          <div>
+            <div class="sp-idea-title">
+              <h3>{{ idea.title }}</h3>
+              <span class="sp-tag">{{ idea.tag }}</span>
+            </div>
+            <p>{{ idea.body }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+</div>

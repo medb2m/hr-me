@@ -1,0 +1,147 @@
+<div class="td-page">
+  <header class="td-hero">
+    <div class="td-hero-inner">
+      <a class="td-back" routerLink="/admin/tickets"><svg lucideArrowLeft [size]="16"></svg> Tableau des tickets</a>
+      @if (ticket(); as t) {
+        <div class="td-hero-row">
+          <span class="td-kind" [attr.data-kind]="t.kind">{{ t.kind === 'support' ? 'Support' : 'Interne' }}</span>
+          <h1>{{ t.subject }}</h1>
+          <span class="td-status" [attr.data-s]="t.status">{{ statusLabel(t.status) }}</span>
+        </div>
+        <p>Ouvert {{ fmt(t.createdAt) }} par {{ t.createdByName || '—' }}
+          @if (t.createdByEmail) { · {{ t.createdByEmail }} }
+          @if (t.createdByRole) { · {{ t.createdByRole }} }
+        </p>
+      }
+    </div>
+    <div class="td-hero-circles" aria-hidden="true"><span></span><span></span></div>
+  </header>
+
+  @if (error()) {
+    <div class="td-error">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="td-loading"><svg lucideLoaderCircle [size]="28" class="spin"></svg> Chargement…</div>
+  } @else if (ticket()) {
+    @if (ticket(); as t) {
+    <div class="td-grid">
+      <main class="td-main">
+        <section class="td-card">
+          <h3>Description</h3>
+          @if (t.description) {
+            <p class="td-desc">{{ t.description }}</p>
+          } @else {
+            <p class="td-empty">Aucune description.</p>
+          }
+          @if (t.attachments.length) {
+            <div class="td-att">
+              <h4><svg lucidePaperclip [size]="15"></svg> Pièces jointes ({{ t.attachments.length }})</h4>
+              @for (f of t.attachments; track f.path) {
+                <a class="td-att-item" [href]="fileUrl(f.path)" target="_blank" rel="noopener">
+                  <svg lucidePaperclip [size]="14"></svg>
+                  <span>{{ f.name }}</span>
+                  <em>{{ (f.size / 1024) | number: '1.0-0' }} Ko</em>
+                </a>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="td-card">
+          <h3><svg lucideMail [size]="16"></svg> Commentaires ({{ t.comments?.length || 0 }})</h3>
+          <div class="td-comments">
+            @for (c of t.comments || []; track c.id) {
+              <div class="td-comment">
+                <div class="td-comment-head">
+                  <strong>{{ c.authorName || '—' }}</strong>
+                  <span class="td-comment-role">{{ c.authorRole }}</span>
+                  <time>{{ fmt(c.createdAt) }}</time>
+                </div>
+                <p>{{ c.body }}</p>
+              </div>
+            } @empty {
+              <p class="td-empty">Pas encore de commentaire.</p>
+            }
+          </div>
+          <div class="td-reply">
+            <textarea
+              [(ngModel)]="commentBody"
+              rows="3"
+              placeholder="Répondre / ajouter une note interne…"
+            ></textarea>
+            <button class="td-send" type="button" (click)="sendComment()" [disabled]="commentSending() || commentBody.trim().length < 2">
+              <svg lucideSend [size]="15"></svg> {{ commentSending() ? 'Envoi…' : 'Envoyer' }}
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <aside class="td-side">
+        <section class="td-card">
+          <h3>Paramètres</h3>
+          <label class="td-field">Statut
+            <select [ngModel]="t.status" (ngModelChange)="onStatus($event)" [disabled]="saving()">
+              @for (o of statusOptions; track o.value) {
+                <option [value]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="td-field">Priorité
+            <select [ngModel]="t.priority" (ngModelChange)="onPriority($event)" [disabled]="saving()">
+              @for (o of priorityOptions; track o.value) {
+                <option [value]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="td-field">Catégorie
+            <select [ngModel]="t.category" (ngModelChange)="onCategory($event)" [disabled]="saving()">
+              @for (c of categoryOptions; track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </select>
+          </label>
+          <label class="td-field">Assigné à
+            <select [ngModel]="t.assignedTo || ''" (ngModelChange)="onAssignee($event)" [disabled]="saving()">
+              <option value="">— Non assigné —</option>
+              @for (a of assignees(); track a.id) {
+                <option [value]="a.id">{{ a.name }} ({{ a.role }})</option>
+              }
+            </select>
+          </label>
+          @if (saving()) {
+            <p class="td-saving"><svg lucideLoaderCircle [size]="14" class="spin"></svg> Enregistrement…</p>
+          }
+        </section>
+
+        <section class="td-card">
+          <h3><svg lucideHistory [size]="16"></svg> Historique</h3>
+          <div class="td-history">
+            @for (h of t.history || []; track $index) {
+              <div class="td-h-item">
+                <span class="td-h-dot" [attr.data-s]="h.status"></span>
+                <div>
+                  <strong>{{ statusLabel(h.status) }}</strong>
+                  <span>par {{ h.changedByName || 'système' }} · {{ fmt(h.changedAt) }}</span>
+                </div>
+              </div>
+            }
+            @if (t.resolvedAt) {
+              <div class="td-h-item">
+                <span class="td-h-dot" data-s="resolved"></span>
+                <div><strong>Résolu</strong><span>{{ fmt(t.resolvedAt) }}</span></div>
+              </div>
+            }
+            @if (t.closedAt) {
+              <div class="td-h-item">
+                <span class="td-h-dot" data-s="closed"></span>
+                <div><strong>Clôturé</strong><span>{{ fmt(t.closedAt) }}</span></div>
+              </div>
+            }
+          </div>
+        </section>
+      </aside>
+    </div>
+    }
+  }
+</div>

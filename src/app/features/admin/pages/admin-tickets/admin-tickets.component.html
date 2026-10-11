@@ -1,0 +1,217 @@
+<div class="tk-page">
+  <header class="tk-hero">
+    <div class="tk-hero-inner">
+      <div class="tk-hero-left">
+        <a class="tk-back" routerLink="/admin"><svg lucideArrowLeft [size]="16"></svg> Admin</a>
+        <h1><svg lucideTicket [size]="26"></svg> Tickets</h1>
+        <p>Demandes internes et support — tableau kanban type Jira.</p>
+      </div>
+      <button class="tk-new" type="button" (click)="openCreate()">
+        <svg lucidePlus [size]="17"></svg> Nouveau ticket
+      </button>
+    </div>
+    <div class="tk-hero-circles" aria-hidden="true"><span></span><span></span></div>
+  </header>
+
+  <!-- Statistiques -->
+  @if (stats(); as s) {
+    <section class="tk-stats">
+      <div class="tk-stat">
+        <div class="tk-stat-ico" data-c="total"><svg lucideChartColumn [size]="18"></svg></div>
+        <div><strong>{{ s.total }}</strong><span>tickets au total</span></div>
+      </div>
+      <div class="tk-stat">
+        <div class="tk-stat-ico" data-c="open"><svg lucideInbox [size]="18"></svg></div>
+        <div><strong>{{ s.byStatus.open + s.byStatus.in_progress + s.byStatus.waiting }}</strong><span>en cours / ouverts</span></div>
+      </div>
+      <div class="tk-stat">
+        <div class="tk-stat-ico" data-c="resolved"><svg lucideCheckCircle2 [size]="18"></svg></div>
+        <div><strong>{{ s.resolvedLast7d }}</strong><span>résolus · 7 jours</span></div>
+      </div>
+      <div class="tk-stat">
+        <div class="tk-stat-ico" data-c="urgent"><svg lucideAlertTriangle [size]="18"></svg></div>
+        <div><strong>{{ s.urgentOpen }}</strong><span>urgents ouverts</span></div>
+      </div>
+      <div class="tk-stat">
+        <div class="tk-stat-ico" data-c="time"><svg lucideClock [size]="18"></svg></div>
+        <div><strong>{{ s.avgResolutionHours || '—' }}<em>h</em></strong><span>délai moyen de résolution</span></div>
+      </div>
+    </section>
+    @if (s.perAssignee.length) {
+      <section class="tk-agents">
+        <div class="tk-agents-title"><svg lucideUsers [size]="16"></svg> Charge par agent</div>
+        <div class="tk-agents-row">
+          @for (a of s.perAssignee; track a.id) {
+            <div class="tk-agent">
+              <span class="tk-agent-name">{{ a.name }}</span>
+              <div class="tk-agent-bar">
+                <span class="tk-agent-fill" [style.width.%]="a.open + a.resolved ? (a.resolved / (a.open + a.resolved)) * 100 : 0"></span>
+              </div>
+              <span class="tk-agent-nums">{{ a.resolved }} résolus · {{ a.open }} ouverts</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  }
+
+  <!-- Filtres -->
+  <section class="tk-filters">
+    <div class="tk-filter tk-filter--search">
+      <svg lucideSearch [size]="16"></svg>
+      <input [(ngModel)]="filterQ" (keyup.enter)="refresh()" placeholder="Rechercher un sujet…" />
+    </div>
+    <select class="tk-filter" [(ngModel)]="filterKind" (change)="refresh()">
+      <option value="">Tous les types</option>
+      <option value="support">Support (candidats/clients)</option>
+      <option value="internal">Internes (équipe)</option>
+    </select>
+    <select class="tk-filter" [(ngModel)]="filterPriority" (change)="refresh()">
+      <option value="">Toutes priorités</option>
+      <option value="urgent">Urgente</option>
+      <option value="high">Haute</option>
+      <option value="medium">Moyenne</option>
+      <option value="low">Basse</option>
+    </select>
+    <select class="tk-filter" [(ngModel)]="filterAssignee" (change)="refresh()">
+      <option value="">Tous les assignés</option>
+      <option value="me">Mes tickets</option>
+      <option value="none">Non assignés</option>
+      @for (a of assignees(); track a.id) {
+        <option [value]="a.id">{{ a.name }}</option>
+      }
+    </select>
+    <button class="tk-btn-ghost" type="button" (click)="refresh()"><svg lucideRefreshCw [size]="15"></svg> Actualiser</button>
+    <button class="tk-btn-ghost" type="button" (click)="clearFilters()"><svg lucideX [size]="15"></svg> Réinitialiser</button>
+  </section>
+
+  @if (error()) {
+    <div class="tk-error">{{ error() }}</div>
+  }
+
+  <!-- Kanban -->
+  @if (loading()) {
+    <div class="tk-loading"><svg lucideLoaderCircle [size]="28" class="spin"></svg> Chargement du tableau…</div>
+  } @else {
+    <div class="tk-board" cdkDropListGroup>
+      @for (col of columns; track col.key) {
+        <section class="tk-col" [attr.data-status]="col.key">
+          <header class="tk-col-head">
+            <span class="tk-col-dot"></span>
+            <h3>{{ col.label }}</h3>
+            <span class="tk-col-count">{{ board()[col.key].length }}</span>
+          </header>
+          <div
+            class="tk-col-body"
+            cdkDropList
+            [cdkDropListData]="board()[col.key]"
+            (cdkDropListDropped)="drop($event, col.key)"
+          >
+            @for (t of board()[col.key]; track t.id) {
+              <article class="tk-card" cdkDrag [cdkDragData]="t" (click)="open(t)">
+                <div class="tk-card-top">
+                  <span class="tk-kind" [attr.data-kind]="t.kind">{{ kindLabel(t.kind) }}</span>
+                  <span class="tk-prio" [attr.data-p]="t.priority" title="Priorité">
+                    @if (t.priority === 'urgent' || t.priority === 'high') {
+                      <svg lucideArrowUp [size]="13"></svg>
+                    } @else {
+                      <svg lucideMinus [size]="13"></svg>
+                    }
+                    {{ priorityLabel(t.priority) }}
+                  </span>
+                </div>
+                <h4>{{ t.subject }}</h4>
+                @if (t.description) {
+                  <p class="tk-card-desc">{{ t.description }}</p>
+                }
+                <footer class="tk-card-foot">
+                  <span class="tk-meta" title="Commentaires"><svg lucideMessageSquare [size]="13"></svg>{{ t.commentsCount || 0 }}</span>
+                  @if (t.attachments.length) {
+                    <span class="tk-meta" title="Pièces jointes"><svg lucidePaperclip [size]="13"></svg>{{ t.attachments.length }}</span>
+                  }
+                  <span class="tk-meta tk-meta--time"><svg lucideClock [size]="13"></svg>{{ ago(t.createdAt) }}</span>
+                  <span class="tk-assignee" [attr.title]="t.assignedToName || 'Non assigné'">
+                    <svg lucideUser [size]="13"></svg>{{ t.assignedToName ? t.assignedToName : (t.createdByName || '—') }}
+                  </span>
+                </footer>
+              </article>
+            } @empty {
+              <div class="tk-col-empty">Aucun ticket</div>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal création -->
+@if (showCreate()) {
+  <div class="tk-modal" (click)="closeCreate()">
+    <div class="tk-modal-card" (click)="$event.stopPropagation()">
+      <header class="tk-modal-head">
+        <h3><svg lucidePlus [size]="18"></svg> Nouveau ticket</h3>
+        <button class="tk-x" type="button" (click)="closeCreate()"><svg lucideX [size]="17"></svg></button>
+      </header>
+      <div class="tk-modal-body">
+        <div class="tk-field tk-field--split">
+          <label>Type
+            <select [(ngModel)]="newKind">
+              <option value="internal">Interne (travail d’équipe)</option>
+              <option value="support">Support (demande utilisateur)</option>
+            </select>
+          </label>
+          <label>Catégorie
+            <select [(ngModel)]="newCategory">
+              <option value="task">Tâche</option>
+              <option value="bug">Bug</option>
+              <option value="feature">Feature request</option>
+              <option value="candidate-followup">Suivi candidat</option>
+              <option value="offer-revision">Révision d’offre</option>
+              <option value="interview">Entretien</option>
+              <option value="documents">Documents</option>
+              <option value="account">Compte</option>
+              <option value="general">Autre</option>
+            </select>
+          </label>
+          <label>Priorité
+            <select [(ngModel)]="newPriority">
+              <option value="low">Basse</option>
+              <option value="medium">Moyenne</option>
+              <option value="high">Haute</option>
+              <option value="urgent">Urgente</option>
+            </select>
+          </label>
+        </div>
+        <label class="tk-field">Sujet *
+          <input [(ngModel)]="newSubject" maxlength="180" placeholder="Ex. Vérifier le diplôme de …" />
+        </label>
+        <label class="tk-field">Description
+          <textarea [(ngModel)]="newDescription" rows="4" placeholder="Contexte, étapes à reproduire, liens utiles…"></textarea>
+        </label>
+        <div class="tk-field tk-field--split2">
+          <label>Assigné à
+            <select [(ngModel)]="newAssignee">
+              <option value="">— Plus tard —</option>
+              @for (a of assignees(); track a.id) {
+                <option [value]="a.id">{{ a.name }} ({{ a.role }})</option>
+              }
+            </select>
+          </label>
+          <label>Pièces jointes (max 5)
+            <input type="file" multiple (change)="onFiles($event)" />
+          </label>
+        </div>
+        @if (createError()) {
+          <div class="tk-error">{{ createError() }}</div>
+        }
+      </div>
+      <footer class="tk-modal-foot">
+        <button class="tk-btn-ghost" type="button" (click)="closeCreate()">Annuler</button>
+        <button class="tk-btn-primary" type="button" (click)="submitCreate()" [disabled]="creating()">
+          {{ creating() ? 'Création…' : 'Créer le ticket' }}
+        </button>
+      </footer>
+    </div>
+  </div>
+}
