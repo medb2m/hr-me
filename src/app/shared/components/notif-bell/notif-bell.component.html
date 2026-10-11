@@ -66,7 +66,7 @@
           </li>
         }
       </ul>
-      <a class="nb-all" routerLink="/notifications" (click)="notifHub.closePanel()">
+      <a class="nb-all" [routerLink]="allLink" (click)="notifHub.closePanel()">
         Voir toutes les notifications
       </a>
     </div>

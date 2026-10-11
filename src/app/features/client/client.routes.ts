@@ -84,6 +84,13 @@ export const CLIENT_ROUTES: Routes = [
           ),
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('../../shared/pages/notifications-center/notifications-center.component').then(
+            (m) => m.NotificationsCenterComponent,
+          ),
+      },
+      {
         path: 'support',
         loadComponent: () =>
           import('../../shared/pages/support/support-page.component').then(

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   LucideBell,
   LucideBriefcase,
@@ -48,6 +48,19 @@ import type { AppNotificationDto } from '../../../core/models/hr-me-realtime.mod
 })
 export class NotifBellComponent {
   readonly notifHub = inject(NotificationsHubService);
+  private readonly router = inject(Router);
+
+  /** Lien « Voir tout » qui reste dans l'espace courant (/candidat, /espace…). */
+  get allLink(): string {
+    const url = this.router.url;
+    if (url.startsWith('/candidat') || url.startsWith('/client')) {
+      return '/candidat/notifications';
+    }
+    if (url.startsWith('/espace')) {
+      return '/espace/notifications';
+    }
+    return '/notifications';
+  }
 
   togglePanel(ev: Event): void {
     ev.stopPropagation();
