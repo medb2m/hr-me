@@ -12,6 +12,8 @@
   border-radius: 0 0 20px 20px;
 }
 .sp-hero-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 18px;
@@ -33,6 +35,11 @@
 .sp-hero h1 { margin: 0 0 4px; font-size: 1.6rem; }
 .sp-hero p { margin: 0; color: #94a3b8; font-size: 0.9rem; }
 .sp-hero-inner > div:nth-child(2) { flex: 1; }
+.sp-hero-circles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 .sp-hero-circles span {
   position: absolute;
   border-radius: 50%;
