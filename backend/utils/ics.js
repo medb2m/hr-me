@@ -8,6 +8,7 @@
  *   end: Date;
  *   location?: string;
  *   url?: string;
+ *   cancel?: boolean;
  * }} opts
  */
 export function buildIcsEvent(opts) {
@@ -24,7 +25,7 @@ export function buildIcsEvent(opts) {
     'VERSION:2.0',
     'PRODID:-//Al Wassit//Calendar//FR',
     'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
+    opts.cancel ? 'METHOD:CANCEL' : 'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${escape(opts.uid)}@hr-me`,
     `DTSTAMP:${fmt(new Date())}`,
@@ -40,6 +41,9 @@ export function buildIcsEvent(opts) {
   }
   if (opts.url) {
     lines.push(`URL:${escape(opts.url)}`);
+  }
+  if (opts.cancel) {
+    lines.push('STATUS:CANCELLED');
   }
   lines.push('END:VEVENT', 'END:VCALENDAR');
   return lines.join('\r\n');

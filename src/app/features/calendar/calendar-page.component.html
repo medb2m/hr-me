@@ -96,9 +96,12 @@
                   type="button"
                   class="cal-ev"
                   [class.cal-ev--allday]="e.allDay"
+                  [class.cal-ev--compact]="evHeight(e) < 44"
+                  [class.cal-ev--tiny]="evHeight(e) < 26"
                   [style.top.px]="evTop(e)"
                   [style.height.px]="evHeight(e)"
                   [style.--evc]="evColor(e)"
+                  [title]="e.title + ' — ' + fmtTime(e.startsAt) + (e.endsAt ? ' – ' + fmtTime(e.endsAt) : '')"
                   (click)="openDetail(e)">
                   <strong>{{ e.title }}</strong>
                   <span>{{ fmtTime(e.startsAt) }}{{ e.endsAt ? ' – ' + fmtTime(e.endsAt) : '' }}</span>

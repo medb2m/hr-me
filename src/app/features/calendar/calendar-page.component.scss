@@ -252,8 +252,17 @@
   gap: 1px;
 }
 .cal-ev:hover { filter: brightness(0.96); box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15); }
-.cal-ev strong {
-  font-size: 0.7rem;
+.cal-ev--compact {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 0 7px;
+}
+.cal-ev--compact strong { font-size: 0.68rem; }
+.cal-ev--compact span { flex-shrink: 0; }
+.cal-ev--tiny span { display: none; }
+.cal-ev--tiny strong { font-size: 0.62rem; }
+.cal-ev strong {  font-size: 0.7rem;
   color: #0f172a;
   white-space: nowrap;
   overflow: hidden;

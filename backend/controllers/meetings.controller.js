@@ -9,7 +9,7 @@ import { emitNotification } from '../services/notification.service.js';
 import { emitToCalendarAgents, getIo } from '../realtime/socket-hub.js';
 import { buildIcsEvent } from '../utils/ics.js';
 import { getFrontendBaseUrl } from '../config/public-url.js';
-import { isSmtpConfigured, sendMeetingInviteEmail } from '../email/mailer.js';
+import { isSmtpConfigured, sendMeetingCancelledEmail, sendMeetingInviteEmail } from '../email/mailer.js';
 
 const MEETING_TYPES = ['general', 'team', 'partner', 'client', 'screening', 'technical', 'final', 'ai_automated'];
 
@@ -523,7 +523,7 @@ export async function updateMeeting(req, res) {
     if (m.status === 'CANCELLED') m.status = 'SCHEDULED'; // édition = réactivation
     await m.save();
 
-    await CalendarEvent.updateMany(
+    const calSync = await CalendarEvent.updateMany(
       { sourceModule: 'meetings', sourceId: m._id },
       {
         title: m.title,
@@ -535,6 +535,36 @@ export async function updateMeeting(req, res) {
         status: m.status === 'CANCELLED' ? 'CANCELLED' : 'SCHEDULED',
       }
     );
+
+    // L'événement a été supprimé à l'annulation → le recréer à la réactivation
+    if (calSync.matchedCount === 0 && m.status !== 'CANCELLED') {
+      const videoLink = `${getFrontendBaseUrl()}/meetings/${m._id}/lobby`;
+      await CalendarEvent.create({
+        title: m.title,
+        type: m.type === 'ai_automated' ? 'AI_INTERVIEW' : 'MEETING',
+        sourceModule: 'meetings',
+        sourceId: m._id,
+        startsAt: m.scheduledAt,
+        endsAt: meetingEndTime(m),
+        allDay: false,
+        timezoneRef: m.timezone,
+        color: m.type === 'ai_automated' ? '#A0522D' : '#7B1C2E',
+        status: 'SCHEDULED',
+        priority: 'NORMAL',
+        agentId: m.createdByAgentId,
+        candidateId: m.candidateId,
+        offerId: m.offerId,
+        location: 'Video',
+        videoLink,
+        description: m.description,
+        participants: m.participants.map((p) => ({
+          userId: p.userId || null,
+          email: p.email,
+          role: p.role === 'host' ? 'HOST' : 'REQUIRED',
+          rsvpStatus: 'PENDING',
+        })),
+      });
+    }
 
     for (const p of m.participants) {
       if (p.userId && p.userId.toString() !== req.user.id) {
@@ -615,22 +645,40 @@ export async function patchMeetingStatus(req, res) {
     }
     m.status = status;
     await m.save();
-    await CalendarEvent.updateMany(
-      { sourceModule: 'meetings', sourceId: m._id },
-      {
-        status:
-          status === 'ENDED' || status === 'ARCHIVED'
-            ? 'COMPLETED'
-            : status === 'CANCELLED'
-              ? 'CANCELLED'
+
+    if (status === 'CANCELLED') {
+      // Retirer l'événement du calendrier
+      await CalendarEvent.deleteMany({ sourceModule: 'meetings', sourceId: m._id });
+    } else {
+      await CalendarEvent.updateMany(
+        { sourceModule: 'meetings', sourceId: m._id },
+        {
+          status:
+            status === 'ENDED' || status === 'ARCHIVED'
+              ? 'COMPLETED'
               : status === 'IN_PROGRESS'
                 ? 'IN_PROGRESS'
                 : 'SCHEDULED',
-      }
-    );
+        }
+      );
+    }
 
     if (status === 'CANCELLED') {
+      const { date: meetDate, time: meetTime } = formatMeetingDateTime(m.scheduledAt, m.timezone);
+      const organizerName = req.user.name || req.user.email;
+      const videoLink = `${getFrontendBaseUrl()}/meetings/${m._id}/lobby`;
+      const icsCancel = buildIcsEvent({
+        uid: m._id.toString(),
+        title: m.title,
+        description: `${meetingKindLabel(m.type)} annulée.`,
+        start: m.scheduledAt,
+        end: meetingEndTime(m),
+        location: 'Al Wassit — visioconférence',
+        url: videoLink,
+        cancel: true,
+      });
       for (const p of m.participants) {
+        // Notification in-app
         if (p.userId && p.userId.toString() !== req.user.id) {
           try {
             await emitNotification({
@@ -638,14 +686,32 @@ export async function patchMeetingStatus(req, res) {
               type: 'MEETING_SCHEDULED',
               category: 'MEETING',
               priority: 'HIGH',
-              title: `Entretien annulé : ${m.title}`,
-              body: `L'entretien du ${m.scheduledAt.toISOString()} a été annulé.`,
+              title: `${meetingKindLabel(m.type)} annulée : ${m.title}`,
+              body: `La réunion du ${meetDate} à ${meetTime} a été annulée.`,
               sourceModule: 'meetings',
               sourceId: m._id,
               metadata: { meetingId: m._id.toString() },
             });
           } catch (e) {
             console.error('[patchStatus] notify cancel', e.message);
+          }
+        }
+        // E-mail d'annulation (tous les participants, même sans compte)
+        if (isSmtpConfigured() && p.email && p.email.includes('@')) {
+          try {
+            await sendMeetingCancelledEmail({
+              to: p.email,
+              participantName: p.name,
+              meetingTitle: m.title,
+              meetingKind: meetingKindLabel(m.type),
+              meetingDate: meetDate,
+              meetingTime: meetTime,
+              meetingTimezone: m.timezone || 'Africa/Tunis',
+              organizerName,
+              ics: icsCancel,
+            });
+          } catch (e) {
+            console.error('[patchStatus] cancel email', p.email, e.message);
           }
         }
       }

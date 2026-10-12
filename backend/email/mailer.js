@@ -192,6 +192,38 @@ export async function sendMeetingInviteEmail({
   });
 }
 
+/** Annulation de réunion (template meeting-cancelled, ICS METHOD:CANCEL en PJ). */
+export async function sendMeetingCancelledEmail({
+  to,
+  participantName,
+  meetingTitle,
+  meetingKind,
+  meetingDate,
+  meetingTime,
+  meetingTimezone,
+  organizerName,
+  ics,
+}) {
+  const v = templateDefaults({
+    participantName: participantName ? ` ${participantName}` : '',
+    meetingTitle,
+    meetingKind,
+    meetingDate,
+    meetingTime,
+    meetingTimezone,
+    organizerName,
+  });
+  const html = renderTemplate('meeting-cancelled.html', v);
+  const text = `Bonjour${v.participantName},\n\n${meetingKind} annulée : ${meetingTitle}\nPrévue le : ${meetingDate} à ${meetingTime} (${meetingTimezone})\nOrganisée par : ${organizerName}\n\nElle a été retirée de votre calendrier. Si elle est reprogrammée, vous recevrez une nouvelle invitation.\n\n— ${v.appName}`;
+  return sendMail({
+    to,
+    subject: `[${v.appName}] Annulée : ${meetingTitle}`,
+    html,
+    text,
+    attachments: ics ? [{ filename: 'invite.ics', content: ics }] : undefined,
+  });
+}
+
 /** Passwordless one-time sign-in link @param {{ to: string, userName: string, magicUrl: string, expiryMinutes?: string|number }} p */
 export async function sendMagicLinkEmail({ to, userName, magicUrl, expiryMinutes = '15' }) {
   const v = templateDefaults({ userName, magicUrl, expiryMinutes: String(expiryMinutes) });
