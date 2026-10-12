@@ -36,6 +36,10 @@ interface PanelUser {
 }
 
 const TYPE_CHIPS = [
+  { value: 'general', label: 'Générale', color: '#64748b' },
+  { value: 'team', label: 'Équipe', color: '#22c55e' },
+  { value: 'partner', label: 'Partenaire', color: '#06b6d4' },
+  { value: 'client', label: 'Client', color: '#ec4899' },
   { value: 'screening', label: 'Présélection', color: '#0ea5e9' },
   { value: 'technical', label: 'Technique', color: '#8b5cf6' },
   { value: 'final', label: 'Finale', color: '#eab308' },
@@ -106,8 +110,8 @@ export class MeetingNewComponent implements OnInit {
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly form = this.fb.nonNullable.group({
-    title: ['Réunion d’équipe', [Validators.required, Validators.maxLength(300)]],
-    type: ['screening'],
+    title: ['Nouvelle réunion', [Validators.required, Validators.maxLength(300)]],
+    type: ['general'],
     date: ['', Validators.required],
     time: ['09:00'],
     durationMin: [30, [Validators.required, Validators.min(5), Validators.max(480)]],

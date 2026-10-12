@@ -11,6 +11,8 @@ import { buildIcsEvent } from '../utils/ics.js';
 import { getFrontendBaseUrl } from '../config/public-url.js';
 import { isSmtpConfigured, sendMail } from '../email/mailer.js';
 
+const MEETING_TYPES = ['general', 'team', 'partner', 'client', 'screening', 'technical', 'final', 'ai_automated'];
+
 function randomPin() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -62,9 +64,9 @@ export async function createMeeting(req, res) {
     const timezone = typeof body.timezone === 'string' ? body.timezone : 'Africa/Tunis';
     const language = ['fr', 'en', 'ar', 'it'].includes(body.language) ? body.language : 'fr';
     const description = typeof body.description === 'string' ? body.description : '';
-    const type = ['screening', 'technical', 'final', 'ai_automated'].includes(body.type)
+    const type = MEETING_TYPES.includes(body.type)
       ? body.type
-      : 'screening';
+      : 'general';
 
     const participants = [];
     const rawParts = Array.isArray(body.participants) ? body.participants : [];
@@ -436,7 +438,7 @@ export async function updateMeeting(req, res) {
     const rescheduled = body.scheduledAt && new Date(body.scheduledAt).getTime() !== m.scheduledAt.getTime();
 
     if (typeof body.title === 'string' && body.title.trim()) m.title = body.title.trim();
-    if (['screening', 'technical', 'final', 'ai_automated'].includes(body.type)) m.type = body.type;
+    if (MEETING_TYPES.includes(body.type)) m.type = body.type;
     if (body.scheduledAt) {
       const d = new Date(body.scheduledAt);
       if (Number.isNaN(d.getTime())) return res.status(400).json({ message: 'Invalid scheduledAt.' });

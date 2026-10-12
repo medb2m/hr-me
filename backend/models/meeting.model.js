@@ -23,7 +23,7 @@ const meetingSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true, maxlength: 300 },
     type: {
       type: String,
-      enum: ['screening', 'technical', 'final', 'ai_automated'],
+      enum: ['general', 'team', 'partner', 'client', 'screening', 'technical', 'final', 'ai_automated'],
       default: 'screening',
     },
     status: {

@@ -32,6 +32,10 @@ type PeriodTab = 'upcoming' | 'history' | 'all';
 type Scope = 'mine' | 'all';
 
 const TYPE_DEFS: { value: string; label: string; color: string }[] = [
+  { value: 'general', label: 'Générale', color: '#64748b' },
+  { value: 'team', label: 'Équipe', color: '#22c55e' },
+  { value: 'partner', label: 'Partenaire', color: '#06b6d4' },
+  { value: 'client', label: 'Client', color: '#ec4899' },
   { value: 'screening', label: 'Présélection', color: '#0ea5e9' },
   { value: 'technical', label: 'Technique', color: '#8b5cf6' },
   { value: 'final', label: 'Finale', color: '#eab308' },
@@ -123,7 +127,7 @@ export class MeetingsHubComponent implements OnInit {
   readonly copied = signal<string | null>(null);
 
   fTitle = '';
-  fType = 'screening';
+  fType = 'general';
   fDate = '';
   fTime = '';
   fDuration = 30;

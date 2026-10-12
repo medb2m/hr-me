@@ -17,6 +17,10 @@ import { MeetingsApiService } from '../../../../core/services/meetings-api.servi
 import type { MeetingDto } from '../../../../core/models/hr-me-realtime.models';
 
 const TYPE_LABELS: Record<string, string> = {
+  general: 'Générale',
+  team: 'Équipe',
+  partner: 'Partenaire',
+  client: 'Client',
   screening: 'Présélection',
   technical: 'Technique',
   final: 'Finale',
