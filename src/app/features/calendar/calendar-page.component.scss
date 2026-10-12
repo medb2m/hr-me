@@ -504,7 +504,17 @@
 .cal-field select:focus,
 .cal-field textarea:focus { border-color: #ffd300; box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.2); }
 .cal-field-row { display: flex; gap: 10px; align-items: flex-end; }
-.cal-field-row3 { display: flex; gap: 10px; }
+.cal-field-row3 {
+  display: flex;
+  gap: 10px;
+}
+.cal-field-row3 .cal-field { min-width: 0; }
+.cal-field-row3 app-date-picker,
+.cal-field-row3 app-time-picker {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
 .cal-field-label { display: block; }
 
 /* Dropdown custom type — style des menus du site */

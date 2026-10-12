@@ -139,10 +139,14 @@
   height: 170px;
   overflow-y: auto;
   scroll-snap-type: y proximity;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   border: 1px solid #f1f5f9;
   border-radius: 10px;
   background: #f8fafc;
+}
+
+.tp-col-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .tp-item {
