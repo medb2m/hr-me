@@ -504,13 +504,73 @@
 .cal-field textarea:focus { border-color: #ffd300; box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.2); }
 .cal-field-row { display: flex; gap: 10px; align-items: flex-end; }
 .cal-field-row3 { display: flex; gap: 10px; }
-.cal-type-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 5px;
-  margin-bottom: 22px;
+.cal-field-label { display: block; }
+
+/* Dropdown custom type — style des menus du site */
+.cal-select { position: relative; }
+.cal-select-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 9px 11px;
+  background: #fff;
+  font-size: 0.87rem;
+  font-weight: 400;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+}
+.cal-select-trigger:hover { border-color: #cbd5e1; }
+.cal-select.open .cal-select-trigger {
+  border-color: #ffd300;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.2);
+}
+.cal-select-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
   flex-shrink: 0;
 }
+.cal-select-value { flex: 1; }
+.cal-select-caret { color: #94a3b8; transition: transform 0.15s; }
+.cal-select.open .cal-select-caret { transform: rotate(180deg); }
+.cal-select-backdrop { position: fixed; inset: 0; z-index: 1; }
+.cal-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 2;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  max-height: 260px;
+  overflow-y: auto;
+}
+.cal-select-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 0.85rem;
+  color: #334155;
+  cursor: pointer;
+}
+.cal-select-item:hover { background: #f8fafc; }
+.cal-select-item.sel { background: rgba(255, 211, 0, 0.16); color: #0f172a; font-weight: 600; }
+.cal-select-check { margin-left: auto; color: #a16207; }
 .cal-check {
   display: flex;
   align-items: center;

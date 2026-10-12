@@ -5,12 +5,12 @@ import { FormsModule } from '@angular/forms';
 import {
   LucideBell,
   LucideCalendarDays,
+  LucideCheck,
+  LucideChevronDown,
   LucideChevronLeft,
   LucideChevronRight,
   LucideClock,
   LucideDownload,
-  LucideLink,
-  LucideList,
   LucideLoaderCircle,
   LucideMapPin,
   LucidePencil,
@@ -67,12 +67,12 @@ const TYPE_DEFS: { value: string; label: string; color: string }[] = [
     FormsModule,
     LucideBell,
     LucideCalendarDays,
+    LucideCheck,
+    LucideChevronDown,
     LucideChevronLeft,
     LucideChevronRight,
     LucideClock,
     LucideDownload,
-    LucideLink,
-    LucideList,
     LucideLoaderCircle,
     LucideMapPin,
     LucidePencil,
@@ -119,6 +119,7 @@ export class CalendarPageComponent implements OnInit {
   fCandidateName = '';
   attendeeQuery = '';
   attendeeResults = signal<Attendee[]>([]);
+  readonly typeMenuOpen = signal(false);
   searching = signal(false);
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -406,6 +407,12 @@ export class CalendarPageComponent implements OnInit {
 
   closeForm(): void {
     this.showForm.set(false);
+    this.typeMenuOpen.set(false);
+  }
+
+  pickType(v: string): void {
+    this.fType = v;
+    this.typeMenuOpen.set(false);
   }
 
   searchAttendees(): void {

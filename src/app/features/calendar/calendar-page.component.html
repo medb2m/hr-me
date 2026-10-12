@@ -234,15 +234,40 @@
         <label class="cal-field">Titre *
           <input [(ngModel)]="fTitle" maxlength="160" placeholder="Ex. Entretien — Chahida Jouini" />
         </label>
-        <div class="cal-field-row">
-          <label class="cal-field">Type
-            <select [(ngModel)]="fType">
-              @for (t of typeDefs; track t.value) {
-                <option [value]="t.value">{{ t.label }}</option>
-              }
-            </select>
-          </label>
-          <span class="cal-type-dot" [style.background]="typeDef(fType).color"></span>
+        <div class="cal-field">
+          <span class="cal-field-label">Type</span>
+          <div class="cal-select" [class.open]="typeMenuOpen()">
+            <button
+              type="button"
+              class="cal-select-trigger"
+              (click)="typeMenuOpen.set(!typeMenuOpen())"
+              aria-haspopup="listbox"
+              [attr.aria-expanded]="typeMenuOpen()">
+              <span class="cal-select-dot" [style.background]="typeDef(fType).color"></span>
+              <span class="cal-select-value">{{ typeDef(fType).label }}</span>
+              <svg lucideChevronDown [size]="15" class="cal-select-caret"></svg>
+            </button>
+            @if (typeMenuOpen()) {
+              <div class="cal-select-backdrop" (click)="typeMenuOpen.set(false)"></div>
+              <ul class="cal-select-menu" role="listbox">
+                @for (t of typeDefs; track t.value) {
+                  <li>
+                    <button
+                      type="button"
+                      class="cal-select-item"
+                      [class.sel]="fType === t.value"
+                      (click)="pickType(t.value)">
+                      <span class="cal-select-dot" [style.background]="t.color"></span>
+                      {{ t.label }}
+                      @if (fType === t.value) {
+                        <svg lucideCheck [size]="14" class="cal-select-check"></svg>
+                      }
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
         </div>
         <div class="cal-field-row3">
           <label class="cal-field">Date
