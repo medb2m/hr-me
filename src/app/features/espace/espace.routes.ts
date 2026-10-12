@@ -40,6 +40,13 @@ export const ESPACE_ROUTES: Routes = [
           import('../calendar/calendar-page.component').then((m) => m.CalendarPageComponent),
       },
       {
+        path: 'meetings/:id/lobby',
+        loadComponent: () =>
+          import('../meetings/pages/meeting-lobby/meeting-lobby.component').then(
+            (m) => m.MeetingLobbyComponent,
+          ),
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import('../../shared/pages/notifications-center/notifications-center.component').then(

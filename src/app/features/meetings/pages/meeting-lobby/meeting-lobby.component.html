@@ -1,5 +1,5 @@
 <div class="lb">
-  <a routerLink="/meetings" class="lb-back"><svg lucideArrowLeft [size]="15"></svg> Réunions</a>
+  <a [routerLink]="backLink" class="lb-back"><svg lucideArrowLeft [size]="15"></svg> {{ backLabel }}</a>
 
   @if (loading()) {
     <div class="lb-card lb-center">
@@ -10,7 +10,7 @@
     <div class="lb-card lb-center">
       <svg lucideVideo [size]="26"></svg>
       <p class="lb-err">{{ error() }}</p>
-      <a routerLink="/meetings" class="lb-btn-ghost">Retour aux réunions</a>
+      <a [routerLink]="backLink" class="lb-btn-ghost">Retour</a>
     </div>
   } @else if (meeting()) {
     @if (meeting(); as m) {

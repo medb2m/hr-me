@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideArrowLeft,
   LucideCalendar,
@@ -65,7 +65,16 @@ const ROLE_LABELS: Record<string, string> = {
 })
 export class MeetingLobbyComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly meetingsApi = inject(MeetingsApiService);
+
+  /** Lien retour : dans un espace dédié, on renvoie vers son calendrier ; sinon vers le hub. */
+  readonly backLink = this.router.url.startsWith('/candidat')
+    ? '/candidat/calendrier'
+    : this.router.url.startsWith('/espace')
+      ? '/espace/calendrier'
+      : '/meetings';
+  readonly backLabel = this.backLink === '/meetings' ? 'Réunions' : 'Calendrier';
 
   readonly meeting = signal<MeetingDto | null>(null);
   readonly loading = signal(true);

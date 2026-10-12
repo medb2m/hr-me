@@ -51,6 +51,13 @@ export class AppComponent {
         void this.router.navigateByUrl(path.replace(/^\/client/, '/candidat'), { replaceUrl: true });
         return;
       }
+      /** Lobby de réunion : réécrit dans l'espace dédié pour garder le layout candidat/client. */
+      const lobby = path.match(/^\/meetings\/([^/]+)\/lobby$/);
+      if (lobby) {
+        const home = area === 'client' ? '/espace' : '/candidat';
+        void this.router.navigateByUrl(`${home}/meetings/${lobby[1]}/lobby`, { replaceUrl: true });
+        return;
+      }
       if (this.isAllowedScopedPath(area, path)) {
         return;
       }
@@ -110,8 +117,8 @@ export class AppComponent {
     if (path === home || path.startsWith(`${home}/`)) {
       return true;
     }
-    // Un candidat/client invité à une réunion doit pouvoir rejoindre le lobby et la salle.
-    if (/^\/meetings\/[^/]+\/(lobby|room)$/.test(path)) {
+    // La salle de réunion reste plein écran (hors espace) pour tous les rôles invités.
+    if (/^\/meetings\/[^/]+\/room$/.test(path)) {
       return true;
     }
     const shared = ['/settings', '/logout', '/verify-email', '/confirm-email-change', '/resend-verification'];
