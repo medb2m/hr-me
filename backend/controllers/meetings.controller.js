@@ -9,9 +9,57 @@ import { emitNotification } from '../services/notification.service.js';
 import { emitToCalendarAgents, getIo } from '../realtime/socket-hub.js';
 import { buildIcsEvent } from '../utils/ics.js';
 import { getFrontendBaseUrl } from '../config/public-url.js';
-import { isSmtpConfigured, sendMail } from '../email/mailer.js';
+import { isSmtpConfigured, sendMeetingInviteEmail } from '../email/mailer.js';
 
 const MEETING_TYPES = ['general', 'team', 'partner', 'client', 'screening', 'technical', 'final', 'ai_automated'];
+
+const MEETING_KIND_LABELS = {
+  general: 'Réunion',
+  team: "Réunion d'équipe",
+  partner: 'Réunion partenaire',
+  client: 'Réunion client',
+  screening: 'Entretien de présélection',
+  technical: 'Entretien technique',
+  final: 'Entretien final',
+  ai_automated: 'Entretien IA',
+};
+
+const MEETING_ROLE_LABELS = {
+  general: { recruiter: 'Participant', candidate: 'Invité', observer: 'Observateur' },
+  team: { recruiter: 'Membre', candidate: 'Invité', observer: 'Observateur' },
+  partner: { recruiter: 'Partenaire', candidate: 'Invité', observer: 'Observateur' },
+  client: { recruiter: 'Client', candidate: 'Invité', observer: 'Observateur' },
+  screening: { recruiter: 'Recruteur', candidate: 'Candidat', observer: 'Évaluateur' },
+  technical: { recruiter: 'Recruteur', candidate: 'Candidat', observer: 'Évaluateur' },
+  final: { recruiter: 'Recruteur', candidate: 'Candidat', observer: 'Évaluateur' },
+  ai_automated: { candidate: 'Candidat', recruiter: 'Superviseur', observer: 'Observateur' },
+};
+
+function meetingKindLabel(type) {
+  return MEETING_KIND_LABELS[type] || 'Réunion';
+}
+
+function meetingRoleLabel(type, role) {
+  if (role === 'host') return 'Animateur';
+  return MEETING_ROLE_LABELS[type]?.[role] || 'Participant';
+}
+
+function formatMeetingDateTime(scheduledAt, timezone) {
+  const tz = timezone || 'Africa/Tunis';
+  const date = new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: tz,
+  }).format(scheduledAt);
+  const time = new Intl.DateTimeFormat('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: tz,
+  }).format(scheduledAt);
+  return { date, time };
+}
 
 function randomPin() {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -178,17 +226,31 @@ export async function createMeeting(req, res) {
         location: 'Al Wassit — visioconférence',
         url: videoLink,
       });
+      const { date: meetDate, time: meetTime } = formatMeetingDateTime(
+        meeting.scheduledAt,
+        meeting.timezone
+      );
+      const organizerName = req.user.name || req.user.email;
       for (const p of participants) {
         const to = p.email;
         if (!to || !to.includes('@')) {
           continue;
         }
         try {
-          await sendMail({
+          await sendMeetingInviteEmail({
             to,
-            subject: `[Al Wassit] Entretien : ${title}`,
-            text: `Bonjour,\n\nUn entretien a été planifié le ${meeting.scheduledAt.toISOString()}.\nLien : ${videoLink}\n${p.role === 'candidate' ? `Code PIN : ${pinCode}\n` : ''}`,
-            attachments: [{ filename: 'invite.ics', content: ics }],
+            participantName: p.name,
+            meetingTitle: title,
+            meetingKind: meetingKindLabel(meeting.type),
+            meetingDate: meetDate,
+            meetingTime: meetTime,
+            meetingDuration: `${meeting.durationMin} min`,
+            meetingTimezone: meeting.timezone || 'Africa/Tunis',
+            organizerName,
+            roleLabel: meetingRoleLabel(meeting.type, p.role),
+            videoLink,
+            pinCode: p.role === 'candidate' ? pinCode : '',
+            ics,
           });
         } catch (e) {
           console.error('[meeting email]', to, e.message);
@@ -270,11 +332,21 @@ export async function addParticipant(req, res) {
           location: 'Al Wassit — visioconférence',
           url: videoLink,
         });
-        await sendMail({
+        const { date: meetDate, time: meetTime } = formatMeetingDateTime(m.scheduledAt, m.timezone);
+        await sendMeetingInviteEmail({
           to: em,
-          subject: `[Al Wassit] Invitation : ${m.title}`,
-          text: `Bonjour,\n\nVous êtes invité·e à la réunion « ${m.title} » le ${m.scheduledAt.toISOString()}.\nLien : ${videoLink}\n${entry.role === 'candidate' ? `Code PIN : ${m.pinCode}\n` : ''}`,
-          attachments: [{ filename: 'invite.ics', content: ics }],
+          participantName: entry.name,
+          meetingTitle: m.title,
+          meetingKind: meetingKindLabel(m.type),
+          meetingDate: meetDate,
+          meetingTime: meetTime,
+          meetingDuration: `${m.durationMin} min`,
+          meetingTimezone: m.timezone || 'Africa/Tunis',
+          organizerName: req.user.name || req.user.email,
+          roleLabel: meetingRoleLabel(m.type, entry.role),
+          videoLink,
+          pinCode: entry.role === 'candidate' ? m.pinCode : '',
+          ics,
         });
       } catch (e) {
         console.error('[addParticipant] email', em, e.message);

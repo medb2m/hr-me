@@ -146,6 +146,52 @@ export async function sendContactConfirmation({ to, userName, subject, messageEx
   });
 }
 
+/** Invitation à une réunion / entretien (template meeting-invite, pièce ICS en PJ). */
+export async function sendMeetingInviteEmail({
+  to,
+  participantName,
+  meetingTitle,
+  meetingKind,
+  meetingDate,
+  meetingTime,
+  meetingDuration,
+  meetingTimezone,
+  organizerName,
+  roleLabel,
+  videoLink,
+  pinCode,
+  ics,
+}) {
+  const pinBlock = pinCode
+    ? `<div style="background:#fffbe6; border:1px solid #fde68a; border-radius:12px; padding:14px 20px; text-align:center; margin:0 0 8px;">
+        <span style="font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#92400e;">Code d'accès (PIN)</span><br />
+        <span style="font-size:24px; font-weight:800; letter-spacing:.3em; color:#0f172a;">${pinCode}</span>
+      </div>`
+    : '';
+  const v = templateDefaults({
+    participantName: participantName ? ` ${participantName}` : '',
+    meetingTitle,
+    meetingKind,
+    meetingDate,
+    meetingTime,
+    meetingDuration,
+    meetingTimezone,
+    organizerName,
+    roleLabel,
+    videoLink,
+    pinBlock,
+  });
+  const html = renderTemplate('meeting-invite.html', v);
+  const text = `Bonjour${v.participantName},\n\n${meetingKind} : ${meetingTitle}\nOrganisé par : ${organizerName}\nDate : ${meetingDate} à ${meetingTime} (${meetingTimezone}) · Durée : ${meetingDuration}\nVotre rôle : ${roleLabel}\n\nRejoindre : ${videoLink}\n${pinCode ? `Code PIN : ${pinCode}\n` : ''}\n— ${v.appName}`;
+  return sendMail({
+    to,
+    subject: `[${v.appName}] ${meetingKind} : ${meetingTitle}`,
+    html,
+    text,
+    attachments: ics ? [{ filename: 'invite.ics', content: ics }] : undefined,
+  });
+}
+
 /** Passwordless one-time sign-in link @param {{ to: string, userName: string, magicUrl: string, expiryMinutes?: string|number }} p */
 export async function sendMagicLinkEmail({ to, userName, magicUrl, expiryMinutes = '15' }) {
   const v = templateDefaults({ userName, magicUrl, expiryMinutes: String(expiryMinutes) });
