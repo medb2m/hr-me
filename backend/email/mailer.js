@@ -192,6 +192,72 @@ export async function sendMeetingInviteEmail({
   });
 }
 
+function escHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Récap envoyé au CRÉATEUR d'une réunion (≠ invitation des participants). */
+export async function sendMeetingCreatedEmail({
+  to,
+  organizerName,
+  meetingTitle,
+  meetingKind,
+  meetingDate,
+  meetingTime,
+  meetingDuration,
+  meetingTimezone,
+  pinCode,
+  videoLink,
+  manageLink,
+  invitees,
+  ics,
+}) {
+  const rows = (invitees || [])
+    .map(
+      (p, i) => `<tr>
+          <td style="padding:10px 16px; ${i > 0 ? 'border-top:1px solid #e2e8f0;' : ''}">
+            <span style="font-size:13px; font-weight:700; color:#0f172a;">${escHtml(p.name || p.email)}</span><br />
+            <span style="font-size:12px; color:#64748b;">${escHtml(p.email)}</span>
+          </td>
+          <td style="padding:10px 16px; ${i > 0 ? 'border-top:1px solid #e2e8f0;' : ''} text-align:right;">
+            <span style="display:inline-block; background:#fef9c3; color:#854d0e; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">${escHtml(p.roleLabel)}</span>
+          </td>
+        </tr>`
+    )
+    .join('');
+  const inviteesRows =
+    rows ||
+    `<tr><td style="padding:14px 16px; font-size:13px; color:#94a3b8;">Aucun invité — réunion privée.</td></tr>`;
+  const v = templateDefaults({
+    participantName: organizerName ? ` ${organizerName}` : '',
+    meetingTitle,
+    meetingKind,
+    meetingDate,
+    meetingTime,
+    meetingDuration,
+    meetingTimezone,
+    pinCode,
+    videoLink,
+    manageLink,
+    inviteeCount: String((invitees || []).length),
+    inviteesRows,
+  });
+  const list = (invitees || []).map((p) => `  - ${p.name || p.email} <${p.email}> — ${p.roleLabel}`).join('\n');
+  const html = renderTemplate('meeting-created.html', v);
+  const text = `Bonjour${v.participantName},\n\nVotre réunion « ${meetingTitle} » est créée.\nDate : ${meetingDate} à ${meetingTime} (${meetingTimezone}) · Durée : ${meetingDuration}\nCode PIN : ${pinCode}\n\nParticipants notifiés :\n${list || '  Aucun'}\n\nGérer : ${manageLink}\nLien salle : ${videoLink}\n\n— ${v.appName}`;
+  return sendMail({
+    to,
+    subject: `[${v.appName}] Réunion créée : ${meetingTitle}`,
+    html,
+    text,
+    attachments: ics ? [{ filename: 'invite.ics', content: ics }] : undefined,
+  });
+}
+
 /** Annulation de réunion (template meeting-cancelled, ICS METHOD:CANCEL en PJ). */
 export async function sendMeetingCancelledEmail({
   to,

@@ -9,7 +9,7 @@ import { emitNotification } from '../services/notification.service.js';
 import { emitToCalendarAgents, getIo } from '../realtime/socket-hub.js';
 import { buildIcsEvent } from '../utils/ics.js';
 import { getFrontendBaseUrl } from '../config/public-url.js';
-import { isSmtpConfigured, sendMeetingCancelledEmail, sendMeetingInviteEmail } from '../email/mailer.js';
+import { isSmtpConfigured, sendMeetingCancelledEmail, sendMeetingCreatedEmail, sendMeetingInviteEmail } from '../email/mailer.js';
 
 const MEETING_TYPES = ['general', 'team', 'partner', 'client', 'screening', 'technical', 'final', 'ai_automated'];
 
@@ -197,6 +197,12 @@ export async function createMeeting(req, res) {
       { event: { id: cal._id.toString(), title: cal.title, startsAt: cal.startsAt, type: cal.type, color: cal.color } }
     );
 
+    const { date: meetDate, time: meetTime } = formatMeetingDateTime(
+      meeting.scheduledAt,
+      meeting.timezone
+    );
+    const organizerName = req.user.name || req.user.email;
+
     for (const p of participants) {
       if (p.userId && p.userId.toString() !== req.user.id) {
         await emitNotification({
@@ -204,8 +210,8 @@ export async function createMeeting(req, res) {
           type: 'MEETING_SCHEDULED',
           category: 'MEETING',
           priority: 'NORMAL',
-          title: `Entretien planifié : ${title}`,
-          body: `Le ${scheduledAt.toISOString()} — rejoindre depuis Al Wassit.`,
+          title: `${meetingKindLabel(meeting.type)} planifiée : ${title}`,
+          body: `Le ${meetDate} à ${meetTime} — rejoindre depuis Al Wassit.`,
           actionUrl: `/meetings/${meeting._id}/lobby`,
           actionLabel: 'Voir le lobby',
           sourceModule: 'meetings',
@@ -226,14 +232,18 @@ export async function createMeeting(req, res) {
         location: 'Al Wassit — visioconférence',
         url: videoLink,
       });
-      const { date: meetDate, time: meetTime } = formatMeetingDateTime(
-        meeting.scheduledAt,
-        meeting.timezone
-      );
-      const organizerName = req.user.name || req.user.email;
+      const creatorEmail = normalizeEmail(req.user.email);
+      const notified = [];
       for (const p of participants) {
         const to = p.email;
         if (!to || !to.includes('@')) {
+          continue;
+        }
+        // Le créateur reçoit un récapitulatif dédié, pas l'invitation
+        const isCreator =
+          normalizeEmail(to) === creatorEmail ||
+          (p.userId && p.userId.toString() === req.user.id);
+        if (isCreator) {
           continue;
         }
         try {
@@ -252,9 +262,34 @@ export async function createMeeting(req, res) {
             pinCode: p.role === 'candidate' ? pinCode : '',
             ics,
           });
+          notified.push({
+            name: p.name,
+            email: to,
+            roleLabel: meetingRoleLabel(meeting.type, p.role),
+          });
         } catch (e) {
           console.error('[meeting email]', to, e.message);
         }
+      }
+      // Récapitulatif pour l'organisateur : la réunion est créée + liste des notifiés
+      try {
+        await sendMeetingCreatedEmail({
+          to: creatorEmail,
+          organizerName,
+          meetingTitle: title,
+          meetingKind: meetingKindLabel(meeting.type),
+          meetingDate: meetDate,
+          meetingTime: meetTime,
+          meetingDuration: `${meeting.durationMin} min`,
+          meetingTimezone: meeting.timezone || 'Africa/Tunis',
+          pinCode,
+          videoLink,
+          manageLink: `${getFrontendBaseUrl()}/meetings`,
+          invitees: notified,
+          ics,
+        });
+      } catch (e) {
+        console.error('[meeting created email]', creatorEmail, e.message);
       }
     }
 
@@ -360,8 +395,8 @@ export async function addParticipant(req, res) {
           type: 'MEETING_SCHEDULED',
           category: 'MEETING',
           priority: 'NORMAL',
-          title: `Ajout à un entretien : ${m.title}`,
-          body: 'Vous avez été ajouté·e à un entretien.',
+          title: `Ajout à une réunion : ${m.title}`,
+          body: 'Vous avez été ajouté·e à une réunion.',
           actionUrl: `/meetings/${m._id}/lobby`,
           actionLabel: 'Voir le lobby',
           sourceModule: 'meetings',
@@ -574,7 +609,7 @@ export async function updateMeeting(req, res) {
             type: 'MEETING_SCHEDULED',
             category: 'MEETING',
             priority: 'NORMAL',
-            title: rescheduled ? `Entretien reprogrammé : ${m.title}` : `Entretien modifié : ${m.title}`,
+            title: rescheduled ? `${meetingKindLabel(m.type)} reprogrammée : ${m.title}` : `${meetingKindLabel(m.type)} modifiée : ${m.title}`,
             body: `Nouvelle date : ${m.scheduledAt.toISOString()}`,
             actionUrl: `/meetings/${m._id}/lobby`,
             actionLabel: 'Voir le lobby',
