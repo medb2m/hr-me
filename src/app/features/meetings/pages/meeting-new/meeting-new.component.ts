@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -8,6 +8,18 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import {
+  LucideGripVertical,
+  LucideInfo,
+  LucideLoaderCircle,
+  LucidePlus,
+  LucideSearch,
+  LucideUserPlus,
+  LucideUsers,
+  LucideVideo,
+  LucideX,
+} from '@lucide/angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import { TimePickerComponent } from '../../../../shared/components/time-picker/time-picker.component';
@@ -15,14 +27,63 @@ import { MeetingsApiService } from '../../../../core/services/meetings-api.servi
 import { CalendarApiService } from '../../../../core/services/calendar-api.service';
 import type { MeetingParticipantDto } from '../../../../core/models/hr-me-realtime.models';
 
+interface PanelUser {
+  id: string | null;
+  name: string;
+  email: string;
+  role?: string;
+}
+
+const TYPE_CHIPS = [
+  { value: 'screening', label: 'Présélection', color: '#0ea5e9' },
+  { value: 'technical', label: 'Technique', color: '#8b5cf6' },
+  { value: 'final', label: 'Finale', color: '#eab308' },
+  { value: 'ai_automated', label: 'IA automatisée', color: '#f97316' },
+];
+
+const DURATIONS = [15, 20, 30, 45, 60, 90, 120];
+
+/** Fonctions Teams/Meet prévues — statique en attente de validation. */
+const ROADMAP = [
+  'Enregistrement de la réunion',
+  'Transcription & résumé IA',
+  'Lever la main',
+  'Réactions en direct',
+  'Arrière-plan flou / virtuel',
+  'Salles de sous-commission',
+  'Sondages pendant la réunion',
+  'Notes partagées',
+  "Salle d'attente & admission",
+  'Verrouillage de la réunion',
+  'RSVP (accepté / décliné)',
+  'Récurrence hebdomadaire',
+];
+
 @Component({
   selector: 'app-meeting-new',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BackButtonComponent, DatePickerComponent, TimePickerComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    BackButtonComponent,
+    DatePickerComponent,
+    TimePickerComponent,
+    CdkDrag,
+    CdkDropList,
+    LucideGripVertical,
+    LucideInfo,
+    LucideLoaderCircle,
+    LucidePlus,
+    LucideSearch,
+    LucideUserPlus,
+    LucideUsers,
+    LucideVideo,
+    LucideX,
+  ],
   templateUrl: './meeting-new.component.html',
   styleUrl: './meeting-new.component.scss',
 })
-export class MeetingNewComponent {
+export class MeetingNewComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly meetingsApi = inject(MeetingsApiService);
   private readonly calendarApi = inject(CalendarApiService);
@@ -32,8 +93,19 @@ export class MeetingNewComponent {
   readonly error = signal<string | null>(null);
   readonly conflictWarning = signal<string | null>(null);
 
+  readonly typeChips = TYPE_CHIPS;
+  readonly durations = DURATIONS;
+  readonly roadmap = ROADMAP;
+
+  // ── Panneau utilisateurs ──
+  readonly recentUsers = signal<PanelUser[]>([]);
+  readonly searchResults = signal<PanelUser[]>([]);
+  readonly userQuery = signal('');
+  readonly searching = signal(false);
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+
   readonly form = this.fb.nonNullable.group({
-    title: ['Entretien de présélection', [Validators.required, Validators.maxLength(300)]],
+    title: ['Réunion d’équipe', [Validators.required, Validators.maxLength(300)]],
     type: ['screening'],
     date: ['', Validators.required],
     time: ['09:00'],
@@ -41,32 +113,88 @@ export class MeetingNewComponent {
     timezone: ['Africa/Tunis'],
     language: ['fr'],
     description: [''],
-    inviteRows: this.fb.array([this.buildInviteGroup()]),
+    inviteRows: this.fb.array<FormGroup>([]),
   });
 
   get inviteRows(): FormArray {
     return this.form.controls.inviteRows;
   }
 
-  private buildInviteGroup(): FormGroup {
-    return this.fb.group({
-      email: [''],
-      name: [''],
-      role: this.fb.nonNullable.control<'recruiter' | 'candidate'>('recruiter'),
-      userId: [''],
+  ngOnInit(): void {
+    this.meetingsApi.recentParticipants().subscribe({
+      next: (r) => this.recentUsers.set(r.items),
+      error: () => {},
     });
   }
 
-  addInviteRow(): void {
-    this.inviteRows.push(this.buildInviteGroup());
+  // ── Recherche utilisateurs ──
+
+  onUserQuery(q: string): void {
+    this.userQuery.set(q);
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    const query = q.trim();
+    if (!query) {
+      this.searchResults.set([]);
+      return;
+    }
+    this.searchTimer = setTimeout(() => {
+      this.searching.set(true);
+      this.calendarApi.attendees(query).subscribe({
+        next: (r) => {
+          this.searchResults.set(r.attendees.map((a) => ({ id: a.id, name: a.name, email: a.email, role: a.role })));
+          this.searching.set(false);
+        },
+        error: () => this.searching.set(false),
+      });
+    }, 250);
+  }
+
+  panelUsers(): PanelUser[] {
+    return this.userQuery().trim() ? this.searchResults() : this.recentUsers();
+  }
+
+  // ── Drag & drop ──
+
+  onUserDrop(ev: CdkDragDrop<unknown>): void {
+    const u = ev.item.data as PanelUser | undefined;
+    if (u?.email) {
+      this.addInviteRow(u);
+    }
+  }
+
+  /** Prédicat : on n'accepte le drop que si l'email n'est pas déjà invité. */
+  inviteDropPredicate = (drag: CdkDrag<PanelUser>): boolean => {
+    const email = drag.data?.email?.toLowerCase();
+    return Boolean(email) && !this.inviteRows.controls.some((c) => (c.get('email')?.value || '').toLowerCase() === email);
+  };
+
+  addInviteRow(u?: PanelUser): void {
+    this.inviteRows.push(
+      this.fb.group({
+        email: [u?.email ?? ''],
+        name: [u?.name ?? ''],
+        role: this.fb.nonNullable.control<'recruiter' | 'candidate'>(
+          u?.role === 'candidate' ? 'candidate' : 'recruiter'
+        ),
+        userId: [u?.id ?? ''],
+      })
+    );
   }
 
   removeInviteRow(index: number): void {
-    if (this.inviteRows.length <= 1) {
-      return;
-    }
     this.inviteRows.removeAt(index);
   }
+
+  initials(name: string): string {
+    return (name || '?')
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0].toUpperCase())
+      .join('');
+  }
+
+  // ── Soumission ──
 
   submit(): void {
     if (this.form.invalid) {
@@ -150,11 +278,13 @@ export class MeetingNewComponent {
     rows: Array<{ email?: string; name?: string; role?: string; userId?: string }>
   ): MeetingParticipantDto[] {
     const out: MeetingParticipantDto[] = [];
+    const seen = new Set<string>();
     for (const r of rows || []) {
       const email = (r.email || '').trim().toLowerCase();
-      if (!email) {
+      if (!email || seen.has(email)) {
         continue;
       }
+      seen.add(email);
       const uid = (r.userId || '').trim();
       const p: MeetingParticipantDto = {
         email,

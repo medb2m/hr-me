@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { Meeting } from '../models/meeting.model.js';
 import { CalendarEvent } from '../models/calendar-event.model.js';
+import { User } from '../models/user.model.js';
 import { getJwtSecret } from '../utils/jwt.js';
 import { emitNotification } from '../services/notification.service.js';
 import { emitToCalendarAgents, getIo } from '../realtime/socket-hub.js';
@@ -234,10 +235,49 @@ export async function addParticipant(req, res) {
     m.participants.push(entry);
     await m.save();
 
+    // Sync calendrier : l'invité apparaît aussi dans l'événement lié
+    await CalendarEvent.updateMany(
+      { sourceModule: 'meetings', sourceId: m._id },
+      {
+        $push: {
+          participants: {
+            userId: entry.userId || null,
+            email: entry.email,
+            role: entry.role === 'host' ? 'HOST' : 'REQUIRED',
+            rsvpStatus: 'PENDING',
+          },
+        },
+      }
+    );
+
     const io = getIo();
     io?.to(`meeting:${m.roomId}`).emit('meeting:participants_updated', {
       participants: serializeMeeting(m).participants,
     });
+
+    // E-mail d'invitation avec pièce ICS si SMTP configuré
+    if (isSmtpConfigured()) {
+      try {
+        const videoLink = `${getFrontendBaseUrl()}/meetings/${m._id}/lobby`;
+        const ics = buildIcsEvent({
+          uid: `${m._id.toString()}-${em}`,
+          title: m.title,
+          description: `${m.description}\n${entry.role === 'candidate' ? `PIN candidat : ${m.pinCode}\n` : ''}Lien : ${videoLink}`,
+          start: m.scheduledAt,
+          end: meetingEndTime(m),
+          location: 'Al Wassit — visioconférence',
+          url: videoLink,
+        });
+        await sendMail({
+          to: em,
+          subject: `[Al Wassit] Invitation : ${m.title}`,
+          text: `Bonjour,\n\nVous êtes invité·e à la réunion « ${m.title} » le ${m.scheduledAt.toISOString()}.\nLien : ${videoLink}\n${entry.role === 'candidate' ? `Code PIN : ${m.pinCode}\n` : ''}`,
+          attachments: [{ filename: 'invite.ics', content: ics }],
+        });
+      } catch (e) {
+        console.error('[addParticipant] email', em, e.message);
+      }
+    }
 
     if (entry.userId && entry.userId.toString() !== req.user.id) {
       try {
@@ -264,6 +304,53 @@ export async function addParticipant(req, res) {
   } catch (err) {
     console.error('[meetings addParticipant]', err);
     return res.status(500).json({ message: err.message || 'Failed to add participant.' });
+  }
+}
+
+/** GET /recent-participants — utilisateurs déjà invités à des réunions passées (staff). */
+export async function recentParticipants(req, res) {
+  try {
+    if (!isStaff(req.user)) {
+      return res.status(403).json({ message: 'Reserved to staff.' });
+    }
+    const meetings = await Meeting.find({ 'participants.0': { $exists: true } })
+      .select('participants scheduledAt')
+      .sort({ scheduledAt: -1 })
+      .limit(80)
+      .lean();
+    const seen = new Map();
+    for (const m of meetings) {
+      for (const p of m.participants || []) {
+        const key = normalizeEmail(p.email) || (p.userId ? `u:${p.userId}` : '');
+        if (!key || seen.has(key)) continue;
+        seen.set(key, {
+          id: p.userId?.toString?.() ?? null,
+          name: p.name || '',
+          email: p.email || '',
+          role: p.role === 'host' ? 'recruiter' : p.role,
+          lastUsed: m.scheduledAt,
+        });
+      }
+      if (seen.size >= 24) break;
+    }
+    // Compléter les noms manquants depuis User
+    const items = [...seen.values()];
+    const missing = items.filter((i) => !i.name && i.id).map((i) => i.id).filter(mongoose.isValidObjectId);
+    if (missing.length) {
+      const users = await User.find({ _id: { $in: missing } }).select('name email').lean();
+      const byId = new Map(users.map((u) => [u._id.toString(), u]));
+      for (const it of items) {
+        const u = it.id ? byId.get(it.id) : null;
+        if (u) {
+          it.name = u.name || it.name;
+          if (!it.email) it.email = u.email;
+        }
+      }
+    }
+    return res.json({ items });
+  } catch (err) {
+    console.error('[meetings recentParticipants]', err);
+    return res.status(500).json({ message: 'Failed.' });
   }
 }
 
@@ -414,6 +501,10 @@ export async function removeParticipant(req, res) {
       return res.status(404).json({ message: 'Participant not found.' });
     }
     await m.save();
+    await CalendarEvent.updateMany(
+      { sourceModule: 'meetings', sourceId: m._id },
+      { $pull: { participants: { email: em } } }
+    );
     const io = getIo();
     io?.to(`meeting:${m.roomId}`).emit('meeting:participants_updated', {
       participants: serializeMeeting(m).participants,

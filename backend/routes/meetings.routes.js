@@ -9,6 +9,7 @@ import {
   getJoinToken,
   addParticipant,
   removeParticipant,
+  recentParticipants,
 } from '../controllers/meetings.controller.js';
 
 const router = Router();
@@ -16,6 +17,7 @@ router.use(requireAuth);
 
 router.post('/', createMeeting);
 router.get('/', listMeetings);
+router.get('/recent-participants', recentParticipants);
 router.get('/:id/join-token', getJoinToken);
 router.post('/:id/participants', addParticipant);
 router.delete('/:id/participants', removeParticipant);

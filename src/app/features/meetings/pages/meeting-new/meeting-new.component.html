@@ -1,92 +1,181 @@
-<div class="meeting-new">
-  <app-back-button link="/meetings" label="Entretiens" class="back"></app-back-button>
-  <h1>Planifier un entretien</h1>
+<div class="mn">
+  <app-back-button link="/meetings" label="Réunions" class="back"></app-back-button>
 
-  @if (conflictWarning()) {
-    <p class="warn">{{ conflictWarning() }}</p>
-  }
+  <div class="mn-head">
+    <h1><svg lucideVideo [size]="22"></svg> Nouvelle réunion</h1>
+    <p>Les invités recevront une <strong>notification</strong>, un <strong>e-mail avec invitation .ics</strong> et l'événement apparaîtra dans leur <strong>calendrier</strong>.</p>
+  </div>
 
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <label>Titre</label>
-    <input type="text" formControlName="title" />
+  <div class="mn-layout">
+    <!-- ═══ Formulaire ═══ -->
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="mn-form">
 
-    <label>Type</label>
-    <select formControlName="type">
-      <option value="screening">Présélection</option>
-      <option value="technical">Technique</option>
-      <option value="final">Final</option>
-      <option value="ai_automated">IA automatisé</option>
-    </select>
+      @if (conflictWarning()) {
+        <p class="mn-warn">{{ conflictWarning() }}</p>
+      }
 
-    <div class="field-row">
-      <div class="field">
-        <span class="flabel">Date</span>
-        <app-date-picker formControlName="date" placeholder="Choisir une date" />
-      </div>
-      <div class="field">
-        <span class="flabel">Heure</span>
-        <app-time-picker formControlName="time" />
-      </div>
-    </div>
+      <label class="mn-field">
+        <span class="mn-label">Titre *</span>
+        <input type="text" formControlName="title" placeholder="Ex. Point hebdo recrutement" />
+      </label>
 
-    <label>Durée (minutes)</label>
-    <input type="number" formControlName="durationMin" min="5" max="480" />
-
-    <label>Fuseau (IANA)</label>
-    <input type="text" formControlName="timezone" />
-
-    <label>Langue</label>
-    <select formControlName="language">
-      <option value="fr">Français</option>
-      <option value="en">English</option>
-      <option value="ar">العربية</option>
-      <option value="it">Italiano</option>
-    </select>
-
-    <label>Description</label>
-    <textarea rows="3" formControlName="description"></textarea>
-
-    <section class="invites" formArrayName="inviteRows">
-      <h2 class="invites-title">Invités (optionnel)</h2>
-      <p class="invites-hint">
-        Indiquez l’<strong>e-mail du compte Al Wassit</strong> de chaque personne : c’est ce qui lui permet d’accéder au lobby et à la salle.
-        Si vous connaissez son <strong>ID utilisateur</strong> MongoDB (24 caractères, ex. depuis <code>/admin/users</code>), ajoutez-le pour lier le compte plus sûrement.
-      </p>
-      @for (_ctrl of inviteRows.controls; track $index; let i = $index) {
-        <div class="invite-row" [formGroupName]="i">
-          <div class="invite-field">
-            <label [attr.for]="'inv-email-' + i">E-mail</label>
-            <input [id]="'inv-email-' + i" type="email" formControlName="email" placeholder="recruteur@exemple.com" />
-          </div>
-          <div class="invite-field">
-            <label [attr.for]="'inv-name-' + i">Nom affiché</label>
-            <input [id]="'inv-name-' + i" type="text" formControlName="name" placeholder="Optionnel" />
-          </div>
-          <div class="invite-field invite-field--sm">
-            <label [attr.for]="'inv-role-' + i">Rôle</label>
-            <select [id]="'inv-role-' + i" formControlName="role">
-              <option value="recruiter">Recruteur / partenaire</option>
-              <option value="candidate">Candidat</option>
-            </select>
-          </div>
-          <div class="invite-field">
-            <label [attr.for]="'inv-uid-' + i">ID utilisateur (optionnel)</label>
-            <input [id]="'inv-uid-' + i" type="text" formControlName="userId" placeholder="24 caractères hex" />
-          </div>
-          @if (inviteRows.length > 1) {
-            <button type="button" class="btn-remove" (click)="removeInviteRow(i)" aria-label="Supprimer la ligne">×</button>
+      <div class="mn-field">
+        <span class="mn-label">Type</span>
+        <div class="mn-chips">
+          @for (t of typeChips; track t.value) {
+            <button type="button" class="mn-chip" [class.sel]="form.controls.type.value === t.value"
+              (click)="form.controls.type.setValue(t.value)">
+              <i [style.background]="t.color"></i>{{ t.label }}
+            </button>
           }
         </div>
+      </div>
+
+      <div class="mn-row3">
+        <div class="mn-field">
+          <span class="mn-label">Date</span>
+          <app-date-picker formControlName="date" placeholder="Choisir une date" />
+        </div>
+        <div class="mn-field">
+          <span class="mn-label">Heure</span>
+          <app-time-picker formControlName="time" />
+        </div>
+        <div class="mn-field">
+          <span class="mn-label">Durée</span>
+          <div class="mn-chips dur">
+            @for (d of durations; track d) {
+              <button type="button" class="mn-chip" [class.sel]="form.controls.durationMin.value === d"
+                (click)="form.controls.durationMin.setValue(d)">{{ d }}′</button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="mn-row2">
+        <label class="mn-field">
+          <span class="mn-label">Fuseau horaire</span>
+          <select formControlName="timezone">
+            <option value="Africa/Tunis">Africa/Tunis (GMT+1)</option>
+            <option value="Europe/Paris">Europe/Paris</option>
+            <option value="Europe/Berlin">Europe/Berlin</option>
+            <option value="Asia/Dubai">Asia/Dubai</option>
+            <option value="America/New_York">America/New_York</option>
+          </select>
+        </label>
+        <label class="mn-field">
+          <span class="mn-label">Langue</span>
+          <select formControlName="language">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+            <option value="it">Italiano</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="mn-field">
+        <span class="mn-label">Description</span>
+        <textarea rows="2" formControlName="description" placeholder="Ordre du jour, consignes…"></textarea>
+      </label>
+
+      <!-- ═══ Invités — zone de drop ═══ -->
+      <section class="mn-invites" formArrayName="inviteRows">
+        <h2><svg lucideUsers [size]="16"></svg> Invités</h2>
+        <p class="mn-hint">Glissez des personnes depuis le panneau de droite, ou ajoutez-les manuellement ci-dessous.</p>
+
+        <div
+          class="mn-drop"
+          cdkDropList
+          #inviteDrop="cdkDropList"
+          [cdkDropListEnterPredicate]="inviteDropPredicate"
+          (cdkDropListDropped)="onUserDrop($event)">
+          @for (_ctrl of inviteRows.controls; track $index; let i = $index) {
+            <div class="mn-invite" [formGroupName]="i">
+              <span class="mn-invite-ava">{{ initials(_ctrl.get('name')?.value || _ctrl.get('email')?.value || '?') }}</span>
+              <input class="mn-inv-name" type="text" formControlName="name" placeholder="Nom" />
+              <input class="mn-inv-mail" type="email" formControlName="email" placeholder="email@exemple.com" />
+              <select class="mn-inv-role" formControlName="role">
+                <option value="recruiter">Recruteur</option>
+                <option value="candidate">Candidat</option>
+              </select>
+              <input type="hidden" formControlName="userId" />
+              <button type="button" class="mn-inv-x" (click)="removeInviteRow(i)" aria-label="Retirer">
+                <svg lucideX [size]="14"></svg>
+              </button>
+            </div>
+          } @empty {
+            <div class="mn-drop-empty">
+              <svg lucideUserPlus [size]="20"></svg>
+              Déposez des utilisateurs ici
+            </div>
+          }
+        </div>
+
+        <button type="button" class="mn-add" (click)="addInviteRow()">
+          <svg lucidePlus [size]="14"></svg> Ajouter manuellement
+        </button>
+      </section>
+
+      @if (error()) {
+        <p class="mn-err">{{ error() }}</p>
       }
-      <button type="button" class="btn-add" (click)="addInviteRow()">+ Ajouter un invité</button>
-    </section>
 
-    @if (error()) {
-      <p class="err">{{ error() }}</p>
-    }
+      <button type="submit" class="mn-submit" [disabled]="submitting()">
+        @if (submitting()) { <svg lucideLoaderCircle [size]="15" class="spin"></svg> }
+        {{ submitting() ? 'Enregistrement…' : 'Créer la réunion' }}
+      </button>
+    </form>
 
-    <button type="submit" class="btn-submit" [disabled]="submitting()">
-      {{ submitting() ? 'Enregistrement…' : 'Créer l’entretien' }}
-    </button>
-  </form>
+    <!-- ═══ Panneau participants récents ═══ -->
+    <aside class="mn-panel">
+      <h2><svg lucideUsers [size]="16"></svg> Personnes récentes</h2>
+      <div class="mn-search">
+        <svg lucideSearch [size]="14"></svg>
+        <input
+          [value]="userQuery()"
+          (input)="onUserQuery($any($event.target).value)"
+          placeholder="Nom, prénom ou e-mail…" />
+      </div>
+      @if (searching()) {
+        <p class="mn-panel-hint"><svg lucideLoaderCircle [size]="13" class="spin"></svg> Recherche…</p>
+      }
+
+      <div
+        class="mn-panel-list"
+        cdkDropList
+        [cdkDropListData]="panelUsers()"
+        [cdkDropListConnectedTo]="[inviteDrop]">
+        @for (u of panelUsers(); track u.email || u.id) {
+          <div class="mn-user" cdkDrag [cdkDragData]="u">
+            <svg lucideGripVertical [size]="14" class="mn-grip"></svg>
+            <span class="mn-user-ava">{{ initials(u.name || u.email) }}</span>
+            <span class="mn-user-info">
+              <strong>{{ u.name || u.email }}</strong>
+              <em>{{ u.email }}</em>
+            </span>
+            <!-- Aperçu pendant le drag -->
+            <div class="mn-user-drag" *cdkDragPreview>
+              <span class="mn-user-ava">{{ initials(u.name || u.email) }}</span>
+              {{ u.name || u.email }}
+            </div>
+          </div>
+        } @empty {
+          <p class="mn-panel-hint">
+            {{ userQuery().trim() ? 'Aucun utilisateur trouvé.' : 'Aucun participant récent.' }}
+          </p>
+        }
+      </div>
+      <p class="mn-panel-hint small">Glissez-déposez vers la zone « Invités ».</p>
+
+      <!-- ═══ Roadmap Teams/Meet (statique) ═══ -->
+      <div class="mn-roadmap">
+        <h3><svg lucideInfo [size]="14"></svg> Bientôt — fonctions Teams/Meet</h3>
+        <ul>
+          @for (r of roadmap; track r) {
+            <li>{{ r }}</li>
+          }
+        </ul>
+      </div>
+    </aside>
+  </div>
 </div>

@@ -7,12 +7,12 @@
       <div class="mh-hero-left">
         <span class="mh-hero-ico"><svg lucideVideo [size]="22"></svg></span>
         <div>
-          <h1>Réunions & entretiens</h1>
+          <h1>Réunions</h1>
           <p>Planification, visioconférence et supervision — Module 10</p>
         </div>
       </div>
       <div class="mh-hero-actions">
-        <a routerLink="/meetings/new" class="mh-btn-primary"><svg lucidePlus [size]="16"></svg> Nouvel entretien</a>
+        <a routerLink="/meetings/new" class="mh-btn-primary"><svg lucidePlus [size]="16"></svg> Nouvelle réunion</a>
         <a routerLink="/calendar" class="mh-btn-ghost"><svg lucideCalendar [size]="16"></svg> Calendrier</a>
       </div>
     </div>
@@ -67,7 +67,7 @@
     <div class="mh-empty">
       <svg lucideVideo [size]="30"></svg>
       <p>Aucune réunion{{ period() === 'history' ? ' dans l’historique' : ' à venir' }}.</p>
-      <a routerLink="/meetings/new" class="mh-btn-primary"><svg lucidePlus [size]="15"></svg> Planifier un entretien</a>
+      <a routerLink="/meetings/new" class="mh-btn-primary"><svg lucidePlus [size]="15"></svg> Planifier une réunion</a>
     </div>
   } @else {
     <ul class="mh-list">
