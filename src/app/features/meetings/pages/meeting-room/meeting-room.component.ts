@@ -90,10 +90,10 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   private roomId = '';
   private pc: RTCPeerConnection | null = null;
   private localStream: MediaStream | null = null;
-  private sentOffer = false;
   private videoSender: RTCRtpSender | null = null;
   private cameraVideoTrack: MediaStreamTrack | null = null;
   private screenStream: MediaStream | null = null;
+  private onSocketReconnect: (() => void) | null = null;
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -338,27 +338,37 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       this.error.set('Socket indisponible.');
       return;
     }
+    // Attacher les listeners AVANT le join pour ne manquer aucune signalisation.
+    this.wireSocket(s);
     s.emit('meeting:join-room', { roomId: this.roomId }, (ack: { ok?: boolean; message?: string }) => {
       if (!ack?.ok) {
         this.error.set(ack?.message || 'Accès à la salle refusé.');
         return;
       }
-      this.wireSocket(s);
+      this.status.set('Connecté — en attente des participants…');
     });
   }
 
   private wireSocket(s: import('socket.io-client').Socket): void {
     this.detachMeetingSocketListeners();
 
+    // Reconnexion socket : rejoindre la salle à nouveau
+    this.onSocketReconnect = () => {
+      if (this.roomId) {
+        s.emit('meeting:join-room', { roomId: this.roomId });
+      }
+    };
+    s.on('connect', this.onSocketReconnect);
+
+    // Le membre DÉJÀ présent reçoit l'événement du nouvel arrivant → c'est lui qui offre
+    // (le nouvel arrivant ne sait pas qui est en salle : il ne peut pas offrir).
     s.on('meeting:peer-present', async ({ userId: otherId }: { userId?: string }) => {
       const myId = this.auth.user()?.id || '';
       if (!otherId || otherId === myId) {
         return;
       }
       await this.ensurePc();
-      const iAmOfferer = myId.localeCompare(otherId) < 0;
-      if (iAmOfferer && !this.sentOffer) {
-        this.sentOffer = true;
+      if (this.pc && !this.pc.remoteDescription) {
         await this.createOffer();
       }
     });
@@ -375,13 +385,22 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
           return;
         }
         if (msg.type === 'offer' && msg.sdp) {
+          // Glare (double offre si join simultané) : le plus petit id cède (« polite peer »)
+          if (this.pc.signalingState !== 'stable') {
+            if (myId.localeCompare(msg.from) > 0) {
+              return; // impoli : notre offre gagne
+            }
+            await this.pc.setLocalDescription({ type: 'rollback' } as RTCSessionDescriptionInit);
+          }
           await this.pc.setRemoteDescription({ type: 'offer', sdp: msg.sdp });
           const answer = await this.pc.createAnswer();
           await this.pc.setLocalDescription(answer);
           s.emit('meeting:signal', { roomId: this.roomId, type: 'answer', sdp: answer.sdp });
           this.status.set('En appel');
         } else if (msg.type === 'answer' && msg.sdp) {
-          await this.pc.setRemoteDescription({ type: 'answer', sdp: msg.sdp });
+          if (this.pc.signalingState === 'have-local-offer') {
+            await this.pc.setRemoteDescription({ type: 'answer', sdp: msg.sdp });
+          }
           this.status.set('En appel');
         } else if (msg.type === 'ice' && msg.candidate) {
           try {
@@ -439,6 +458,10 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
     s.off('meeting:peer-present');
     s.off('meeting:signal');
+    if (this.onSocketReconnect) {
+      s.off('connect', this.onSocketReconnect);
+      this.onSocketReconnect = null;
+    }
     s.off('chat:message');
     s.off('meeting:participants_updated');
     s.off('meeting:moderation');
