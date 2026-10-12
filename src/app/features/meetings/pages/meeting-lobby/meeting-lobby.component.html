@@ -1,17 +1,96 @@
-<div class="lobby">
-  <app-back-button link="/meetings" label="Liste" class="back"></app-back-button>
+<div class="lb">
+  <a routerLink="/meetings" class="lb-back"><svg lucideArrowLeft [size]="15"></svg> Réunions</a>
 
   @if (loading()) {
-    <p>Chargement…</p>
+    <div class="lb-card lb-center">
+      <svg lucideLoaderCircle [size]="22" class="spin"></svg>
+      <p>Chargement…</p>
+    </div>
   } @else if (error()) {
-    <p class="err">{{ error() }}</p>
+    <div class="lb-card lb-center">
+      <svg lucideVideo [size]="26"></svg>
+      <p class="lb-err">{{ error() }}</p>
+      <a routerLink="/meetings" class="lb-btn-ghost">Retour aux réunions</a>
+    </div>
   } @else if (meeting()) {
-    <h1>{{ meeting()!.title }}</h1>
-    <p class="meta">{{ meeting()!.scheduledAt | date : 'full' }} · {{ meeting()!.durationMin }} min · {{ meeting()!.status }}</p>
-    @if (meeting()!.participants.length) {
-      <p class="pin">Code PIN (candidat) : <strong>{{ meeting()!.pinCode }}</strong></p>
+    @if (meeting(); as m) {
+    <!-- ══ Carte principale ══ -->
+    <div class="lb-card">
+      <div class="lb-hero">
+        <span class="lb-circle c1"></span>
+        <span class="lb-circle c2"></span>
+        <div class="lb-hero-top">
+          <span class="lb-type">{{ typeLabel() }}</span>
+          <span class="lb-status" [class.off]="m.status === 'CANCELLED'">{{ statusLabel() }}</span>
+        </div>
+        <h1>{{ m.title }}</h1>
+        <div class="lb-when">
+          <span><svg lucideCalendar [size]="15"></svg> {{ dateLong() }}</span>
+          <span><svg lucideClock [size]="15"></svg> {{ timeOf() }} · {{ m.durationMin }} min</span>
+          <span><svg lucideGlobe [size]="15"></svg> {{ m.timezone }}</span>
+        </div>
+        @if (startsIn()) {
+          <span class="lb-countdown"><svg lucideClock [size]="13"></svg> Début {{ startsIn() }}</span>
+        }
+      </div>
+
+      @if (m.description) {
+        <p class="lb-desc">{{ m.description }}</p>
+      }
+
+      @if (m.status === 'CANCELLED') {
+        <div class="lb-notice warn">
+          Cette réunion a été annulée par l'organisateur.
+        </div>
+      } @else if (ended()) {
+        <div class="lb-notice">
+          Cette réunion est terminée.
+        </div>
+      } @else {
+        <div class="lb-join">
+          <a class="lb-btn-join" [routerLink]="['/meetings', m.id, 'room']">
+            <svg lucideVideo [size]="18"></svg> Entrer dans la salle
+          </a>
+          <button class="lb-btn-ghost" type="button" (click)="copyLink()">
+            <svg lucideCopy [size]="14"></svg> {{ copied() ? 'Lien copié !' : 'Copier le lien' }}
+          </button>
+        </div>
+        <p class="lb-hint">Vérifiez micro et caméra avant d'entrer — la salle s'ouvre dans l'onglet courant.</p>
+      }
+    </div>
+
+    <!-- ══ Détails ══ -->
+    <div class="lb-grid">
+      <div class="lb-card lb-card--flat">
+        <h2><svg lucideUsers [size]="16"></svg> Participants ({{ m.participants.length }})</h2>
+        <ul class="lb-parts">
+          @for (p of m.participants; track p.email || p.name) {
+            <li>
+              <span class="lb-avatar">{{ initials(p.name || p.email || '?') }}</span>
+              <span class="lb-part-info">
+                <strong>{{ p.name || p.email }}</strong>
+                <em>{{ p.email }}</em>
+              </span>
+              <span class="lb-role" [class.host]="p.role === 'host'">{{ roleLabel(p.role) }}</span>
+            </li>
+          } @empty {
+            <li class="lb-empty-parts">Aucun participant invité.</li>
+          }
+        </ul>
+      </div>
+
+      <div class="lb-card lb-card--flat">
+        <h2><svg lucidePin [size]="16"></svg> Accès</h2>
+        <div class="lb-pinbox">
+          <span class="lb-pin-label">Code PIN (candidat)</span>
+          <strong class="lb-pin">{{ m.pinCode }}</strong>
+        </div>
+        @if (m.createdByName || m.createdByEmail) {
+          <p class="lb-creator"><svg lucideUser [size]="13"></svg> Organisée par {{ m.createdByName || m.createdByEmail }}</p>
+        }
+        <p class="lb-tip">Partagez le lien du lobby et le PIN au candidat pour qu'il rejoigne sans compte recruteur.</p>
+      </div>
+    </div>
     }
-    <p class="hint">Vérifiez micro et caméra, puis ouvrez la salle sécurisée.</p>
-    <a class="join" [routerLink]="['/meetings', meeting()!.id, 'room']">Entrer dans la salle</a>
   }
 </div>
