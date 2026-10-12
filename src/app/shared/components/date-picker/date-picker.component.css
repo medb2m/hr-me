@@ -78,7 +78,8 @@
   position: fixed;
   top: 8px;
   left: 8px;
-  z-index: 120;
+  /* au-dessus des modales (3000) et de la topnav admin (1030) */
+  z-index: 4000;
   width: 300px;
   background: #fff;
   border: 1px solid #e2e8f0;

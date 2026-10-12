@@ -270,16 +270,19 @@
           </div>
         </div>
         <div class="cal-field-row3">
-          <label class="cal-field">Date
-            <input type="date" [(ngModel)]="fDate" />
-          </label>
+          <div class="cal-field">
+            <span class="cal-field-label">Date</span>
+            <app-date-picker [(ngModel)]="fDate" placeholder="Choisir une date" />
+          </div>
           @if (!fAllDay) {
-            <label class="cal-field">Début
-              <input type="time" [(ngModel)]="fStart" />
-            </label>
-            <label class="cal-field">Fin
-              <input type="time" [(ngModel)]="fEnd" />
-            </label>
+            <div class="cal-field">
+              <span class="cal-field-label">Début</span>
+              <app-time-picker [(ngModel)]="fStart" />
+            </div>
+            <div class="cal-field">
+              <span class="cal-field-label">Fin</span>
+              <app-time-picker [(ngModel)]="fEnd" />
+            </div>
           }
         </div>
         <label class="cal-check">

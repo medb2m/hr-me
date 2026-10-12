@@ -376,7 +376,8 @@ tbody tr:hover:not(.cell-empty-row) {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.45);
-  z-index: 90;
+  /* au-dessus de la topnav (1030) */
+  z-index: 3000;
 }
 
 .panel {
@@ -387,7 +388,7 @@ tbody tr:hover:not(.cell-empty-row) {
   width: min(420px, 100vw);
   background: #fff;
   box-shadow: -12px 0 40px rgba(15, 23, 42, 0.25);
-  z-index: 95;
+  z-index: 3001;
   display: flex;
   flex-direction: column;
 }
@@ -439,7 +440,7 @@ tbody tr:hover:not(.cell-empty-row) {
   border-radius: 14px;
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
   padding: 24px;
-  z-index: 95;
+  z-index: 3002;
 }
 
 .confirm h2 {

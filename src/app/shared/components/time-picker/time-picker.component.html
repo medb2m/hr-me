@@ -1,0 +1,83 @@
+<div class="tp" [class.tp--open]="open" [class.tp--disabled]="disabled">
+  <!-- Champ saisissable -->
+  <div class="tp-trigger">
+    <svg lucideClock [size]="15" class="tp-ico" aria-hidden="true"></svg>
+    <input
+      class="tp-input"
+      type="text"
+      inputmode="numeric"
+      autocomplete="off"
+      maxlength="5"
+      [placeholder]="placeholder"
+      [value]="text"
+      [disabled]="disabled"
+      (input)="onTextInput($event)"
+      (blur)="commitText()"
+      (keydown)="onTextKeydown($event)"
+      aria-label="Heure (HH:mm)"
+    />
+    @if (clearable && value) {
+      <button type="button" class="tp-clear" (click)="clear()" aria-label="Effacer l'heure">
+        <svg lucideX [size]="13" aria-hidden="true"></svg>
+      </button>
+    }
+    <button
+      type="button"
+      class="tp-caret"
+      (click)="toggle()"
+      [disabled]="disabled"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="open"
+      aria-label="Choisir l'heure"
+    >
+      <svg lucideChevronDown [size]="14" aria-hidden="true"></svg>
+    </button>
+  </div>
+
+  <!-- Molette heures/minutes -->
+  @if (open) {
+    <div class="tp-pop" [ngStyle]="popStyle" role="dialog" aria-label="Choisir une heure">
+      <div class="tp-wheels">
+        <div class="tp-col">
+          <span class="tp-col-label">Heures</span>
+          <div class="tp-col-scroll">
+            @for (h of hours; track h) {
+              <button
+                type="button"
+                class="tp-item"
+                [class.tp-item--sel]="h === selHour"
+                (click)="pickHour(h)"
+              >
+                {{ h < 10 ? '0' + h : h }}
+              </button>
+            }
+          </div>
+        </div>
+        <span class="tp-sep">:</span>
+        <div class="tp-col">
+          <span class="tp-col-label">Min</span>
+          <div class="tp-col-scroll">
+            @for (m of minutes; track m) {
+              <button
+                type="button"
+                class="tp-item"
+                [class.tp-item--sel]="m === selMinute"
+                (click)="pickMinute(m)"
+              >
+                {{ m < 10 ? '0' + m : m }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="tp-foot">
+        <button type="button" class="tp-foot__btn" (click)="pickNow()">Maintenant</button>
+        <span class="tp-foot__spacer"></span>
+        @if (clearable) {
+          <button type="button" class="tp-foot__btn tp-foot__btn--clear" (click)="clear()">Effacer</button>
+        }
+        <button type="button" class="tp-foot__btn tp-foot__btn--ok" (click)="done()">OK</button>
+      </div>
+    </div>
+  }
+</div>

@@ -21,6 +21,8 @@ import {
   LucideVideo,
   LucideX,
 } from '@lucide/angular';
+import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
+import { TimePickerComponent } from '../../shared/components/time-picker/time-picker.component';
 import { CalendarApiService } from '../../core/services/calendar-api.service';
 import { SocketService } from '../../core/services/socket.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -65,6 +67,8 @@ const TYPE_DEFS: { value: string; label: string; color: string }[] = [
   imports: [
     CommonModule,
     FormsModule,
+    DatePickerComponent,
+    TimePickerComponent,
     LucideBell,
     LucideCalendarDays,
     LucideCheck,

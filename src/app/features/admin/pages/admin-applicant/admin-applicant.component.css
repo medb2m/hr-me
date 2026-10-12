@@ -491,7 +491,8 @@
 .ap-modal {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  /* au-dessus de la topnav (1030) et de ses panneaux (2100) */
+  z-index: 3000;
   display: flex;
   align-items: flex-start;
   justify-content: center;

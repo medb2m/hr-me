@@ -368,7 +368,8 @@ select.tk-filter { cursor: pointer; }
   inset: 0;
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(3px);
-  z-index: 200;
+  /* au-dessus de la topnav (1030) et de ses panneaux (2100) */
+  z-index: 3000;
   display: grid;
   place-items: center;
   padding: 20px;
