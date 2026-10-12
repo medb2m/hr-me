@@ -162,6 +162,24 @@ export function attachSocketIo(httpServer, frontendOrigin) {
       }
     });
 
+    socket.on('meeting:leave-room', (payload) => {
+      const roomId = typeof payload?.roomId === 'string' ? payload.roomId : '';
+      if (!roomId || !socket.rooms.has(`meeting:${roomId}`)) {
+        return;
+      }
+      socket.leave(`meeting:${roomId}`);
+      socket.to(`meeting:${roomId}`).emit('meeting:peer-left', { userId: socket.data.userId });
+    });
+
+    // Déconnexion brutale (onglet fermé, perte réseau) : prévenir les salles occupées
+    socket.on('disconnecting', () => {
+      for (const r of socket.rooms) {
+        if (r.startsWith('meeting:')) {
+          socket.to(r).emit('meeting:peer-left', { userId: socket.data.userId });
+        }
+      }
+    });
+
     socket.on('meeting:signal', (payload) => {
       const roomId = payload?.roomId;
       if (typeof roomId !== 'string' || !socket.rooms.has(`meeting:${roomId}`)) {

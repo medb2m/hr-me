@@ -412,6 +412,17 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       }
     );
 
+    // L'autre participant a quitté : fermer le pc pour que son retour re-négocie proprement
+    s.on('meeting:peer-left', ({ userId: otherId }: { userId?: string }) => {
+      const myId = this.auth.user()?.id || '';
+      if (!otherId || otherId === myId) {
+        return;
+      }
+      this.closePc();
+      this.status.set('Participant parti — en attente…');
+      this.cdr.markForCheck();
+    });
+
     s.on('chat:message', (msg: { senderId?: string; content: string; sentAt: string }) => {
       this.chatMessages.update((list) => [...list, msg].slice(-200));
     });
@@ -457,6 +468,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       return;
     }
     s.off('meeting:peer-present');
+    s.off('meeting:peer-left');
     s.off('meeting:signal');
     if (this.onSocketReconnect) {
       s.off('connect', this.onSocketReconnect);
@@ -529,7 +541,21 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     queueMicrotask(() => this.syncLocalVideo());
   }
 
+  /** Ferme la connexion pair et nettoie la vidéo distante (le flux local reste actif). */
+  private closePc(): void {
+    this.pc?.close();
+    this.pc = null;
+    this.videoSender = null;
+    if (this.remoteV?.nativeElement) {
+      this.remoteV.nativeElement.srcObject = null;
+    }
+  }
+
   private leaveMediaAndPc(navigate: boolean): void {
+    // Prévenir les autres que l'on quitte la salle
+    if (this.roomId) {
+      this.socketSvc.getSocket()?.emit('meeting:leave-room', { roomId: this.roomId });
+    }
     if (this.screenSharing()) {
       this.screenStream?.getTracks().forEach((t) => t.stop());
       this.screenStream = null;
@@ -548,8 +574,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     if (this.remoteV?.nativeElement) {
       this.remoteV.nativeElement.srcObject = null;
     }
-    this.pc?.close();
-    this.pc = null;
+    this.closePc();
     if (navigate) {
       void this.router.navigate(['/meetings', this.meetingId, 'lobby']);
     }
