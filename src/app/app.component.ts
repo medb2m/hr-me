@@ -110,6 +110,10 @@ export class AppComponent {
     if (path === home || path.startsWith(`${home}/`)) {
       return true;
     }
+    // Un candidat/client invité à une réunion doit pouvoir rejoindre le lobby et la salle.
+    if (/^\/meetings\/[^/]+\/(lobby|room)$/.test(path)) {
+      return true;
+    }
     const shared = ['/settings', '/logout', '/verify-email', '/confirm-email-change', '/resend-verification'];
     return shared.some((p) => path === p || path.startsWith(`${p}/`));
   }
