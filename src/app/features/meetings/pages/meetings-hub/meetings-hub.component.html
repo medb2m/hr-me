@@ -202,7 +202,7 @@
           <ul class="mh-parts">
             @for (p of m.participants; track p.email) {
               <li>
-                <span class="mh-part-role" [class.host]="p.role === 'host'">{{ p.role }}</span>
+                <span class="mh-part-role" [class.host]="p.role === 'host'">{{ roleLabel(m, p.role) }}</span>
                 <span class="mh-part-name">{{ p.name || p.email }}</span>
                 <span class="mh-part-mail">{{ p.email }}</span>
                 @if (p.joinAt) { <span class="mh-part-join">rejoint</span> }
@@ -216,7 +216,7 @@
           <div class="mh-addpart">
             <input [(ngModel)]="pName" placeholder="Nom" />
             <input [(ngModel)]="pEmail" placeholder="email@exemple.com" />
-            <app-select class="mh-prole" [(ngModel)]="pRole" [options]="roleOptions" />
+            <app-select class="mh-prole" [(ngModel)]="pRole" [options]="roleOptionsForType(m.type)" />
             <button type="button" class="mh-btn-add" (click)="addParticipant(m)"><svg lucidePlus [size]="14"></svg></button>
           </div>
         </div>

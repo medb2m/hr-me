@@ -64,10 +64,49 @@ const LANGS = [
   { value: 'ar', label: 'العربية' },
   { value: 'it', label: 'Italiano' },
 ];
-const ROLE_OPTIONS = [
-  { value: 'recruiter', label: 'Recruteur' },
-  { value: 'candidate', label: 'Candidat' },
-];
+/** Rôles proposés selon le type de réunion. */
+const ROLE_OPTIONS_BY_TYPE: Record<string, { value: string; label: string }[]> = {
+  general: [
+    { value: 'recruiter', label: 'Participant' },
+    { value: 'candidate', label: 'Invité' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+  team: [
+    { value: 'recruiter', label: 'Membre' },
+    { value: 'candidate', label: 'Invité' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+  partner: [
+    { value: 'recruiter', label: 'Partenaire' },
+    { value: 'candidate', label: 'Invité' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+  client: [
+    { value: 'recruiter', label: 'Client' },
+    { value: 'candidate', label: 'Invité' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+  screening: [
+    { value: 'recruiter', label: 'Recruteur' },
+    { value: 'candidate', label: 'Candidat' },
+    { value: 'observer', label: 'Évaluateur' },
+  ],
+  technical: [
+    { value: 'recruiter', label: 'Recruteur' },
+    { value: 'candidate', label: 'Candidat' },
+    { value: 'observer', label: 'Évaluateur' },
+  ],
+  final: [
+    { value: 'recruiter', label: 'Recruteur' },
+    { value: 'candidate', label: 'Candidat' },
+    { value: 'observer', label: 'Évaluateur' },
+  ],
+  ai_automated: [
+    { value: 'candidate', label: 'Candidat' },
+    { value: 'recruiter', label: 'Superviseur' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+};
 
 /** Idées futures — section statique en attente de validation. */
 const FUTURE_IDEAS = [
@@ -120,7 +159,7 @@ export class MeetingsHubComponent implements OnInit {
   readonly timezones = TIMEZONES;
   readonly tzOptions = TZ_OPTIONS;
   readonly langs = LANGS;
-  readonly roleOptions = ROLE_OPTIONS;
+  readonly roleOptionsByType = ROLE_OPTIONS_BY_TYPE;
   readonly futureIdeas = FUTURE_IDEAS;
   readonly statusOptions = [
     { value: '', label: 'Tous statuts' },
@@ -247,6 +286,15 @@ export class MeetingsHubComponent implements OnInit {
 
   statusDef(s: string) {
     return STATUS_DEFS[s] ?? { label: s, color: '#475569', bg: '#f1f5f9' };
+  }
+
+  roleOptionsForType(t: string) {
+    return ROLE_OPTIONS_BY_TYPE[t] ?? ROLE_OPTIONS_BY_TYPE['general'];
+  }
+
+  roleLabel(m: MeetingDto, role: string): string {
+    if (role === 'host') return 'Animateur';
+    return this.roleOptionsForType(m.type).find((o) => o.value === role)?.label ?? role;
   }
 
   isLiveNow(m: MeetingDto): boolean {

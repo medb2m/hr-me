@@ -117,10 +117,53 @@ export class MeetingNewComponent implements OnInit {
     { value: 'ar', label: 'العربية' },
     { value: 'it', label: 'Italiano' },
   ];
-  readonly roleOptions = [
-    { value: 'recruiter', label: 'Recruteur' },
-    { value: 'candidate', label: 'Candidat' },
-  ];
+  /** Rôles proposés selon le type de réunion. */
+  readonly roleOptionsByType: Record<string, { value: string; label: string }[]> = {
+    general: [
+      { value: 'recruiter', label: 'Participant' },
+      { value: 'candidate', label: 'Invité' },
+      { value: 'observer', label: 'Observateur' },
+    ],
+    team: [
+      { value: 'recruiter', label: 'Membre' },
+      { value: 'candidate', label: 'Invité' },
+      { value: 'observer', label: 'Observateur' },
+    ],
+    partner: [
+      { value: 'recruiter', label: 'Partenaire' },
+      { value: 'candidate', label: 'Invité' },
+      { value: 'observer', label: 'Observateur' },
+    ],
+    client: [
+      { value: 'recruiter', label: 'Client' },
+      { value: 'candidate', label: 'Invité' },
+      { value: 'observer', label: 'Observateur' },
+    ],
+    screening: [
+      { value: 'recruiter', label: 'Recruteur' },
+      { value: 'candidate', label: 'Candidat' },
+      { value: 'observer', label: 'Évaluateur' },
+    ],
+    technical: [
+      { value: 'recruiter', label: 'Recruteur' },
+      { value: 'candidate', label: 'Candidat' },
+      { value: 'observer', label: 'Évaluateur' },
+    ],
+    final: [
+      { value: 'recruiter', label: 'Recruteur' },
+      { value: 'candidate', label: 'Candidat' },
+      { value: 'observer', label: 'Évaluateur' },
+    ],
+    ai_automated: [
+      { value: 'candidate', label: 'Candidat' },
+      { value: 'recruiter', label: 'Superviseur' },
+      { value: 'observer', label: 'Observateur' },
+    ],
+  };
+
+  roleOptionsForType(): { value: string; label: string }[] {
+    return this.roleOptionsByType[this.form.controls.type.value] ?? this.roleOptionsByType['general'];
+  }
 
   // ── Panneau utilisateurs ──
   readonly recentUsers = signal<PanelUser[]>([]);
@@ -200,8 +243,8 @@ export class MeetingNewComponent implements OnInit {
       this.fb.group({
         email: [u?.email ?? ''],
         name: [u?.name ?? ''],
-        role: this.fb.nonNullable.control<'recruiter' | 'candidate'>(
-          u?.role === 'candidate' ? 'candidate' : 'recruiter'
+        role: this.fb.nonNullable.control<'recruiter' | 'candidate' | 'observer'>(
+          u?.role === 'candidate' ? 'candidate' : (this.roleOptionsForType()[0].value as 'recruiter')
         ),
         userId: [u?.id ?? ''],
         avatarUrl: [u?.avatarUrl ?? ''],
@@ -317,7 +360,7 @@ export class MeetingNewComponent implements OnInit {
       const p: MeetingParticipantDto = {
         email,
         name: (r.name || '').trim(),
-        role: r.role === 'candidate' ? 'candidate' : 'recruiter',
+        role: ['candidate', 'observer'].includes(r.role || '') ? (r.role as MeetingParticipantDto['role']) : 'recruiter',
       };
       if (/^[a-f\d]{24}$/i.test(uid)) {
         p.userId = uid;

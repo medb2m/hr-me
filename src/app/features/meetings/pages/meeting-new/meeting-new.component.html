@@ -89,7 +89,7 @@
               </span>
               <input class="mn-inv-name" type="text" formControlName="name" placeholder="Nom" />
               <input class="mn-inv-mail" type="email" formControlName="email" placeholder="email@exemple.com" />
-              <app-select class="mn-inv-role" formControlName="role" [options]="roleOptions" />
+              <app-select class="mn-inv-role" formControlName="role" [options]="roleOptionsForType()" />
               <input type="hidden" formControlName="userId" />
               <input type="hidden" formControlName="avatarUrl" />
               <button type="button" class="mn-inv-x" (click)="removeInviteRow(i)" aria-label="Retirer">

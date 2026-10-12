@@ -220,7 +220,7 @@ export async function addParticipant(req, res) {
     if (!em) {
       return res.status(400).json({ message: 'A valid email is required.' });
     }
-    const role = ['recruiter', 'candidate'].includes(body.role) ? body.role : 'recruiter';
+    const role = ['recruiter', 'candidate', 'observer'].includes(body.role) ? body.role : 'recruiter';
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     const dup = m.participants.some(
       (p) =>
