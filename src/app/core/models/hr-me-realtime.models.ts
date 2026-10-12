@@ -16,6 +16,7 @@ export interface MeetingParticipantDto {
   email: string;
   name: string;
   role: 'host' | 'recruiter' | 'candidate' | 'observer';
+  avatarUrl?: string;
   joinAt?: string | null;
   leaveAt?: string | null;
   noShow?: boolean;

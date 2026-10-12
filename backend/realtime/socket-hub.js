@@ -136,10 +136,21 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         }
         const join = socket.data.meetingJoin;
         const userId = socket.data.userId;
+        const roomMembers = async () => {
+          const socks = await io.in(`meeting:${roomId}`).fetchSockets();
+          const seen = new Map();
+          for (const x of socks) {
+            const id = x.data.userId;
+            if (id && !seen.has(id)) {
+              seen.set(id, { userId: id, email: x.data.email || '' });
+            }
+          }
+          return [...seen.values()];
+        };
         if (join?.roomId === roomId && join.meetingId === meeting._id.toString()) {
           socket.join(`meeting:${roomId}`);
           socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId });
-          cb?.({ ok: true, meetingId: meeting._id.toString() });
+          cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers() });
           return;
         }
         const userEmail = normalizeSocketEmail(socket.data.email);
@@ -155,7 +166,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         }
         socket.join(`meeting:${roomId}`);
         socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId });
-        cb?.({ ok: true, meetingId: meeting._id.toString() });
+        cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers() });
       } catch (e) {
         console.error('[meeting:join-room]', e);
         cb?.({ ok: false, message: 'Server error' });
@@ -178,6 +189,21 @@ export function attachSocketIo(httpServer, frontendOrigin) {
           socket.to(r).emit('meeting:peer-left', { userId: socket.data.userId });
         }
       }
+    });
+
+    // État micro/caméra relayé à la salle (avatar + indicateurs)
+    socket.on('meeting:media-state', (payload) => {
+      const roomId = typeof payload?.roomId === 'string' ? payload.roomId : '';
+      if (!roomId || !socket.rooms.has(`meeting:${roomId}`)) {
+        return;
+      }
+      socket.to(`meeting:${roomId}`).emit('meeting:media-state', {
+        userId: socket.data.userId,
+        email: socket.data.email || '',
+        micOn: payload.micOn !== false,
+        camOn: payload.camOn !== false,
+        name: typeof payload.name === 'string' ? payload.name.slice(0, 80) : '',
+      });
     });
 
     socket.on('meeting:signal', (payload) => {

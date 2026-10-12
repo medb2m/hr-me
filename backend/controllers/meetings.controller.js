@@ -481,11 +481,36 @@ export async function getMeeting(req, res) {
     if (!canAccessMeeting(req.user.id, req.user.email, m)) {
       return res.status(403).json({ message: 'Forbidden.' });
     }
-    return res.json({ meeting: serializeMeeting(m) });
+    const dto = serializeMeeting(m);
+    dto.participants = await withParticipantAvatars(dto.participants);
+    return res.json({ meeting: dto });
   } catch (err) {
     console.error('[meetings get]', err);
     return res.status(500).json({ message: 'Failed.' });
   }
+}
+
+/** Enrichit les participants avec `avatarUrl` (par userId, sinon par e-mail). */
+async function withParticipantAvatars(participants) {
+  const ids = (participants || []).map((p) => p.userId).filter(Boolean);
+  const emails = (participants || []).map((p) => normalizeEmail(p.email)).filter(Boolean);
+  if (!ids.length && !emails.length) {
+    return participants;
+  }
+  const users = await User.find({
+    $or: [
+      ...(ids.length ? [{ _id: { $in: ids.filter((x) => mongoose.isValidObjectId(x)) } }] : []),
+      ...(emails.length ? [{ email: { $in: emails } }] : []),
+    ],
+  })
+    .select('email avatarUrl')
+    .lean();
+  const byId = new Map(users.map((u) => [u._id.toString(), u.avatarUrl || '']));
+  const byEmail = new Map(users.map((u) => [normalizeEmail(u.email), u.avatarUrl || '']));
+  return participants.map((p) => ({
+    ...p,
+    avatarUrl: (p.userId && byId.get(String(p.userId))) || byEmail.get(normalizeEmail(p.email)) || '',
+  }));
 }
 
 const STAFF_ROLES = ['admin', 'agent', 'director', 'recruiter'];

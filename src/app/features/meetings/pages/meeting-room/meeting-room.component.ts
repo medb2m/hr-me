@@ -74,6 +74,17 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   readonly screenSharing = signal(false);
   readonly addParticipantBusy = signal(false);
   readonly addParticipantErr = signal<string | null>(null);
+  /** Présence en salle (userIds / emails connectés). */
+  readonly presentIds = signal<Set<string>>(new Set());
+  readonly presentEmails = signal<Set<string>>(new Set());
+  /** Pair distant connecté (négociation établie). */
+  readonly remoteActive = signal(false);
+  readonly remoteCamOn = signal(true);
+  readonly remoteMicOn = signal(true);
+  readonly remoteSpeaking = signal(false);
+  readonly selfSpeaking = signal(false);
+
+  private remoteUserId = '';
 
   readonly isHost = computed(() => {
     const uid = this.auth.user()?.id || '';
@@ -94,6 +105,10 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   private cameraVideoTrack: MediaStreamTrack | null = null;
   private screenStream: MediaStream | null = null;
   private onSocketReconnect: (() => void) | null = null;
+  private audioCtx: AudioContext | null = null;
+  private localAnalyser: AnalyserNode | null = null;
+  private remoteAnalyser: AnalyserNode | null = null;
+  private speakTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -147,6 +162,52 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
     return false;
   }
+
+  /** Participant actuellement connecté en salle (indicateur vert). */
+  isPresent(p: MeetingParticipantDto): boolean {
+    if (this.isSelfParticipant(p)) {
+      return true;
+    }
+    if (p.userId && this.presentIds().has(String(p.userId))) {
+      return true;
+    }
+    return this.presentEmails().has((p.email || '').trim().toLowerCase());
+  }
+
+  initials(name: string): string {
+    return (name || '?')
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0].toUpperCase())
+      .join('');
+  }
+
+  private findParticipantByUserId(uid: string): MeetingParticipantDto | undefined {
+    return this.participants().find((x) => String(x.userId) === uid);
+  }
+
+  remoteName = computed(() => {
+    const p = this.findParticipantByUserId(this.remoteUserId);
+    return p?.name || p?.email || 'Participant';
+  });
+
+  remoteAvatar = computed(() => this.findParticipantByUserId(this.remoteUserId)?.avatarUrl || '');
+
+  remoteInitials = computed(() => this.initials(this.remoteName()));
+
+  selfName = computed(() => this.auth.user()?.name || this.auth.user()?.email || 'Vous');
+
+  selfAvatar = computed(() => {
+    const me = this.auth.user();
+    if (me?.avatarUrl) {
+      return me.avatarUrl;
+    }
+    const self = this.participants().find((x) => this.isSelfParticipant(x));
+    return self?.avatarUrl || '';
+  });
+
+  selfInitials = computed(() => this.initials(this.selfName()));
 
   canModerateParticipant(p: MeetingParticipantDto): boolean {
     if (!this.isHost() || this.isSelfParticipant(p)) {
@@ -244,20 +305,24 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     if (t) {
       t.enabled = on;
     }
+    this.emitMediaState();
   }
 
   toggleCam(): void {
-    const vt = this.videoSender?.track;
-    if (vt && vt.kind === 'video') {
-      vt.enabled = !vt.enabled;
-      this.camOn.set(vt.enabled);
-      if (!this.screenSharing()) {
-        const cam = this.cameraVideoTrack;
-        if (cam) {
-          cam.enabled = vt.enabled;
-        }
+    const on = !this.camOn();
+    this.camOn.set(on);
+    if (this.cameraVideoTrack) {
+      this.cameraVideoTrack.enabled = on;
+    }
+    // Ne pas couper la piste d'écran pendant un partage
+    if (!this.screenSharing()) {
+      const vt = this.videoSender?.track;
+      if (vt && vt.kind === 'video') {
+        vt.enabled = on;
       }
     }
+    this.syncLocalVideo();
+    this.emitMediaState();
   }
 
   async toggleFullscreen(): Promise<void> {
@@ -306,15 +371,94 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   private async startMedia(): Promise<void> {
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 720 } },
-        audio: { echoCancellation: true, noiseSuppression: true },
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 },
+        },
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       this.cameraVideoTrack = this.localStream.getVideoTracks()[0] || null;
+      this.camOn.set(Boolean(this.cameraVideoTrack));
+      this.micOn.set(Boolean(this.localStream.getAudioTracks()[0]));
       this.syncLocalVideo();
       this.status.set('Connecté — en attente du pair…');
     } catch {
-      this.error.set('Caméra ou micro refusé par le navigateur.');
+      this.camOn.set(false);
+      this.micOn.set(false);
+      this.status.set('Caméra/micro indisponible — vous rejoignez en écoute.');
     }
+  }
+
+  private emitMediaState(): void {
+    this.socketSvc.getSocket()?.emit('meeting:media-state', {
+      roomId: this.roomId,
+      micOn: this.micOn(),
+      camOn: this.camOn(),
+      name: this.selfName(),
+    });
+  }
+
+  private levelOf(analyser: AnalyserNode | null | undefined): number {
+    if (!analyser) {
+      return 0;
+    }
+    const buf = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(buf);
+    let sum = 0;
+    for (const v of buf) {
+      sum += v;
+    }
+    return sum / buf.length / 255;
+  }
+
+  private startSpeakingDetection(): void {
+    try {
+      this.audioCtx = this.audioCtx ?? new AudioContext();
+      if (this.audioCtx.state === 'suspended') {
+        void this.audioCtx.resume();
+      }
+      if (this.localStream && !this.localAnalyser) {
+        const src = this.audioCtx.createMediaStreamSource(this.localStream);
+        this.localAnalyser = this.audioCtx.createAnalyser();
+        this.localAnalyser.fftSize = 512;
+        src.connect(this.localAnalyser);
+      }
+      if (!this.speakTimer) {
+        this.speakTimer = setInterval(() => {
+          this.selfSpeaking.set(this.levelOf(this.localAnalyser) > 0.045);
+          this.remoteSpeaking.set(this.levelOf(this.remoteAnalyser) > 0.045);
+        }, 200);
+      }
+    } catch {
+      /* WebAudio indisponible */
+    }
+  }
+
+  private attachRemoteAnalyser(stream: MediaStream): void {
+    try {
+      if (!this.audioCtx || this.remoteAnalyser) {
+        return;
+      }
+      const src = this.audioCtx.createMediaStreamSource(stream);
+      this.remoteAnalyser = this.audioCtx.createAnalyser();
+      this.remoteAnalyser.fftSize = 512;
+      src.connect(this.remoteAnalyser);
+    } catch {
+      /* */
+    }
+  }
+
+  private stopSpeakingDetection(): void {
+    if (this.speakTimer) {
+      clearInterval(this.speakTimer);
+      this.speakTimer = null;
+    }
+    this.localAnalyser = null;
+    this.remoteAnalyser = null;
+    void this.audioCtx?.close().catch(() => {});
+    this.audioCtx = null;
   }
 
   private syncLocalVideo(): void {
@@ -340,13 +484,42 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
     // Attacher les listeners AVANT le join pour ne manquer aucune signalisation.
     this.wireSocket(s);
-    s.emit('meeting:join-room', { roomId: this.roomId }, (ack: { ok?: boolean; message?: string }) => {
-      if (!ack?.ok) {
-        this.error.set(ack?.message || 'Accès à la salle refusé.');
-        return;
+    s.emit(
+      'meeting:join-room',
+      { roomId: this.roomId },
+      (ack: {
+        ok?: boolean;
+        message?: string;
+        members?: { userId?: string; email?: string }[];
+      }) => {
+        if (!ack?.ok) {
+          this.error.set(ack?.message || 'Accès à la salle refusé.');
+          return;
+        }
+        // Présence initiale depuis l'ack
+        const ids = new Set<string>();
+        const emails = new Set<string>();
+        for (const m of ack.members || []) {
+          if (m.userId) {
+            ids.add(String(m.userId));
+          }
+          if (m.email) {
+            emails.add(m.email.trim().toLowerCase());
+          }
+        }
+        this.presentIds.set(ids);
+        this.presentEmails.set(emails);
+        // Un autre membre déjà en salle = le pair à afficher
+        const myId = this.auth.user()?.id || '';
+        const other = [...ids].find((id) => id !== myId);
+        if (other) {
+          this.remoteUserId = other;
+        }
+        this.emitMediaState();
+        this.startSpeakingDetection();
+        this.status.set('Connecté — en attente des participants…');
       }
-      this.status.set('Connecté — en attente des participants…');
-    });
+    );
   }
 
   private wireSocket(s: import('socket.io-client').Socket): void {
@@ -367,10 +540,15 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       if (!otherId || otherId === myId) {
         return;
       }
+      this.remoteUserId = otherId;
+      this.presentIds.update((set) => new Set(set).add(otherId));
+      // Informer le nouvel arrivant de notre état cam/mic
+      this.emitMediaState();
       await this.ensurePc();
       if (this.pc && !this.pc.remoteDescription) {
         await this.createOffer();
       }
+      this.cdr.markForCheck();
     });
 
     s.on(
@@ -380,6 +558,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         if (!msg.from || msg.from === myId) {
           return;
         }
+        this.remoteUserId = msg.from;
         await this.ensurePc();
         if (!this.pc) {
           return;
@@ -396,12 +575,16 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
           const answer = await this.pc.createAnswer();
           await this.pc.setLocalDescription(answer);
           s.emit('meeting:signal', { roomId: this.roomId, type: 'answer', sdp: answer.sdp });
+          this.remoteActive.set(true);
           this.status.set('En appel');
+          this.cdr.markForCheck();
         } else if (msg.type === 'answer' && msg.sdp) {
           if (this.pc.signalingState === 'have-local-offer') {
             await this.pc.setRemoteDescription({ type: 'answer', sdp: msg.sdp });
           }
+          this.remoteActive.set(true);
           this.status.set('En appel');
+          this.cdr.markForCheck();
         } else if (msg.type === 'ice' && msg.candidate) {
           try {
             await this.pc.addIceCandidate(msg.candidate);
@@ -418,10 +601,33 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       if (!otherId || otherId === myId) {
         return;
       }
+      this.presentIds.update((set) => {
+        const next = new Set(set);
+        next.delete(otherId);
+        return next;
+      });
+      this.remoteActive.set(false);
+      this.remoteSpeaking.set(false);
+      this.remoteAnalyser = null;
       this.closePc();
       this.status.set('Participant parti — en attente…');
       this.cdr.markForCheck();
     });
+
+    // État micro/caméra du pair (avatar + indicateurs)
+    s.on(
+      'meeting:media-state',
+      (msg: { userId?: string; email?: string; micOn?: boolean; camOn?: boolean }) => {
+        const myId = this.auth.user()?.id || '';
+        if (!msg.userId || msg.userId === myId) {
+          return;
+        }
+        this.remoteUserId = msg.userId;
+        this.remoteCamOn.set(msg.camOn !== false);
+        this.remoteMicOn.set(msg.micOn !== false);
+        this.cdr.markForCheck();
+      }
+    );
 
     s.on('chat:message', (msg: { senderId?: string; content: string; sentAt: string }) => {
       this.chatMessages.update((list) => [...list, msg].slice(-200));
@@ -469,6 +675,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
     s.off('meeting:peer-present');
     s.off('meeting:peer-left');
+    s.off('meeting:media-state');
     s.off('meeting:signal');
     if (this.onSocketReconnect) {
       s.off('connect', this.onSocketReconnect);
@@ -500,6 +707,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       const [stream] = ev.streams;
       if (stream && this.remoteV?.nativeElement) {
         this.remoteV.nativeElement.srcObject = stream;
+        this.attachRemoteAnalyser(stream);
+        this.remoteActive.set(true);
+        this.cdr.markForCheck();
       }
     };
     if (this.localStream) {
@@ -508,6 +718,12 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       }
     }
     this.videoSender = this.pc.getSenders().find((x) => x.track?.kind === 'video') ?? null;
+    // Qualité HD : ~2,5 Mbps, pas de réduction de résolution
+    if (this.videoSender) {
+      const params = this.videoSender.getParameters();
+      params.encodings = [{ maxBitrate: 2_500_000, scaleResolutionDownBy: 1 }];
+      void this.videoSender.setParameters(params).catch(() => {});
+    }
     if (!this.cameraVideoTrack) {
       this.cameraVideoTrack = this.localStream?.getVideoTracks()[0] ?? null;
     }
@@ -552,6 +768,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   }
 
   private leaveMediaAndPc(navigate: boolean): void {
+    this.stopSpeakingDetection();
+    this.remoteActive.set(false);
+    this.remoteSpeaking.set(false);
     // Prévenir les autres que l'on quitte la salle
     if (this.roomId) {
       this.socketSvc.getSocket()?.emit('meeting:leave-room', { roomId: this.roomId });

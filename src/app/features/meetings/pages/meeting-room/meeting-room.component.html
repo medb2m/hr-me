@@ -12,13 +12,47 @@
       </header>
 
       <div class="room-workspace">
-        <main class="room-stage">
+        <main class="room-stage" [class.solo]="!remoteActive()">
           <video #remoteV class="vid-remote" autoplay playsinline></video>
-          <div class="room-local-pip">
+
+          <!-- Pair distant : avatar quand sa caméra est coupée -->
+          @if (remoteActive() && !remoteCamOn()) {
+            <div class="remote-card" [class.speaking]="remoteSpeaking()">
+              @if (remoteAvatar()) {
+                <img class="tile-avatar" [src]="remoteAvatar()" [alt]="remoteName()" />
+              } @else {
+                <span class="tile-initials">{{ remoteInitials() }}</span>
+              }
+              <span class="tile-name">{{ remoteName() }}</span>
+              @if (!remoteMicOn()) {
+                <span class="tile-sub">Micro coupé</span>
+              }
+            </div>
+          }
+
+          <!-- Étiquette du pair (nom + micro) quand sa vidéo est visible -->
+          @if (remoteActive() && remoteCamOn()) {
+            <div class="remote-tag" [class.speaking]="remoteSpeaking()">
+              <span class="remote-tag-name">{{ remoteName() }}</span>
+              @if (!remoteMicOn()) {
+                <svg lucideMicOff class="remote-tag-ic"></svg>
+              }
+            </div>
+          }
+
+          <!-- Caméra locale : PiP en appel, plein écran si seul -->
+          <div class="room-local-pip" [class.speaking]="selfSpeaking()">
             <video #localV class="vid-local" autoplay playsinline muted></video>
             @if (!camOn()) {
-              <div class="cam-off-overlay">Vidéo off</div>
+              <div class="cam-off-overlay">
+                @if (selfAvatar()) {
+                  <img class="pip-avatar" [src]="selfAvatar()" [alt]="selfName()" />
+                } @else {
+                  <span class="pip-initials">{{ selfInitials() }}</span>
+                }
+              </div>
             }
+            <span class="pip-name">Vous</span>
             @if (screenSharing()) {
               <div class="pip-badge">Écran</div>
             }
@@ -127,6 +161,7 @@
                   @for (p of participants(); track $index) {
                     <li class="part-item">
                       <div class="part-main">
+                        <span class="part-dot" [class.on]="isPresent(p)" [attr.title]="isPresent(p) ? 'En salle' : 'Absent'"></span>
                         <span class="part-name">{{ p.name || p.email || '—' }}</span>
                         @if (isSelfParticipant(p)) {
                           <span class="part-you">Vous</span>
