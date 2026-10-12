@@ -26,6 +26,7 @@ import { MeetingsApiService } from '../../../../core/services/meetings-api.servi
 import { AuthService } from '../../../../core/services/auth.service';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import { TimePickerComponent } from '../../../../shared/components/time-picker/time-picker.component';
+import { SelectComponent } from '../../../../shared/components/select/select.component';
 import type { MeetingDto, MeetingParticipantDto } from '../../../../core/models/hr-me-realtime.models';
 
 type PeriodTab = 'upcoming' | 'history' | 'all';
@@ -53,11 +54,19 @@ const STATUS_DEFS: Record<string, { label: string; color: string; bg: string }> 
 
 const DURATIONS = [15, 20, 30, 45, 60, 90, 120];
 const TIMEZONES = ['Africa/Tunis', 'Europe/Paris', 'Europe/Berlin', 'Asia/Dubai', 'America/New_York'];
+const TZ_OPTIONS = TIMEZONES.map((tz) => ({
+  value: tz,
+  label: tz === 'Africa/Tunis' ? 'Africa/Tunis (GMT+1)' : tz,
+}));
 const LANGS = [
   { value: 'fr', label: 'Français' },
   { value: 'en', label: 'English' },
   { value: 'ar', label: 'العربية' },
   { value: 'it', label: 'Italiano' },
+];
+const ROLE_OPTIONS = [
+  { value: 'recruiter', label: 'Recruteur' },
+  { value: 'candidate', label: 'Candidat' },
 ];
 
 /** Idées futures — section statique en attente de validation. */
@@ -78,6 +87,7 @@ const FUTURE_IDEAS = [
     FormsModule,
     DatePickerComponent,
     TimePickerComponent,
+    SelectComponent,
     LucideArchive,
     LucideBan,
     LucideCalendar,
@@ -108,8 +118,14 @@ export class MeetingsHubComponent implements OnInit {
   readonly statusDefs = STATUS_DEFS;
   readonly durations = DURATIONS;
   readonly timezones = TIMEZONES;
+  readonly tzOptions = TZ_OPTIONS;
   readonly langs = LANGS;
+  readonly roleOptions = ROLE_OPTIONS;
   readonly futureIdeas = FUTURE_IDEAS;
+  readonly statusOptions = [
+    { value: '', label: 'Tous statuts' },
+    ...Object.entries(STATUS_DEFS).map(([value, d]) => ({ value, label: d.label })),
+  ];
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);

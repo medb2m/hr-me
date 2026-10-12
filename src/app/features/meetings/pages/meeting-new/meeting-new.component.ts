@@ -23,6 +23,7 @@ import {
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import { TimePickerComponent } from '../../../../shared/components/time-picker/time-picker.component';
+import { SelectComponent } from '../../../../shared/components/select/select.component';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
 import { CalendarApiService } from '../../../../core/services/calendar-api.service';
 import type { MeetingParticipantDto } from '../../../../core/models/hr-me-realtime.models';
@@ -73,6 +74,7 @@ const ROADMAP = [
     BackButtonComponent,
     DatePickerComponent,
     TimePickerComponent,
+    SelectComponent,
     CdkDrag,
     CdkDropList,
     LucideGripVertical,
@@ -101,6 +103,24 @@ export class MeetingNewComponent implements OnInit {
   readonly typeChips = TYPE_CHIPS;
   readonly durations = DURATIONS;
   readonly roadmap = ROADMAP;
+
+  readonly tzOptions = [
+    { value: 'Africa/Tunis', label: 'Africa/Tunis (GMT+1)' },
+    { value: 'Europe/Paris', label: 'Europe/Paris' },
+    { value: 'Europe/Berlin', label: 'Europe/Berlin' },
+    { value: 'Asia/Dubai', label: 'Asia/Dubai' },
+    { value: 'America/New_York', label: 'America/New_York' },
+  ];
+  readonly langOptions = [
+    { value: 'fr', label: 'Français' },
+    { value: 'en', label: 'English' },
+    { value: 'ar', label: 'العربية' },
+    { value: 'it', label: 'Italiano' },
+  ];
+  readonly roleOptions = [
+    { value: 'recruiter', label: 'Recruteur' },
+    { value: 'candidate', label: 'Candidat' },
+  ];
 
   // ── Panneau utilisateurs ──
   readonly recentUsers = signal<PanelUser[]>([]);

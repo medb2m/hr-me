@@ -209,11 +209,7 @@ $border: #e2e8f0;
 .mn-inv-name { width: 120px; }
 .mn-inv-mail { flex: 1; }
 .mn-inv-role {
-  border: 1px solid $border;
-  border-radius: 7px;
-  padding: 6px 8px;
-  font-size: 0.8rem;
-  background: #fff;
+  width: 132px;
   flex-shrink: 0;
 }
 .mn-inv-x {

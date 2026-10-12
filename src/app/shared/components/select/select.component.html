@@ -1,0 +1,40 @@
+<div class="aw-select" [class.open]="open" [class.disabled]="disabled">
+  <button
+    type="button"
+    class="aw-trigger"
+    (click)="toggle()"
+    [disabled]="disabled"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="open"
+  >
+    @if (selected?.color) {
+      <span class="aw-dot" [style.background]="selected!.color"></span>
+    }
+    <span class="aw-value" [class.ph]="!selected">{{ selected?.label || placeholder }}</span>
+    <svg lucideChevronDown [size]="14" class="aw-caret" aria-hidden="true"></svg>
+  </button>
+  @if (open) {
+    <ul class="aw-menu" role="listbox" [ngStyle]="popStyle">
+      @for (o of options; track o.value) {
+        <li>
+          <button
+            type="button"
+            class="aw-item"
+            [class.sel]="o.value === value"
+            role="option"
+            [attr.aria-selected]="o.value === value"
+            (click)="pick(o)"
+          >
+            @if (o.color) {
+              <span class="aw-dot" [style.background]="o.color"></span>
+            }
+            {{ o.label }}
+            @if (o.value === value) {
+              <svg lucideCheck [size]="13" class="aw-check" aria-hidden="true"></svg>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>

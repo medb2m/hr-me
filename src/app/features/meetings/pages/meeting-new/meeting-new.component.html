@@ -52,25 +52,14 @@
       </div>
 
       <div class="mn-row2">
-        <label class="mn-field">
+        <div class="mn-field">
           <span class="mn-label">Fuseau horaire</span>
-          <select formControlName="timezone">
-            <option value="Africa/Tunis">Africa/Tunis (GMT+1)</option>
-            <option value="Europe/Paris">Europe/Paris</option>
-            <option value="Europe/Berlin">Europe/Berlin</option>
-            <option value="Asia/Dubai">Asia/Dubai</option>
-            <option value="America/New_York">America/New_York</option>
-          </select>
-        </label>
-        <label class="mn-field">
+          <app-select formControlName="timezone" [options]="tzOptions" />
+        </div>
+        <div class="mn-field">
           <span class="mn-label">Langue</span>
-          <select formControlName="language">
-            <option value="fr">Français</option>
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-            <option value="it">Italiano</option>
-          </select>
-        </label>
+          <app-select formControlName="language" [options]="langOptions" />
+        </div>
       </div>
 
       <label class="mn-field">
@@ -100,10 +89,7 @@
               </span>
               <input class="mn-inv-name" type="text" formControlName="name" placeholder="Nom" />
               <input class="mn-inv-mail" type="email" formControlName="email" placeholder="email@exemple.com" />
-              <select class="mn-inv-role" formControlName="role">
-                <option value="recruiter">Recruteur</option>
-                <option value="candidate">Candidat</option>
-              </select>
+              <app-select class="mn-inv-role" formControlName="role" [options]="roleOptions" />
               <input type="hidden" formControlName="userId" />
               <input type="hidden" formControlName="avatarUrl" />
               <button type="button" class="mn-inv-x" (click)="removeInviteRow(i)" aria-label="Retirer">

@@ -45,12 +45,11 @@
           <button [class.on]="scope() === 'all'" (click)="setScope('all')">Toutes</button>
         </div>
       }
-      <select class="mh-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
-        <option value="">Tous statuts</option>
-        @for (s of ['SCHEDULED','WAITING','IN_PROGRESS','ENDED','CANCELLED','ARCHIVED']; track s) {
-          <option [value]="s">{{ statusDef(s).label }}</option>
-        }
-      </select>
+      <app-select
+        class="mh-select"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event)"
+        [options]="statusOptions" />
       <div class="mh-search">
         <svg lucideSearch [size]="15"></svg>
         <input [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Titre, participant, créateur…" />
@@ -184,20 +183,14 @@
           </div>
         </div>
         <div class="mh-field-row">
-          <label class="mh-field">Fuseau
-            <select [(ngModel)]="fTimezone">
-              @for (tz of timezones; track tz) {
-                <option [value]="tz">{{ tz }}</option>
-              }
-            </select>
-          </label>
-          <label class="mh-field">Langue
-            <select [(ngModel)]="fLanguage">
-              @for (l of langs; track l.value) {
-                <option [value]="l.value">{{ l.label }}</option>
-              }
-            </select>
-          </label>
+          <div class="mh-field">
+            <span class="mh-label">Fuseau</span>
+            <app-select [(ngModel)]="fTimezone" [options]="tzOptions" />
+          </div>
+          <div class="mh-field">
+            <span class="mh-label">Langue</span>
+            <app-select [(ngModel)]="fLanguage" [options]="langs" />
+          </div>
         </div>
         <label class="mh-field">Description
           <textarea [(ngModel)]="fDescription" rows="2" placeholder="Ordre du jour…"></textarea>
@@ -223,10 +216,7 @@
           <div class="mh-addpart">
             <input [(ngModel)]="pName" placeholder="Nom" />
             <input [(ngModel)]="pEmail" placeholder="email@exemple.com" />
-            <select [(ngModel)]="pRole">
-              <option value="recruiter">Recruteur</option>
-              <option value="candidate">Candidat</option>
-            </select>
+            <app-select class="mh-prole" [(ngModel)]="pRole" [options]="roleOptions" />
             <button type="button" class="mh-btn-add" (click)="addParticipant(m)"><svg lucidePlus [size]="14"></svg></button>
           </div>
         </div>

@@ -1,0 +1,93 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.aw-select { position: relative; }
+
+.aw-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 9px 11px;
+  background: #fff;
+  font-size: 0.86rem;
+  font-weight: 400;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.aw-trigger:hover:not(:disabled) { border-color: #cbd5e1; }
+.aw-select.open .aw-trigger {
+  border-color: #ffd300;
+  box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.2);
+}
+.aw-trigger:disabled { opacity: 0.55; cursor: not-allowed; background: #f8fafc; }
+
+.aw-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.aw-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aw-value.ph { color: #94a3b8; }
+.aw-caret { color: #94a3b8; transition: transform 0.15s; flex-shrink: 0; }
+.aw-select.open .aw-caret { transform: rotate(180deg); }
+
+.aw-menu {
+  position: fixed;
+  z-index: 4000;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+  animation: aw-in 0.14s ease-out;
+}
+
+.aw-menu::-webkit-scrollbar { width: 6px; }
+.aw-menu::-webkit-scrollbar-track { margin-top: 20px; margin-bottom: 20px; background: transparent; }
+.aw-menu::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 6px; }
+
+@keyframes aw-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.aw-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.84rem;
+  color: #334155;
+  cursor: pointer;
+  font-family: inherit;
+}
+.aw-item:hover { background: #f8fafc; }
+.aw-item.sel { background: rgba(255, 211, 0, 0.16); color: #0f172a; font-weight: 600; }
+.aw-check { margin-left: auto; color: #a16207; flex-shrink: 0; }
