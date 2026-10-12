@@ -233,15 +233,15 @@ export class TimePickerComponent implements ControlValueAccessor, OnInit, OnDest
     const cols = root.querySelectorAll('.tp-col-scroll');
     const h = this.selHour ?? 9;
     const m = this.selMinute ?? 0;
-    if (cols[0]) cols[0].scrollTop = h * ITEM_H - ITEM_H * 2;
-    if (cols[1]) cols[1].scrollTop = m * ITEM_H - ITEM_H * 2;
+    if (cols[0]) cols[0].scrollTop = h * ITEM_H - ITEM_H * 1.5;
+    if (cols[1]) cols[1].scrollTop = m * ITEM_H - ITEM_H * 1.5;
   }
 
   private positionPop(): void {
     if (typeof window === 'undefined') return;
     const rect = this.host.nativeElement.getBoundingClientRect();
     const popW = Math.min(260, window.innerWidth - 16);
-    const popH = 280;
+    const popH = 250;
     const left = Math.max(8, Math.min(rect.left, window.innerWidth - popW - 8));
     const spaceBelow = window.innerHeight - rect.bottom - 8;
     const spaceAbove = rect.top - 8;

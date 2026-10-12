@@ -136,7 +136,7 @@
 }
 
 .tp-col-scroll {
-  height: 170px;
+  height: 136px;
   overflow-y: auto;
   scroll-snap-type: y proximity;
   scrollbar-width: thin;
@@ -152,8 +152,8 @@
 }
 
 .tp-col-scroll::-webkit-scrollbar-track {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 30px;
+  margin-bottom: 30px;
   background: transparent;
 }
 
