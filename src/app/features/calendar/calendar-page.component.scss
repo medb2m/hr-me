@@ -453,7 +453,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid #e2e8f0;
 }
 .cal-modal-head h3 {
@@ -482,12 +482,12 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 14px 20px;
+  padding: 10px 20px;
   border-top: 1px solid #e2e8f0;
 }
 
 /* ── Formulaire ── */
-.cal-form { padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
+.cal-form { padding: 12px 20px; display: flex; flex-direction: column; gap: 2px; }
 .cal-field {
   display: flex;
   flex-direction: column;
@@ -495,9 +495,10 @@
   font-size: 0.78rem;
   font-weight: 600;
   color: #334155;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   flex: 1;
 }
+.cal-field--grow { flex: 1.6; }
 .cal-field input,
 .cal-field select,
 .cal-field textarea {
@@ -607,7 +608,7 @@
   gap: 8px;
   font-size: 0.84rem;
   color: #334155;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   cursor: pointer;
 }
 .cal-check input { accent-color: #eab308; }
@@ -621,7 +622,7 @@
   padding: 8px 12px;
   font-size: 0.82rem;
   color: #0f172a;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 .cal-hint {
   display: flex;
@@ -629,7 +630,7 @@
   gap: 6px;
   font-size: 0.74rem;
   color: #94a3b8;
-  margin: 0 0 10px;
+  margin: 0 0 6px;
 }
 .cal-att-results {
   list-style: none;
