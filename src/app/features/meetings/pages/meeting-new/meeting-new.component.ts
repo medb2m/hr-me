@@ -32,6 +32,7 @@ interface PanelUser {
   name: string;
   email: string;
   role?: string;
+  avatarUrl?: string;
 }
 
 const TYPE_CHIPS = [
@@ -141,7 +142,9 @@ export class MeetingNewComponent implements OnInit {
       this.searching.set(true);
       this.calendarApi.attendees(query).subscribe({
         next: (r) => {
-          this.searchResults.set(r.attendees.map((a) => ({ id: a.id, name: a.name, email: a.email, role: a.role })));
+          this.searchResults.set(
+            r.attendees.map((a) => ({ id: a.id, name: a.name, email: a.email, role: a.role, avatarUrl: a.avatarUrl }))
+          );
           this.searching.set(false);
         },
         error: () => this.searching.set(false),
@@ -177,6 +180,7 @@ export class MeetingNewComponent implements OnInit {
           u?.role === 'candidate' ? 'candidate' : 'recruiter'
         ),
         userId: [u?.id ?? ''],
+        avatarUrl: [u?.avatarUrl ?? ''],
       })
     );
   }

@@ -91,7 +91,13 @@
           (cdkDropListDropped)="onUserDrop($event)">
           @for (_ctrl of inviteRows.controls; track $index; let i = $index) {
             <div class="mn-invite" [formGroupName]="i">
-              <span class="mn-invite-ava">{{ initials(_ctrl.get('name')?.value || _ctrl.get('email')?.value || '?') }}</span>
+              <span class="mn-invite-ava">
+                @if (_ctrl.get('avatarUrl')?.value) {
+                  <img [src]="_ctrl.get('avatarUrl')?.value" alt="" />
+                } @else {
+                  {{ initials(_ctrl.get('name')?.value || _ctrl.get('email')?.value || '?') }}
+                }
+              </span>
               <input class="mn-inv-name" type="text" formControlName="name" placeholder="Nom" />
               <input class="mn-inv-mail" type="email" formControlName="email" placeholder="email@exemple.com" />
               <select class="mn-inv-role" formControlName="role">
@@ -99,6 +105,7 @@
                 <option value="candidate">Candidat</option>
               </select>
               <input type="hidden" formControlName="userId" />
+              <input type="hidden" formControlName="avatarUrl" />
               <button type="button" class="mn-inv-x" (click)="removeInviteRow(i)" aria-label="Retirer">
                 <svg lucideX [size]="14"></svg>
               </button>
@@ -148,14 +155,26 @@
         @for (u of panelUsers(); track u.email || u.id) {
           <div class="mn-user" cdkDrag [cdkDragData]="u">
             <svg lucideGripVertical [size]="14" class="mn-grip"></svg>
-            <span class="mn-user-ava">{{ initials(u.name || u.email) }}</span>
+            <span class="mn-user-ava">
+              @if (u.avatarUrl) {
+                <img [src]="u.avatarUrl" alt="" />
+              } @else {
+                {{ initials(u.name || u.email) }}
+              }
+            </span>
             <span class="mn-user-info">
               <strong>{{ u.name || u.email }}</strong>
               <em>{{ u.email }}</em>
             </span>
             <!-- Aperçu pendant le drag -->
             <div class="mn-user-drag" *cdkDragPreview>
-              <span class="mn-user-ava">{{ initials(u.name || u.email) }}</span>
+              <span class="mn-user-ava">
+                @if (u.avatarUrl) {
+                  <img [src]="u.avatarUrl" alt="" />
+                } @else {
+                  {{ initials(u.name || u.email) }}
+                }
+              </span>
               {{ u.name || u.email }}
             </div>
           </div>

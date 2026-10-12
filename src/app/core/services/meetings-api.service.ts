@@ -50,8 +50,8 @@ export class MeetingsApiService {
     return this.http.patch<{ meeting: MeetingDto }>(`${this.base}/${id}/status`, { status });
   }
 
-  recentParticipants(): Observable<{ items: { id: string | null; name: string; email: string; role: string; lastUsed: string }[] }> {
-    return this.http.get<{ items: { id: string | null; name: string; email: string; role: string; lastUsed: string }[] }>(
+  recentParticipants(): Observable<{ items: { id: string | null; name: string; email: string; role: string; avatarUrl?: string; lastUsed: string }[] }> {
+    return this.http.get<{ items: { id: string | null; name: string; email: string; role: string; avatarUrl?: string; lastUsed: string }[] }>(
       `${this.base}/recent-participants`
     );
   }

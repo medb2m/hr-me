@@ -417,7 +417,7 @@ export async function listAttendees(req, res) {
         }
       : {};
     const users = await User.find(filter)
-      .select('name email role')
+      .select('name email role avatarUrl')
       .sort({ name: 1, email: 1 })
       .limit(15)
       .lean();
@@ -427,6 +427,7 @@ export async function listAttendees(req, res) {
         name: u.name || u.email,
         email: u.email,
         role: u.role,
+        avatarUrl: u.avatarUrl || '',
       })),
     });
   } catch (err) {

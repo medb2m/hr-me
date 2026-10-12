@@ -333,17 +333,26 @@ export async function recentParticipants(req, res) {
       }
       if (seen.size >= 24) break;
     }
-    // Compléter les noms manquants depuis User
+    // Compléter noms + photos depuis User (par id ou e-mail)
     const items = [...seen.values()];
-    const missing = items.filter((i) => !i.name && i.id).map((i) => i.id).filter(mongoose.isValidObjectId);
-    if (missing.length) {
-      const users = await User.find({ _id: { $in: missing } }).select('name email').lean();
+    const ids = items.map((i) => i.id).filter((id) => id && mongoose.isValidObjectId(id));
+    const emails = items.map((i) => i.email).filter(Boolean);
+    if (ids.length || emails.length) {
+      const or = [];
+      if (ids.length) or.push({ _id: { $in: ids } });
+      if (emails.length) or.push({ email: { $in: emails } });
+      const users = await User.find({ $or: or }).select('name email avatarUrl').lean();
       const byId = new Map(users.map((u) => [u._id.toString(), u]));
+      const byEmail = new Map(users.map((u) => [u.email, u]));
       for (const it of items) {
-        const u = it.id ? byId.get(it.id) : null;
+        const u = (it.id ? byId.get(it.id) : null) || (it.email ? byEmail.get(it.email) : null);
         if (u) {
-          it.name = u.name || it.name;
+          if (!it.name) it.name = u.name || it.name;
           if (!it.email) it.email = u.email;
+          it.avatarUrl = u.avatarUrl || '';
+          if (!it.id) it.id = u._id.toString();
+        } else {
+          it.avatarUrl = '';
         }
       }
     }

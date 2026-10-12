@@ -42,9 +42,9 @@ export class CalendarApiService {
     return this.http.delete<{ ok: boolean }>(`${this.base}/events/${id}`);
   }
 
-  attendees(q = ''): Observable<{ attendees: { id: string; name: string; email: string; role: string }[] }> {
+  attendees(q = ''): Observable<{ attendees: { id: string; name: string; email: string; role: string; avatarUrl: string }[] }> {
     const params = q ? new HttpParams().set('q', q) : undefined;
-    return this.http.get<{ attendees: { id: string; name: string; email: string; role: string }[] }>(
+    return this.http.get<{ attendees: { id: string; name: string; email: string; role: string; avatarUrl: string }[] }>(
       `${this.base}/attendees`,
       { params },
     );
