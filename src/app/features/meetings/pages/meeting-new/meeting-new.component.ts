@@ -9,6 +9,8 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { TimePickerComponent } from '../../../../shared/components/time-picker/time-picker.component';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
 import { CalendarApiService } from '../../../../core/services/calendar-api.service';
 import type { MeetingParticipantDto } from '../../../../core/models/hr-me-realtime.models';
@@ -16,7 +18,7 @@ import type { MeetingParticipantDto } from '../../../../core/models/hr-me-realti
 @Component({
   selector: 'app-meeting-new',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BackButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, BackButtonComponent, DatePickerComponent, TimePickerComponent],
   templateUrl: './meeting-new.component.html',
   styleUrl: './meeting-new.component.scss',
 })
@@ -33,7 +35,8 @@ export class MeetingNewComponent {
   readonly form = this.fb.nonNullable.group({
     title: ['Entretien de présélection', [Validators.required, Validators.maxLength(300)]],
     type: ['screening'],
-    scheduledAtLocal: ['', Validators.required],
+    date: ['', Validators.required],
+    time: ['09:00'],
     durationMin: [30, [Validators.required, Validators.min(5), Validators.max(480)]],
     timezone: ['Africa/Tunis'],
     language: ['fr'],
@@ -79,7 +82,9 @@ export class MeetingNewComponent {
         return;
       }
     }
-    const scheduledAt = new Date(raw.scheduledAtLocal);
+    const [y, mo, d] = String(raw.date).split('-').map(Number);
+    const [hh, mm] = String(raw.time || '09:00').split(':').map(Number);
+    const scheduledAt = new Date(y, (mo || 1) - 1, d || 1, hh || 0, mm || 0);
     if (Number.isNaN(scheduledAt.getTime())) {
       this.error.set('Date / heure invalides.');
       return;

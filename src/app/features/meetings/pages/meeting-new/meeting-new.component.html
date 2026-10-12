@@ -18,8 +18,16 @@
       <option value="ai_automated">IA automatisé</option>
     </select>
 
-    <label>Date et heure (local)</label>
-    <input type="datetime-local" formControlName="scheduledAtLocal" />
+    <div class="field-row">
+      <div class="field">
+        <span class="flabel">Date</span>
+        <app-date-picker formControlName="date" placeholder="Choisir une date" />
+      </div>
+      <div class="field">
+        <span class="flabel">Heure</span>
+        <app-time-picker formControlName="time" />
+      </div>
+    </div>
 
     <label>Durée (minutes)</label>
     <input type="number" formControlName="durationMin" min="5" max="480" />

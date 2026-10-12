@@ -1,6 +1,6 @@
 /** Aligné sur le backend Mongoose / API REST. */
 
-export type MeetingStatus = 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'ENDED' | 'ARCHIVED';
+export type MeetingStatus = 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'ENDED' | 'ARCHIVED' | 'CANCELLED';
 export type MeetingType = 'screening' | 'technical' | 'final' | 'ai_automated';
 
 export interface MeetingParticipantDto {
@@ -26,6 +26,8 @@ export interface MeetingDto {
   offerId?: string | null;
   candidateId?: string | null;
   createdByAgentId: string;
+  createdByName?: string;
+  createdByEmail?: string;
   roomId: string;
   pinCode: string;
   participants: MeetingParticipantDto[];

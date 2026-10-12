@@ -1,18 +1,22 @@
-$burgundy: #7b1c2e;
+$ink: #0f172a;
+$yellow: #ffd300;
+$slate: #64748b;
+$border: #e2e8f0;
 
 .meeting-new {
-  max-width: 520px;
+  max-width: 560px;
   margin: 2rem auto;
-  padding: 0 1rem;
+  padding: 0 1rem 3rem;
 
   h1 {
-    color: $burgundy;
+    color: $ink;
     margin: 0.5rem 0 1rem;
+    font-size: 1.4rem;
   }
 }
 
 .back {
-  color: $burgundy;
+  color: $slate;
   text-decoration: none;
   font-weight: 600;
 }
@@ -21,31 +25,68 @@ form {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.4rem;
 }
 
-label {
+label, .flabel {
   font-weight: 600;
   margin-top: 0.5rem;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  color: #334155;
+  display: block;
 }
 
 input,
 select,
 textarea {
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+  padding: 0.55rem 0.7rem;
+  border-radius: 9px;
+  border: 1px solid $border;
+  font-size: 0.88rem;
+  color: $ink;
+  outline: 0;
+  font-family: inherit;
+
+  &:focus {
+    border-color: $yellow;
+    box-shadow: 0 0 0 3px rgba(255, 211, 0, 0.2);
+  }
+}
+
+.field-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 0.5rem;
+
+  .field {
+    flex: 1;
+    min-width: 0;
+
+    app-date-picker,
+    app-time-picker {
+      display: block;
+      width: 100%;
+      min-width: 0;
+    }
+  }
 }
 
 .btn-submit {
   margin-top: 1rem;
-  padding: 0.6rem 1rem;
+  padding: 0.65rem 1rem;
   border: none;
-  border-radius: 8px;
-  background: $burgundy;
-  color: #fff;
-  font-weight: 600;
+  border-radius: 10px;
+  background: $ink;
+  color: $yellow;
+  font-weight: 700;
+  font-size: 0.9rem;
   cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) { background: #1e293b; }
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -55,20 +96,27 @@ textarea {
 .invites {
   margin-top: 1.25rem;
   padding-top: 1rem;
-  border-top: 1px dashed #d1d5db;
+  border-top: 1px dashed $border;
 }
 
 .invites-title {
-  font-size: 1.05rem;
-  color: $burgundy;
+  font-size: 1rem;
+  color: $ink;
   margin: 0 0 0.35rem;
 }
 
 .invites-hint {
-  font-size: 0.82rem;
-  color: #4b5563;
+  font-size: 0.8rem;
+  color: $slate;
   margin: 0 0 1rem;
   line-height: 1.45;
+
+  code {
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-size: 0.75rem;
+  }
 }
 
 .invite-row {
@@ -78,8 +126,8 @@ textarea {
   align-items: end;
   margin-bottom: 0.65rem;
   padding: 0.65rem;
-  background: #faf8f5;
-  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  border: 1px solid $border;
   border-radius: 10px;
   position: relative;
 }
@@ -111,18 +159,22 @@ textarea {
   font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
+
+  &:hover { background: #fef2f2; }
 }
 
 .btn-add {
   margin-top: 0.25rem;
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
-  border: 1px dashed $burgundy;
+  border: 1px dashed #a16207;
   background: #fff;
-  color: $burgundy;
+  color: #a16207;
   font-weight: 600;
   cursor: pointer;
   font-size: 0.85rem;
+
+  &:hover { background: rgba(255, 211, 0, 0.12); }
 }
 
 @media (max-width: 900px) {
@@ -132,10 +184,13 @@ textarea {
   .btn-remove {
     justify-self: end;
   }
+  .field-row { flex-direction: column; }
 }
 
 .err {
   color: #b91c1c;
+  font-size: 0.84rem;
+  margin-top: 0.4rem;
 }
 
 .warn {

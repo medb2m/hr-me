@@ -31,13 +31,29 @@ export class MeetingsApiService {
     return this.http.get<{ meeting: MeetingDto }>(`${this.base}/${id}`);
   }
 
-  list(from: Date, to: Date): Observable<{ items: MeetingDto[] }> {
-    const params = new HttpParams().set('from', from.toISOString()).set('to', to.toISOString());
+  list(
+    from: Date,
+    to: Date,
+    opts: { scope?: 'mine' | 'all'; status?: string } = {}
+  ): Observable<{ items: MeetingDto[] }> {
+    let params = new HttpParams().set('from', from.toISOString()).set('to', to.toISOString());
+    if (opts.scope === 'all') params = params.set('scope', 'all');
+    if (opts.status) params = params.set('status', opts.status);
     return this.http.get<{ items: MeetingDto[] }>(this.base, { params });
+  }
+
+  update(id: string, body: Partial<CreateMeetingBody>): Observable<{ meeting: MeetingDto }> {
+    return this.http.patch<{ meeting: MeetingDto }>(`${this.base}/${id}`, body);
   }
 
   patchStatus(id: string, status: string): Observable<{ meeting: MeetingDto }> {
     return this.http.patch<{ meeting: MeetingDto }>(`${this.base}/${id}/status`, { status });
+  }
+
+  removeParticipant(meetingId: string, email: string): Observable<{ meeting: MeetingDto }> {
+    return this.http.delete<{ meeting: MeetingDto }>(`${this.base}/${meetingId}/participants`, {
+      body: { email },
+    });
   }
 
   getJoinToken(id: string): Observable<{ token: string; roomId: string; meetingRole: string; expiresAt: string }> {

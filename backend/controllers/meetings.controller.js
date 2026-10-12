@@ -209,8 +209,8 @@ export async function addParticipant(req, res) {
     if (!m) {
       return res.status(404).json({ message: 'Not found.' });
     }
-    if (m.createdByAgentId.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Only the host can add participants.' });
+    if (!canManageMeeting(req.user, m)) {
+      return res.status(403).json({ message: 'Only host or admin can add participants.' });
     }
     const body = req.body || {};
     const em = normalizeEmail(body.email);
@@ -283,25 +283,144 @@ export async function getMeeting(req, res) {
   }
 }
 
+const STAFF_ROLES = ['admin', 'agent', 'director', 'recruiter'];
+
+function isStaff(user) {
+  return STAFF_ROLES.includes(user?.role);
+}
+
+/** Créateur ou admin peut gérer (modifier/annuler/participants). */
+function canManageMeeting(user, meeting) {
+  return meeting.createdByAgentId.toString() === user.id || user.role === 'admin';
+}
+
 export async function listMeetings(req, res) {
   try {
-    const from = req.query.from ? new Date(String(req.query.from)) : new Date();
-    const to = req.query.to ? new Date(String(req.query.to)) : new Date(from.getTime() + 30 * 86400000);
-    const uid = new mongoose.Types.ObjectId(req.user.id);
-    const em = normalizeEmail(req.user.email);
-    const or = [{ createdByAgentId: uid }, { 'participants.userId': uid }];
-    if (em) {
-      or.push({ 'participants.email': em });
+    const from = req.query.from ? new Date(String(req.query.from)) : new Date(0);
+    const to = req.query.to ? new Date(String(req.query.to)) : new Date('2999-12-31');
+    const filter = { scheduledAt: { $gte: from, $lte: to } };
+    // Staff peut superviser toutes les réunions via ?scope=all
+    if (!(isStaff(req.user) && req.query.scope === 'all')) {
+      const uid = new mongoose.Types.ObjectId(req.user.id);
+      const em = normalizeEmail(req.user.email);
+      const or = [{ createdByAgentId: uid }, { 'participants.userId': uid }];
+      if (em) {
+        or.push({ 'participants.email': em });
+      }
+      filter.$or = or;
     }
-    const items = await Meeting.find({
-      $or: or,
-      scheduledAt: { $gte: from, $lte: to },
-    })
+    if (req.query.status) {
+      const statuses = String(req.query.status).split(',').filter(Boolean);
+      if (statuses.length) filter.status = { $in: statuses };
+    }
+    const items = await Meeting.find(filter)
+      .populate('createdByAgentId', 'name email')
       .sort({ scheduledAt: 1 })
       .lean();
     return res.json({ items: items.map(serializeMeetingLean) });
   } catch (err) {
     console.error('[meetings list]', err);
+    return res.status(500).json({ message: 'Failed.' });
+  }
+}
+
+export async function updateMeeting(req, res) {
+  try {
+    const m = await Meeting.findById(req.params.id);
+    if (!m) {
+      return res.status(404).json({ message: 'Not found.' });
+    }
+    if (!canManageMeeting(req.user, m)) {
+      return res.status(403).json({ message: 'Only host or admin can edit.' });
+    }
+    if (['ENDED', 'ARCHIVED'].includes(m.status)) {
+      return res.status(400).json({ message: 'A finished meeting cannot be edited.' });
+    }
+    const body = req.body || {};
+    const rescheduled = body.scheduledAt && new Date(body.scheduledAt).getTime() !== m.scheduledAt.getTime();
+
+    if (typeof body.title === 'string' && body.title.trim()) m.title = body.title.trim();
+    if (['screening', 'technical', 'final', 'ai_automated'].includes(body.type)) m.type = body.type;
+    if (body.scheduledAt) {
+      const d = new Date(body.scheduledAt);
+      if (Number.isNaN(d.getTime())) return res.status(400).json({ message: 'Invalid scheduledAt.' });
+      m.scheduledAt = d;
+    }
+    if (body.durationMin) m.durationMin = Math.min(480, Math.max(5, Number(body.durationMin) || m.durationMin));
+    if (typeof body.timezone === 'string' && body.timezone) m.timezone = body.timezone;
+    if (['fr', 'en', 'ar', 'it'].includes(body.language)) m.language = body.language;
+    if (typeof body.description === 'string') m.description = body.description;
+    if (m.status === 'CANCELLED') m.status = 'SCHEDULED'; // édition = réactivation
+    await m.save();
+
+    await CalendarEvent.updateMany(
+      { sourceModule: 'meetings', sourceId: m._id },
+      {
+        title: m.title,
+        type: m.type === 'ai_automated' ? 'AI_INTERVIEW' : 'MEETING',
+        startsAt: m.scheduledAt,
+        endsAt: meetingEndTime(m),
+        timezoneRef: m.timezone,
+        description: m.description,
+        status: m.status === 'CANCELLED' ? 'CANCELLED' : 'SCHEDULED',
+      }
+    );
+
+    for (const p of m.participants) {
+      if (p.userId && p.userId.toString() !== req.user.id) {
+        try {
+          await emitNotification({
+            recipientId: p.userId,
+            type: 'MEETING_SCHEDULED',
+            category: 'MEETING',
+            priority: 'NORMAL',
+            title: rescheduled ? `Entretien reprogrammé : ${m.title}` : `Entretien modifié : ${m.title}`,
+            body: `Nouvelle date : ${m.scheduledAt.toISOString()}`,
+            actionUrl: `/meetings/${m._id}/lobby`,
+            actionLabel: 'Voir le lobby',
+            sourceModule: 'meetings',
+            sourceId: m._id,
+            metadata: { meetingId: m._id.toString(), roomId: m.roomId },
+            sound: 'bell_meeting',
+          });
+        } catch (e) {
+          console.error('[updateMeeting] notify', e.message);
+        }
+      }
+    }
+    return res.json({ meeting: serializeMeeting(m) });
+  } catch (err) {
+    console.error('[meetings update]', err);
+    return res.status(500).json({ message: 'Failed.' });
+  }
+}
+
+export async function removeParticipant(req, res) {
+  try {
+    const m = await Meeting.findById(req.params.id);
+    if (!m) {
+      return res.status(404).json({ message: 'Not found.' });
+    }
+    if (!canManageMeeting(req.user, m)) {
+      return res.status(403).json({ message: 'Only host or admin can remove participants.' });
+    }
+    const em = normalizeEmail(req.body?.email ?? req.query.email);
+    if (!em) return res.status(400).json({ message: 'email required.' });
+    const before = m.participants.length;
+    m.participants = m.participants.filter(
+      (p) => p.role === 'host' || normalizeEmail(p.email) !== em
+    );
+    if (m.participants.length === before) {
+      return res.status(404).json({ message: 'Participant not found.' });
+    }
+    await m.save();
+    const io = getIo();
+    io?.to(`meeting:${m.roomId}`).emit('meeting:participants_updated', {
+      participants: serializeMeeting(m).participants,
+    });
+    return res.json({ meeting: serializeMeeting(m) });
+  } catch (err) {
+    console.error('[meetings removeParticipant]', err);
     return res.status(500).json({ message: 'Failed.' });
   }
 }
@@ -312,28 +431,50 @@ export async function patchMeetingStatus(req, res) {
     if (!m) {
       return res.status(404).json({ message: 'Not found.' });
     }
-    if (m.createdByAgentId.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Only host can change status.' });
+    if (!canManageMeeting(req.user, m)) {
+      return res.status(403).json({ message: 'Only host or admin can change status.' });
     }
     const status = req.body?.status;
-    const allowed = ['SCHEDULED', 'WAITING', 'IN_PROGRESS', 'ENDED', 'ARCHIVED'];
+    const allowed = ['SCHEDULED', 'WAITING', 'IN_PROGRESS', 'ENDED', 'ARCHIVED', 'CANCELLED'];
     if (!allowed.includes(status)) {
       return res.status(400).json({ message: 'Invalid status.' });
     }
     m.status = status;
     await m.save();
-    if (m.candidateId || m.offerId) {
-      await CalendarEvent.updateMany(
-        { sourceModule: 'meetings', sourceId: m._id },
-        {
-          status:
-            status === 'ENDED' || status === 'ARCHIVED'
-              ? 'COMPLETED'
+    await CalendarEvent.updateMany(
+      { sourceModule: 'meetings', sourceId: m._id },
+      {
+        status:
+          status === 'ENDED' || status === 'ARCHIVED'
+            ? 'COMPLETED'
+            : status === 'CANCELLED'
+              ? 'CANCELLED'
               : status === 'IN_PROGRESS'
                 ? 'IN_PROGRESS'
                 : 'SCHEDULED',
+      }
+    );
+
+    if (status === 'CANCELLED') {
+      for (const p of m.participants) {
+        if (p.userId && p.userId.toString() !== req.user.id) {
+          try {
+            await emitNotification({
+              recipientId: p.userId,
+              type: 'MEETING_SCHEDULED',
+              category: 'MEETING',
+              priority: 'HIGH',
+              title: `Entretien annulé : ${m.title}`,
+              body: `L'entretien du ${m.scheduledAt.toISOString()} a été annulé.`,
+              sourceModule: 'meetings',
+              sourceId: m._id,
+              metadata: { meetingId: m._id.toString() },
+            });
+          } catch (e) {
+            console.error('[patchStatus] notify cancel', e.message);
+          }
         }
-      );
+      }
     }
     return res.json({ meeting: serializeMeeting(m) });
   } catch (err) {
@@ -400,7 +541,9 @@ function serializeMeetingLean(o) {
     description: o.description,
     offerId: o.offerId?.toString?.() ?? o.offerId,
     candidateId: o.candidateId?.toString?.() ?? o.candidateId,
-    createdByAgentId: o.createdByAgentId?.toString?.() ?? o.createdByAgentId,
+    createdByAgentId: o.createdByAgentId?._id?.toString?.() ?? o.createdByAgentId?.toString?.() ?? o.createdByAgentId,
+    createdByName: o.createdByAgentId?.name || '',
+    createdByEmail: o.createdByAgentId?.email || '',
     roomId: o.roomId,
     pinCode: o.pinCode,
     participants: (o.participants || []).map((p) => ({

@@ -1,32 +1,275 @@
-<div class="meetings-hub">
-  <header class="mh-head">
-    <h1>Entretiens en ligne</h1>
-    <p class="mh-sub">Planification, visioconférence et suivi — Module 10</p>
-    <a routerLink="/meetings/new" class="btn-primary">Nouvel entretien</a>
-    <a routerLink="/calendar" class="btn-secondary">Calendrier</a>
+<div class="mh">
+  <!-- ══ Hero ══ -->
+  <header class="mh-hero">
+    <span class="mh-hero-circle c1"></span>
+    <span class="mh-hero-circle c2"></span>
+    <div class="mh-hero-inner">
+      <div class="mh-hero-left">
+        <span class="mh-hero-ico"><svg lucideVideo [size]="22"></svg></span>
+        <div>
+          <h1>Réunions & entretiens</h1>
+          <p>Planification, visioconférence et supervision — Module 10</p>
+        </div>
+      </div>
+      <div class="mh-hero-actions">
+        <a routerLink="/meetings/new" class="mh-btn-primary"><svg lucidePlus [size]="16"></svg> Nouvel entretien</a>
+        <a routerLink="/calendar" class="mh-btn-ghost"><svg lucideCalendar [size]="16"></svg> Calendrier</a>
+      </div>
+    </div>
   </header>
 
+  <!-- ══ Stats ══ -->
+  <div class="mh-stats">
+    <div class="mh-stat"><strong>{{ stats().upcoming }}</strong><span>À venir</span></div>
+    <div class="mh-stat"><strong>{{ stats().today }}</strong><span>Aujourd'hui</span></div>
+    <div class="mh-stat live"><strong>{{ stats().live }}</strong><span>En cours</span></div>
+    <div class="mh-stat"><strong>{{ stats().ended }}</strong><span>Terminées</span></div>
+    <div class="mh-stat"><strong>{{ stats().cancelled }}</strong><span>Annulées</span></div>
+  </div>
+
+  <!-- ══ Toolbar ══ -->
+  <div class="mh-toolbar">
+    <div class="mh-tabs">
+      <button [class.on]="period() === 'upcoming'" (click)="setPeriod('upcoming')">
+        <svg lucideCalendar [size]="14"></svg> À venir
+      </button>
+      <button [class.on]="period() === 'history'" (click)="setPeriod('history')">
+        <svg lucideHistory [size]="14"></svg> Historique
+      </button>
+      <button [class.on]="period() === 'all'" (click)="setPeriod('all')">Tout</button>
+    </div>
+    <div class="mh-toolbar-right">
+      @if (isStaff()) {
+        <div class="mh-scope">
+          <button [class.on]="scope() === 'mine'" (click)="setScope('mine')">Mes réunions</button>
+          <button [class.on]="scope() === 'all'" (click)="setScope('all')">Toutes</button>
+        </div>
+      }
+      <select class="mh-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <option value="">Tous statuts</option>
+        @for (s of ['SCHEDULED','WAITING','IN_PROGRESS','ENDED','CANCELLED','ARCHIVED']; track s) {
+          <option [value]="s">{{ statusDef(s).label }}</option>
+        }
+      </select>
+      <div class="mh-search">
+        <svg lucideSearch [size]="15"></svg>
+        <input [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Titre, participant, créateur…" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Liste ══ -->
   @if (loading()) {
-    <p class="mh-muted">Chargement…</p>
+    <p class="mh-loading"><svg lucideLoaderCircle [size]="18" class="spin"></svg> Chargement…</p>
   } @else if (error()) {
     <p class="mh-error">{{ error() }}</p>
-  } @else if (items().length === 0) {
-    <p class="mh-muted">Aucun entretien sur les 45 prochains jours.</p>
+  } @else if (sorted().length === 0) {
+    <div class="mh-empty">
+      <svg lucideVideo [size]="30"></svg>
+      <p>Aucune réunion{{ period() === 'history' ? ' dans l’historique' : ' à venir' }}.</p>
+      <a routerLink="/meetings/new" class="mh-btn-primary"><svg lucidePlus [size]="15"></svg> Planifier un entretien</a>
+    </div>
   } @else {
     <ul class="mh-list">
-      @for (m of items(); track m.id) {
-        <li class="mh-card">
-          <div class="mh-card-main">
-            <strong>{{ m.title }}</strong>
-            <span class="mh-badge">{{ m.status }}</span>
+      @for (m of sorted(); track m.id) {
+        <li class="mh-card" [class.past]="isPast(m)" [class.cancelled]="m.status === 'CANCELLED'">
+          <div class="mh-date" [style.--dc]="typeDef(m.type).color">
+            <strong>{{ dayNum(m) }}</strong>
+            <span>{{ monthShort(m) }}</span>
           </div>
-          <div class="mh-meta">{{ m.scheduledAt | date : 'medium' }} · {{ m.durationMin }} min</div>
-          <div class="mh-actions">
-            <a [routerLink]="['/meetings', m.id, 'lobby']">Lobby</a>
-            <a [routerLink]="['/meetings', m.id, 'room']">Rejoindre la salle</a>
+          <div class="mh-card-main">
+            <div class="mh-card-top">
+              <span class="mh-type" [style.--tc]="typeDef(m.type).color">{{ typeDef(m.type).label }}</span>
+              <span class="mh-status" [style.color]="statusDef(m.status).color" [style.background]="statusDef(m.status).bg">
+                {{ statusDef(m.status).label }}
+              </span>
+              @if (isLiveNow(m)) {
+                <span class="mh-live"><i></i> En direct</span>
+              }
+            </div>
+            <h3>{{ m.title }}</h3>
+            <div class="mh-meta">
+              <span><svg lucideClock [size]="13"></svg> {{ timeOf(m) }} · {{ m.durationMin }} min</span>
+              <span><svg lucideUsers [size]="13"></svg> {{ m.participants.length || 0 }} participant{{ (m.participants.length || 0) > 1 ? 's' : '' }}</span>
+              @if (m.createdByName) {
+                <span><svg lucideUser [size]="13"></svg> {{ m.createdByName }}</span>
+              }
+              @if (canManage(m)) {
+                <span class="mh-pin"><svg lucidePin [size]="13"></svg> PIN {{ m.pinCode }}</span>
+              }
+            </div>
+          </div>
+          <div class="mh-card-actions">
+            @if (m.status !== 'CANCELLED' && !isPast(m)) {
+              <a [routerLink]="['/meetings', m.id, 'lobby']" class="mh-act join"><svg lucideVideo [size]="15"></svg> Rejoindre</a>
+            }
+            <button class="mh-act" (click)="copyLink(m, $event)" [title]="'Copier le lien'">
+              <svg lucideCopy [size]="15"></svg>
+              {{ copied() === m.id ? 'Copié !' : 'Lien' }}
+            </button>
+            @if (canManage(m)) {
+              <button class="mh-act" (click)="openEdit(m)"><svg lucidePencil [size]="15"></svg> Gérer</button>
+              @if (m.status === 'CANCELLED') {
+                <button class="mh-act restore" (click)="setStatus(m, 'SCHEDULED')"><svg lucideRotateCcw [size]="15"></svg> Réactiver</button>
+              } @else if (!['ENDED','ARCHIVED'].includes(m.status)) {
+                <button class="mh-act cancel" (click)="askCancel(m)"><svg lucideBan [size]="15"></svg> Annuler</button>
+              }
+              @if (m.status === 'ENDED' && isAdmin()) {
+                <button class="mh-act" (click)="setStatus(m, 'ARCHIVED')"><svg lucideArchive [size]="15"></svg> Archiver</button>
+              }
+            }
           </div>
         </li>
       }
     </ul>
   }
+
+  <!-- ══ Idées futures (statique) ══ -->
+  <section class="mh-future">
+    <h2><svg lucideSparkles [size]="17"></svg> Bientôt disponible — idées à valider</h2>
+    <div class="mh-future-grid">
+      @for (idea of futureIdeas; track idea.title) {
+        <div class="mh-idea">
+          <h4>{{ idea.title }}</h4>
+          <p>{{ idea.desc }}</p>
+        </div>
+      }
+    </div>
+  </section>
 </div>
+
+<!-- ══ Modal gérer / modifier ══ -->
+@if (editing(); as m) {
+  <div class="mh-modal" (click)="closeEdit()">
+    <div class="mh-modal-card" (click)="$event.stopPropagation()">
+      <div class="mh-modal-head">
+        <div>
+          <h3>Gérer la réunion</h3>
+          <p class="mh-modal-sub">{{ dateLong(m) }} · créée par {{ m.createdByName || '—' }}</p>
+        </div>
+        <button class="mh-x" type="button" (click)="closeEdit()"><svg lucideX [size]="16"></svg></button>
+      </div>
+      <div class="mh-modal-body">
+        <div class="mh-field-row">
+          <label class="mh-field grow">Titre
+            <input [(ngModel)]="fTitle" maxlength="300" />
+          </label>
+        </div>
+        <div class="mh-field">
+          <span class="mh-label">Type</span>
+          <div class="mh-chips">
+            @for (t of typeDefs; track t.value) {
+              <button type="button" class="mh-chip" [class.sel]="fType === t.value" (click)="fType = t.value">
+                <i [style.background]="t.color"></i>{{ t.label }}
+              </button>
+            }
+          </div>
+        </div>
+        <div class="mh-field-row3">
+          <div class="mh-field">
+            <span class="mh-label">Date</span>
+            <app-date-picker [(ngModel)]="fDate" />
+          </div>
+          <div class="mh-field">
+            <span class="mh-label">Heure</span>
+            <app-time-picker [(ngModel)]="fTime" />
+          </div>
+          <div class="mh-field">
+            <span class="mh-label">Durée</span>
+            <div class="mh-chips dur">
+              @for (d of durations; track d) {
+                <button type="button" class="mh-chip" [class.sel]="fDuration === d" (click)="fDuration = d">{{ d }}′</button>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="mh-field-row">
+          <label class="mh-field">Fuseau
+            <select [(ngModel)]="fTimezone">
+              @for (tz of timezones; track tz) {
+                <option [value]="tz">{{ tz }}</option>
+              }
+            </select>
+          </label>
+          <label class="mh-field">Langue
+            <select [(ngModel)]="fLanguage">
+              @for (l of langs; track l.value) {
+                <option [value]="l.value">{{ l.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+        <label class="mh-field">Description
+          <textarea [(ngModel)]="fDescription" rows="2" placeholder="Ordre du jour…"></textarea>
+        </label>
+
+        <!-- Participants -->
+        <div class="mh-field">
+          <span class="mh-label">Participants ({{ m.participants.length || 0 }})</span>
+          <ul class="mh-parts">
+            @for (p of m.participants; track p.email) {
+              <li>
+                <span class="mh-part-role" [class.host]="p.role === 'host'">{{ p.role }}</span>
+                <span class="mh-part-name">{{ p.name || p.email }}</span>
+                <span class="mh-part-mail">{{ p.email }}</span>
+                @if (p.joinAt) { <span class="mh-part-join">rejoint</span> }
+                @if (p.noShow) { <span class="mh-part-noshow">absent</span> }
+                @if (p.role !== 'host') {
+                  <button type="button" class="mh-part-x" (click)="removeParticipant(m, p)" title="Retirer"><svg lucideX [size]="13"></svg></button>
+                }
+              </li>
+            }
+          </ul>
+          <div class="mh-addpart">
+            <input [(ngModel)]="pName" placeholder="Nom" />
+            <input [(ngModel)]="pEmail" placeholder="email@exemple.com" />
+            <select [(ngModel)]="pRole">
+              <option value="recruiter">Recruteur</option>
+              <option value="candidate">Candidat</option>
+            </select>
+            <button type="button" class="mh-btn-add" (click)="addParticipant(m)"><svg lucidePlus [size]="14"></svg></button>
+          </div>
+        </div>
+
+        <div class="mh-infos">
+          <span><svg lucidePin [size]="13"></svg> PIN candidat : <strong>{{ m.pinCode }}</strong></span>
+          <span>Room : {{ m.roomId.slice(0, 8) }}…</span>
+          @if (m.updatedAt && m.updatedAt !== m.createdAt) {
+            <span>Modifiée le {{ m.updatedAt | date : 'dd/MM/yy HH:mm' }}</span>
+          }
+        </div>
+
+        @if (formError()) {
+          <div class="mh-err">{{ formError() }}</div>
+        }
+      </div>
+      <div class="mh-modal-foot">
+        <a [routerLink]="['/meetings', m.id, 'lobby']" class="mh-btn-ghost-sm"><svg lucideVideo [size]="14"></svg> Lobby</a>
+        <span class="mh-spacer"></span>
+        <button class="mh-btn-ghost-sm" (click)="closeEdit()">Fermer</button>
+        <button class="mh-btn-primary-sm" (click)="saveEdit()" [disabled]="saving()">
+          @if (saving()) { <svg lucideLoaderCircle [size]="14" class="spin"></svg> } @else { <svg lucideCheck [size]="14"></svg> }
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ Confirm annulation ══ -->
+@if (cancelling(); as m) {
+  <div class="mh-modal" (click)="cancelling.set(null)">
+    <div class="mh-modal-card mh-modal-card--confirm" (click)="$event.stopPropagation()">
+      <h3><svg lucideBan [size]="18"></svg> Annuler cette réunion ?</h3>
+      <p><strong>{{ m.title }}</strong><br />{{ dateLong(m) }} à {{ timeOf(m) }}</p>
+      <p class="mh-muted">Les participants seront notifiés de l’annulation. Vous pourrez la réactiver ensuite.</p>
+      <div class="mh-modal-foot">
+        <button class="mh-btn-ghost-sm" (click)="cancelling.set(null)">Retour</button>
+        <button class="mh-btn-danger" (click)="confirmCancel()" [disabled]="cancelBusy()">
+          @if (cancelBusy()) { <svg lucideLoaderCircle [size]="14" class="spin"></svg> }
+          Confirmer l’annulation
+        </button>
+      </div>
+    </div>
+  </div>
+}
