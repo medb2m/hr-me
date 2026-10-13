@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import {
@@ -14,6 +14,9 @@ import {
   LucideMessageSquare,
   LucidePencil,
   LucidePin,
+  LucideZoomIn,
+  LucideZoomOut,
+  LucideDownload,
   LucidePlus,
   LucideRotateCcw,
   LucideSearch,
@@ -140,6 +143,9 @@ const FUTURE_IDEAS = [
     LucideMessageSquare,
     LucidePencil,
     LucidePin,
+    LucideZoomIn,
+    LucideZoomOut,
+    LucideDownload,
     LucidePlus,
     LucideRotateCcw,
     LucideSearch,
@@ -205,6 +211,10 @@ export class MeetingsHubComponent implements OnInit {
   readonly chatMsgs = signal<MeetingChatMsg[]>([]);
   readonly chatLoading = signal(false);
   readonly chatErr = signal<string | null>(null);
+
+  // ── Visionneuse d'image (lightbox) ──
+  readonly lightbox = signal<{ src: string; sender: string; sentAt: string } | null>(null);
+  readonly lightboxZoom = signal(1);
 
   readonly isStaff = computed(() =>
     ['admin', 'agent', 'director', 'recruiter'].includes(this.auth.user()?.role ?? '')
@@ -358,9 +368,52 @@ export class MeetingsHubComponent implements OnInit {
     return Boolean(msg.senderId && msg.senderId === this.auth.user()?.id);
   }
 
-  openChatImage(url?: string): void {
-    if (url) {
-      window.open(url, '_blank');
+  /** Ouvre la visionneuse plein écran sur l'image du message. */
+  openChatImage(c: MeetingChatMsg): void {
+    if (!c.imageUrl) {
+      return;
+    }
+    this.lightboxZoom.set(1);
+    this.lightbox.set({
+      src: c.imageUrl,
+      sender: this.isSelfMsg(c) ? 'Vous' : c.senderName || 'Participant',
+      sentAt: c.sentAt,
+    });
+  }
+
+  closeLightbox(): void {
+    this.lightbox.set(null);
+  }
+
+  zoomLightbox(delta: number): void {
+    const z = Math.min(4, Math.max(0.5, this.lightboxZoom() + delta));
+    this.lightboxZoom.set(Math.round(z * 100) / 100);
+  }
+
+  onLightboxWheel(ev: WheelEvent): void {
+    ev.preventDefault();
+    this.zoomLightbox(ev.deltaY < 0 ? 0.25 : -0.25);
+  }
+
+  lightboxZoomPct(): string {
+    return `${Math.round(this.lightboxZoom() * 100)} %`;
+  }
+
+  downloadLightbox(): void {
+    const lb = this.lightbox();
+    if (!lb) {
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = lb.src;
+    a.download = `alwassit-${Date.now()}.jpg`;
+    a.click();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void {
+    if (this.lightbox()) {
+      this.closeLightbox();
     }
   }
 
