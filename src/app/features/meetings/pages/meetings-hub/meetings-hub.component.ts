@@ -11,6 +11,7 @@ import {
   LucideCopy,
   LucideHistory,
   LucideLoaderCircle,
+  LucideMessageSquare,
   LucidePencil,
   LucidePin,
   LucidePlus,
@@ -23,6 +24,7 @@ import {
   LucideX,
 } from '@lucide/angular';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
+import type { MeetingChatMsg } from '../../../../core/services/meetings-api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import { TimePickerComponent } from '../../../../shared/components/time-picker/time-picker.component';
@@ -135,6 +137,7 @@ const FUTURE_IDEAS = [
     LucideCopy,
     LucideHistory,
     LucideLoaderCircle,
+    LucideMessageSquare,
     LucidePencil,
     LucidePin,
     LucidePlus,
@@ -196,6 +199,12 @@ export class MeetingsHubComponent implements OnInit {
   // ── Confirmation annulation ──
   readonly cancelling = signal<MeetingDto | null>(null);
   readonly cancelBusy = signal(false);
+
+  // ── Transcription de la discussion (copie persistante) ──
+  readonly chatView = signal<MeetingDto | null>(null);
+  readonly chatMsgs = signal<MeetingChatMsg[]>([]);
+  readonly chatLoading = signal(false);
+  readonly chatErr = signal<string | null>(null);
 
   readonly isStaff = computed(() =>
     ['admin', 'agent', 'director', 'recruiter'].includes(this.auth.user()?.role ?? '')
@@ -305,6 +314,54 @@ export class MeetingsHubComponent implements OnInit {
 
   canManage(m: MeetingDto): boolean {
     return this.isAdmin() || m.createdByAgentId === this.auth.user()?.id;
+  }
+
+  /** Ouvre la copie persistée de la discussion de salle. */
+  openChat(m: MeetingDto): void {
+    this.chatView.set(m);
+    this.chatMsgs.set([]);
+    this.chatErr.set(null);
+    this.chatLoading.set(true);
+    this.api.getChat(m.id).subscribe({
+      next: (r) => {
+        this.chatMsgs.set(r.messages || []);
+        this.chatLoading.set(false);
+      },
+      error: () => {
+        this.chatErr.set('Impossible de charger la discussion.');
+        this.chatLoading.set(false);
+      },
+    });
+  }
+
+  closeChat(): void {
+    this.chatView.set(null);
+    this.chatMsgs.set([]);
+  }
+
+  chatInitials(name?: string): string {
+    const parts = (name || 'P').trim().split(/\s+/);
+    return ((parts[0]?.[0] || 'P') + (parts[1]?.[0] || '')).toUpperCase();
+  }
+
+  chatColor(key?: string): string {
+    const palette = ['#7b1c2e', '#a63d52', '#b8860b', '#8a5a2b', '#0f766e', '#33415c', '#6d3b8e', '#4d7c0f', '#93512f', '#3e6b8f'];
+    let h = 0;
+    const s = key || 'x';
+    for (let i = 0; i < s.length; i++) {
+      h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    }
+    return palette[h % palette.length];
+  }
+
+  isSelfMsg(msg: MeetingChatMsg): boolean {
+    return Boolean(msg.senderId && msg.senderId === this.auth.user()?.id);
+  }
+
+  openChatImage(url?: string): void {
+    if (url) {
+      window.open(url, '_blank');
+    }
   }
 
   isPast(m: MeetingDto): boolean {

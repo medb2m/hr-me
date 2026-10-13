@@ -10,6 +10,7 @@ import {
   addParticipant,
   removeParticipant,
   recentParticipants,
+  getMeetingChat,
 } from '../controllers/meetings.controller.js';
 
 const router = Router();
@@ -19,6 +20,7 @@ router.post('/', createMeeting);
 router.get('/', listMeetings);
 router.get('/recent-participants', recentParticipants);
 router.get('/:id/join-token', getJoinToken);
+router.get('/:id/chat', getMeetingChat);
 router.post('/:id/participants', addParticipant);
 router.delete('/:id/participants', removeParticipant);
 router.patch('/:id/status', patchMeetingStatus);

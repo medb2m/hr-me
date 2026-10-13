@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { getJwtSecret } from '../utils/jwt.js';
 import { Meeting } from '../models/meeting.model.js';
+import { MeetingChat } from '../models/meeting-chat.model.js';
 import { Notification } from '../models/notification.model.js';
 import { User } from '../models/user.model.js';
 
@@ -150,10 +151,25 @@ export function attachSocketIo(httpServer, frontendOrigin) {
           }
           return [...seen.values()];
         };
+        // Historique du chat : persiste après départ/retour dans la salle
+        const chatHistory = async () => {
+          const list = await MeetingChat.find({ roomId })
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .lean();
+          return list.reverse().map((m) => ({
+            senderId: m.senderId ? m.senderId.toString() : '',
+            senderName: m.senderName,
+            senderAvatar: m.senderAvatar,
+            content: m.content,
+            imageUrl: m.imageUrl,
+            sentAt: m.sentAt.toISOString(),
+          }));
+        };
         if (join?.roomId === roomId && join.meetingId === meeting._id.toString()) {
           socket.join(`meeting:${roomId}`);
           socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId, email: socket.data.email || '' });
-          cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers() });
+          cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers(), messages: await chatHistory() });
           return;
         }
         const userEmail = normalizeSocketEmail(socket.data.email);
@@ -169,7 +185,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         }
         socket.join(`meeting:${roomId}`);
         socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId, email: socket.data.email || '' });
-        cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers() });
+        cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers(), messages: await chatHistory() });
       } catch (e) {
         console.error('[meeting:join-room]', e);
         cb?.({ ok: false, message: 'Server error' });
@@ -294,8 +310,9 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         // Nom résolu depuis les participants déclarés de la réunion
         let senderName = '';
         let senderAvatar = '';
+        let meeting = null;
         try {
-          const meeting = await Meeting.findOne({ roomId }).lean();
+          meeting = await Meeting.findOne({ roomId }).lean();
           const myEmail = normalizeSocketEmail(socket.data.email);
           const me = meeting?.participants?.find(
             (p) =>
@@ -328,6 +345,22 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         }
         if (!senderName) {
           senderName = socket.data.email || '';
+        }
+        // Copie persistante pour l'historique (salle, animateur, admins)
+        try {
+          if (meeting) {
+            await MeetingChat.create({
+              meetingId: meeting._id,
+              roomId,
+              senderId: socket.data.userId || null,
+              senderName,
+              senderAvatar,
+              content,
+              imageUrl: image,
+            });
+          }
+        } catch (e) {
+          console.error('[chat:message persist]', e);
         }
         io.to(`meeting:${roomId}`).emit('chat:message', {
           senderId: socket.data.userId,

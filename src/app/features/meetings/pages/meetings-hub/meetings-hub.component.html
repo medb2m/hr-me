@@ -107,6 +107,7 @@
               {{ copied() === m.id ? 'Copié !' : 'Lien' }}
             </button>
             @if (canManage(m)) {
+              <button class="mh-act" (click)="openChat(m)" title="Voir la copie de la discussion"><svg lucideMessageSquare [size]="15"></svg> Discussion</button>
               <button class="mh-act" (click)="openEdit(m)"><svg lucidePencil [size]="15"></svg> Gérer</button>
               @if (m.status === 'CANCELLED') {
                 <button class="mh-act restore" (click)="setStatus(m, 'SCHEDULED')"><svg lucideRotateCcw [size]="15"></svg> Réactiver</button>
@@ -259,6 +260,54 @@
           @if (cancelBusy()) { <svg lucideLoaderCircle [size]="14" class="spin"></svg> }
           Confirmer l’annulation
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ Transcription de la discussion de salle ══ -->
+@if (chatView(); as m) {
+  <div class="mh-modal" (click)="closeChat()">
+    <div class="mh-modal-card mh-modal-card--chat" (click)="$event.stopPropagation()">
+      <div class="mh-modal-head">
+        <div>
+          <h3><svg lucideMessageSquare [size]="17"></svg> Discussion de la réunion</h3>
+          <p class="mh-modal-sub">{{ m.title }} · {{ dateLong(m) }}</p>
+        </div>
+        <button class="mh-x" type="button" (click)="closeChat()"><svg lucideX [size]="16"></svg></button>
+      </div>
+      <div class="mh-chat-body">
+        @if (chatLoading()) {
+          <p class="mh-chat-note"><svg lucideLoaderCircle [size]="14" class="spin"></svg> Chargement de la discussion…</p>
+        } @else if (chatErr()) {
+          <p class="mh-chat-note mh-chat-note--err">{{ chatErr() }}</p>
+        } @else if (!chatMsgs().length) {
+          <p class="mh-chat-note">Aucun message échangé dans cette salle.</p>
+        } @else {
+          <ul class="mh-chat-list">
+            @for (c of chatMsgs(); track c.id) {
+              <li class="mh-chat-li" [class.mh-chat-li--me]="isSelfMsg(c)">
+                @if (c.senderAvatar) {
+                  <img class="mh-chat-ava" [src]="c.senderAvatar" [alt]="c.senderName" />
+                } @else {
+                  <span class="mh-chat-init" [style.background]="chatColor(c.senderId || c.senderName)">{{ chatInitials(c.senderName) }}</span>
+                }
+                <div class="mh-chat-msg">
+                  <div class="mh-chat-head">
+                    <strong>{{ isSelfMsg(c) ? 'Vous' : (c.senderName || 'Participant') }}</strong>
+                    <span>{{ c.sentAt | date : 'd MMM · HH:mm' }}</span>
+                  </div>
+                  @if (c.content) {
+                    <p class="mh-chat-text">{{ c.content }}</p>
+                  }
+                  @if (c.imageUrl) {
+                    <img class="mh-chat-img" [src]="c.imageUrl" alt="Image partagée" (click)="openChatImage(c.imageUrl)" />
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
       </div>
     </div>
   </div>

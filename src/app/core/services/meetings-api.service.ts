@@ -4,6 +4,16 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type { MeetingDto, MeetingParticipantDto } from '../models/hr-me-realtime.models';
 
+export interface MeetingChatMsg {
+  id: string;
+  senderId?: string;
+  senderName?: string;
+  senderAvatar?: string;
+  content: string;
+  imageUrl?: string;
+  sentAt: string;
+}
+
 export interface CreateMeetingBody {
   title: string;
   type?: string;
@@ -66,6 +76,11 @@ export class MeetingsApiService {
     return this.http.get<{ token: string; roomId: string; meetingRole: string; expiresAt: string }>(
       `${this.base}/${id}/join-token`
     );
+  }
+
+  /** Transcription persistante de la discussion (staff + animateur). */
+  getChat(id: string): Observable<{ messages: MeetingChatMsg[] }> {
+    return this.http.get<{ messages: MeetingChatMsg[] }>(`${this.base}/${id}/chat`);
   }
 
   addParticipant(

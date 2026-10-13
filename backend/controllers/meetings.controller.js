@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { Meeting } from '../models/meeting.model.js';
+import { MeetingChat } from '../models/meeting-chat.model.js';
 import { CalendarEvent } from '../models/calendar-event.model.js';
 import { User } from '../models/user.model.js';
 import { getJwtSecret } from '../utils/jwt.js';
@@ -858,4 +859,38 @@ function serializeMeetingLean(o) {
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
   };
+}
+
+/**
+ * Transcription de la discussion de salle — réservée au staff
+ * (consultation de toutes les réunions) et à l'animateur créateur.
+ */
+export async function getMeetingChat(req, res) {
+  try {
+    const m = await Meeting.findById(req.params.id).lean();
+    if (!m) {
+      return res.status(404).json({ message: 'Not found.' });
+    }
+    if (!canManageMeeting(req.user, m)) {
+      return res.status(403).json({ message: 'Only host or staff can read the transcript.' });
+    }
+    const rows = await MeetingChat.find({ roomId: m.roomId })
+      .sort({ createdAt: 1 })
+      .limit(500)
+      .lean();
+    return res.json({
+      messages: rows.map((x) => ({
+        id: x._id.toString(),
+        senderId: x.senderId ? x.senderId.toString() : '',
+        senderName: x.senderName,
+        senderAvatar: x.senderAvatar,
+        content: x.content,
+        imageUrl: x.imageUrl,
+        sentAt: x.sentAt,
+      })),
+    });
+  } catch (e) {
+    console.error('[getMeetingChat]', e);
+    return res.status(500).json({ message: 'Failed.' });
+  }
 }

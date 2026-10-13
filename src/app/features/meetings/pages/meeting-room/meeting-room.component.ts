@@ -1055,10 +1055,16 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         ok?: boolean;
         message?: string;
         members?: { userId?: string; email?: string }[];
+        messages?: ChatMsg[];
       }) => {
         if (!ack?.ok) {
           this.error.set(ack?.message || 'Accès à la salle refusé.');
           return;
+        }
+        // Historique persistant du chat (survit aux départs/retours)
+        if (Array.isArray(ack.messages) && ack.messages.length) {
+          this.chatMessages.set(ack.messages.slice(-200));
+          this.scrollChatToBottom();
         }
         // Présence initiale depuis l'ack
         const ids = new Set<string>();
