@@ -500,6 +500,41 @@
     </div>
   }
 
+  <!-- ══ Invités en salle d'attente — popup latéral pour l'animateur ══ -->
+  @if (guestRequests().length) {
+    <aside class="guest-reqs" aria-label="Demandes d'accès invités">
+      <div class="guest-req-head">
+        <svg lucideUsers></svg>
+        Salle d'attente <span class="guest-req-count">{{ guestRequests().length }}</span>
+      </div>
+      @for (g of guestRequests(); track g.guestId) {
+        <div class="guest-req">
+          <div class="guest-req-ava" [style.background]="tileColor(g.guestId)">{{ initials(g.name) }}</div>
+          <div class="guest-req-info">
+            <strong>{{ g.name }}</strong>
+            <span>souhaite rejoindre la réunion</span>
+          </div>
+          <div class="guest-req-btns">
+            <button
+              type="button"
+              class="guest-req-btn ok"
+              (click)="approveGuest(g)"
+              title="Admettre dans la réunion">
+              <svg lucideCheck></svg>
+            </button>
+            <button
+              type="button"
+              class="guest-req-btn no"
+              (click)="denyGuest(g)"
+              title="Refuser l'accès">
+              <svg lucideX></svg>
+            </button>
+          </div>
+        </div>
+      }
+    </aside>
+  }
+
   <!-- ══ Visionneuse d'image (lightbox) ══ -->
   @if (lightbox(); as lb) {
     <div class="lb" (click)="closeLightbox()" role="dialog" aria-modal="true" aria-label="Aperçu de l’image">

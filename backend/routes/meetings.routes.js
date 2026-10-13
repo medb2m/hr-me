@@ -11,9 +11,14 @@ import {
   removeParticipant,
   recentParticipants,
   getMeetingChat,
+  guestAccess,
 } from '../controllers/meetings.controller.js';
 
 const router = Router();
+
+// Public : invités sans compte (PIN → entrée directe, sinon salle d'attente)
+router.post('/:id/guest-access', guestAccess);
+
 router.use(requireAuth);
 
 router.post('/', createMeeting);

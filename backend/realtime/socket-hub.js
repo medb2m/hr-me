@@ -62,6 +62,18 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         };
         socket.data.userId = payload.sub;
         socket.data.role = payload.meetingRole;
+        socket.data.guestName = typeof payload.name === 'string' ? payload.name.slice(0, 60) : '';
+        return next();
+      }
+      // Invité en salle d'attente : connecté mais pas encore admis dans la salle
+      if (payload.typ === 'meeting_wait') {
+        socket.data.meetingWait = {
+          meetingId: payload.meetingId,
+          roomId: payload.roomId,
+          name: typeof payload.name === 'string' ? payload.name.slice(0, 60) : 'Invité',
+        };
+        socket.data.userId = payload.sub;
+        socket.data.role = 'guest';
         return next();
       }
       if (!payload.sub) {
@@ -75,6 +87,9 @@ export function attachSocketIo(httpServer, frontendOrigin) {
       return next(new Error('Unauthorized'));
     }
   });
+
+  // Invités en salle d'attente : roomId → Map<guestId, { name, socketId }>
+  const pendingGuests = new Map();
 
   io.on('connection', async (socket) => {
     const uid = socket.data.userId;
@@ -168,8 +183,18 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         };
         if (join?.roomId === roomId && join.meetingId === meeting._id.toString()) {
           socket.join(`meeting:${roomId}`);
-          socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId, email: socket.data.email || '' });
+          socket.to(`meeting:${roomId}`).emit('meeting:peer-present', {
+            userId,
+            email: socket.data.email || '',
+            name: socket.data.guestName || '',
+          });
           cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers(), messages: await chatHistory() });
+          // Animateur qui arrive : renvoyer les invités en attente déjà déposés
+          if (meeting.createdByAgentId.toString() === userId) {
+            for (const [gid, g] of pendingGuests.get(roomId) || []) {
+              socket.emit('meeting:guest-request', { guestId: gid, name: g.name });
+            }
+          }
           return;
         }
         const userEmail = normalizeSocketEmail(socket.data.email);
@@ -184,8 +209,17 @@ export function attachSocketIo(httpServer, frontendOrigin) {
           return;
         }
         socket.join(`meeting:${roomId}`);
-        socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId, email: socket.data.email || '' });
+        socket.to(`meeting:${roomId}`).emit('meeting:peer-present', {
+          userId,
+          email: socket.data.email || '',
+          name: socket.data.guestName || '',
+        });
         cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers(), messages: await chatHistory() });
+        if (isCreator) {
+          for (const [gid, g] of pendingGuests.get(roomId) || []) {
+            socket.emit('meeting:guest-request', { guestId: gid, name: g.name });
+          }
+        }
       } catch (e) {
         console.error('[meeting:join-room]', e);
         cb?.({ ok: false, message: 'Server error' });
@@ -204,8 +238,100 @@ export function attachSocketIo(httpServer, frontendOrigin) {
       });
     });
 
+    // ── Salle d'attente invité : demande d'admission à l'animateur ──
+    socket.on('meeting:request-join', (payload, cb) => {
+      const w = socket.data.meetingWait;
+      const roomId = typeof payload?.roomId === 'string' ? payload.roomId : w?.roomId;
+      if (!w || w.roomId !== roomId) {
+        cb?.({ ok: false, message: 'Not waiting.' });
+        return;
+      }
+      let room = pendingGuests.get(roomId);
+      if (!room) {
+        pendingGuests.set(roomId, (room = new Map()));
+      }
+      room.set(socket.data.userId, { name: w.name, socketId: socket.id });
+      io.to(`meeting:${roomId}`).emit('meeting:guest-request', {
+        guestId: socket.data.userId,
+        name: w.name,
+      });
+      cb?.({ ok: true });
+    });
+
+    // L'animateur admet ou refuse un invité en attente
+    socket.on('meeting:guest-decision', async (payload) => {
+      try {
+        const roomId = typeof payload?.roomId === 'string' ? payload.roomId : '';
+        const guestId = typeof payload?.guestId === 'string' ? payload.guestId : '';
+        const approved = payload?.approved === true;
+        if (!roomId || !guestId || !socket.rooms.has(`meeting:${roomId}`)) {
+          return;
+        }
+        const meeting = await Meeting.findOne({ roomId }).lean();
+        if (!meeting || meeting.createdByAgentId.toString() !== socket.data.userId) {
+          return;
+        }
+        const pend = pendingGuests.get(roomId)?.get(guestId);
+        if (!pend) {
+          return;
+        }
+        pendingGuests.get(roomId).delete(guestId);
+        const guestSock = io.sockets.sockets.get(pend.socketId);
+        if (!guestSock) {
+          return;
+        }
+        if (approved) {
+          const token = jwt.sign(
+            {
+              sub: guestId,
+              typ: 'meeting_join',
+              meetingId: meeting._id.toString(),
+              roomId,
+              meetingRole: 'guest',
+              name: pend.name,
+              guest: true,
+            },
+            getJwtSecret(),
+            { expiresIn: '12h' }
+          );
+          // Passe le socket invité en mode « admis » pour que join-room fonctionne
+          guestSock.data.meetingJoin = {
+            meetingId: meeting._id.toString(),
+            roomId,
+            role: 'guest',
+            userId: guestId,
+          };
+          guestSock.data.guestName = pend.name;
+          guestSock.emit('meeting:guest-approved', { token });
+        } else {
+          guestSock.emit('meeting:guest-denied', {});
+        }
+      } catch (e) {
+        console.error('[meeting:guest-decision]', e);
+      }
+    });
+
+    // L'invité retire sa demande
+    socket.on('meeting:withdraw', (payload) => {
+      const w = socket.data.meetingWait;
+      const roomId = typeof payload?.roomId === 'string' ? payload.roomId : w?.roomId;
+      if (!w || w.roomId !== roomId) {
+        return;
+      }
+      pendingGuests.get(roomId)?.delete(socket.data.userId);
+      socket.to(`meeting:${roomId}`).emit('meeting:guest-cancel', { guestId: socket.data.userId });
+    });
+
     // Déconnexion brutale (onglet fermé, perte réseau) : prévenir les salles occupées
     socket.on('disconnecting', () => {
+      // Invité en attente qui part : retirer sa demande chez l'animateur
+      const w = socket.data.meetingWait;
+      if (w?.roomId && pendingGuests.get(w.roomId)?.has(socket.data.userId)) {
+        pendingGuests.get(w.roomId).delete(socket.data.userId);
+        socket.to(`meeting:${w.roomId}`).emit('meeting:guest-cancel', {
+          guestId: socket.data.userId,
+        });
+      }
       for (const r of socket.rooms) {
         if (r.startsWith('meeting:')) {
           socket.to(r).emit('meeting:peer-left', {
@@ -344,7 +470,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
           /* */
         }
         if (!senderName) {
-          senderName = socket.data.email || '';
+          senderName = socket.data.guestName || socket.data.email || '';
         }
         // Copie persistante pour l'historique (salle, animateur, admins)
         try {
@@ -352,7 +478,10 @@ export function attachSocketIo(httpServer, frontendOrigin) {
             await MeetingChat.create({
               meetingId: meeting._id,
               roomId,
-              senderId: socket.data.userId || null,
+              senderId:
+                socket.data.userId && mongoose.isValidObjectId(socket.data.userId)
+                  ? socket.data.userId
+                  : null,
               senderName,
               senderAvatar,
               content,

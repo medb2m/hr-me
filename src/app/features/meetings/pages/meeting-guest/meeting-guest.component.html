@@ -1,0 +1,83 @@
+<div class="guest-page">
+  <div class="guest-card">
+
+    @if (step() === 'form') {
+      <header class="guest-head">
+        <div class="guest-brand"><svg lucideVideo [size]="26"></svg></div>
+        <h1>{{ meetingTitle() || 'Réunion Al Wassit' }}</h1>
+        <p>Vous êtes invité(e) à une visioconférence. Entrez votre nom — il sera affiché aux autres participants.</p>
+      </header>
+
+      <form class="guest-form" (ngSubmit)="submit()">
+        <label>
+          <svg lucideUser [size]="15"></svg>
+          Votre nom <span class="req">*</span>
+        </label>
+        <input type="text" [(ngModel)]="name" name="gname" placeholder="Ex. Marie Dupont" maxlength="60" required />
+
+        <label>
+          <svg lucidePin [size]="15"></svg>
+          Code PIN <span class="opt">(reçu par e-mail — facultatif)</span>
+        </label>
+        <input type="text" [(ngModel)]="pin" name="gpin" inputmode="numeric" placeholder="Ex. 904574" maxlength="6" />
+
+        @if (error()) {
+          <p class="guest-err">{{ error() }}</p>
+        }
+
+        <button type="submit" class="guest-btn" [disabled]="busy()">
+          @if (busy()) {
+            <svg lucideLoaderCircle [size]="18" class="spin"></svg> Vérification…
+          } @else {
+            <svg lucideDoorOpen [size]="18"></svg> Rejoindre la réunion
+          }
+        </button>
+
+        <p class="guest-hint">
+          Sans code PIN, votre demande sera transmise à l'animateur de la réunion pour approbation.
+        </p>
+      </form>
+
+      @if (isLoggedIn) {
+        <div class="guest-account">
+          Vous avez un compte ?
+          <a [routerLink]="['/meetings', meetingId, 'lobby']">
+            <svg lucideLogIn [size]="14"></svg> Ouvrir le lobby
+          </a>
+        </div>
+      }
+    }
+
+    @if (step() === 'waiting') {
+      <div class="guest-waiting">
+        <!-- Animation de salle d'attente -->
+        <div class="wait-anim">
+          <div class="wait-ring r1"></div>
+          <div class="wait-ring r2"></div>
+          <div class="wait-ring r3"></div>
+          <div class="wait-avatar">{{ waitingName().slice(0, 2).toUpperCase() }}</div>
+          <div class="wait-orbit"><span class="wait-dot"></span></div>
+        </div>
+
+        <h2>En attente d'acceptation</h2>
+        <p class="wait-sub">
+          Bonjour <strong>{{ waitingName() }}</strong> — votre demande a été transmise à l'animateur de
+          «&nbsp;{{ meetingTitle() }}&nbsp;». Vous entrerez automatiquement dès qu'il vous acceptera.
+        </p>
+
+        <div class="wait-dots"><span></span><span></span><span></span></div>
+
+        <button type="button" class="guest-btn ghost" (click)="cancelWaiting()">Annuler et quitter</button>
+      </div>
+    }
+
+    @if (step() === 'denied') {
+      <div class="guest-denied">
+        <div class="denied-ico"><svg lucideXCircle [size]="44"></svg></div>
+        <h2>Accès refusé</h2>
+        <p>L'animateur n'a pas accepté votre demande de participation à «&nbsp;{{ meetingTitle() }}&nbsp;».</p>
+        <button type="button" class="guest-btn ghost" (click)="cancelWaiting()">Retour</button>
+      </div>
+    }
+  </div>
+</div>

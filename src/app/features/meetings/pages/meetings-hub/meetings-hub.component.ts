@@ -438,7 +438,8 @@ export class MeetingsHubComponent implements OnInit {
   }
 
   joinUrl(m: MeetingDto): string {
-    return `${window.location.origin}/meetings/${m.id}/lobby`;
+    // Lien universel invité : sans compte → nom + PIN ou salle d'attente
+    return `${window.location.origin}/meetings/${m.id}/invite`;
   }
 
   copyLink(m: MeetingDto, ev: Event): void {

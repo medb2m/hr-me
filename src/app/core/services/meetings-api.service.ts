@@ -14,6 +14,16 @@ export interface MeetingChatMsg {
   sentAt: string;
 }
 
+export interface GuestAccessResult {
+  mode: 'join' | 'wait';
+  token?: string;
+  waitToken?: string;
+  guestId: string;
+  name: string;
+  roomId: string;
+  meeting: { id: string; title: string; type: string; scheduledAt: string; durationMin: number; timezone: string };
+}
+
 export interface CreateMeetingBody {
   title: string;
   type?: string;
@@ -81,6 +91,11 @@ export class MeetingsApiService {
   /** Transcription persistante de la discussion (staff + animateur). */
   getChat(id: string): Observable<{ messages: MeetingChatMsg[] }> {
     return this.http.get<{ messages: MeetingChatMsg[] }>(`${this.base}/${id}/chat`);
+  }
+
+  /** Accès invité sans compte : PIN → entrée directe, sinon salle d'attente. */
+  guestAccess(id: string, body: { name: string; pin?: string }): Observable<GuestAccessResult> {
+    return this.http.post<GuestAccessResult>(`${this.base}/${id}/guest-access`, body);
   }
 
   addParticipant(

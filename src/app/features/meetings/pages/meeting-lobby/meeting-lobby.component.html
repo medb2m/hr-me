@@ -82,13 +82,17 @@
       <div class="lb-card lb-card--flat">
         <h2><svg lucidePin [size]="16"></svg> Accès</h2>
         <div class="lb-pinbox">
-          <span class="lb-pin-label">Code PIN (candidat)</span>
+          <span class="lb-pin-label">Code PIN (invités sans compte)</span>
           <strong class="lb-pin">{{ m.pinCode }}</strong>
         </div>
         @if (m.createdByName || m.createdByEmail) {
           <p class="lb-creator"><svg lucideUser [size]="13"></svg> Organisée par {{ m.createdByName || m.createdByEmail }}</p>
         }
-        <p class="lb-tip">Partagez le lien du lobby et le PIN au candidat pour qu'il rejoigne sans compte recruteur.</p>
+        <p class="lb-tip">
+          Les participants invités ayant un compte entrent automatiquement. Envoyez le lien d'invitation
+          (« Copier le lien ») à une personne sans compte : avec le PIN elle entre directement,
+          sans PIN elle attend votre acceptation en salle d'attente.
+        </p>
       </div>
     </div>
     }

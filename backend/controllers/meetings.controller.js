@@ -894,3 +894,85 @@ export async function getMeetingChat(req, res) {
     return res.status(500).json({ message: 'Failed.' });
   }
 }
+
+/**
+ * Accès invité SANS compte (endpoint public).
+ * - PIN correct  → jeton meeting_join → entrée directe dans la salle.
+ * - Pas de PIN   → jeton meeting_wait → salle d'attente + approbation de l'animateur.
+ * - PIN saisi mais erroné → 403 explicite.
+ */
+export async function guestAccess(req, res) {
+  try {
+    const m = await Meeting.findById(req.params.id).lean();
+    if (!m) {
+      return res.status(404).json({ message: 'Réunion introuvable.' });
+    }
+    if (['ENDED', 'ARCHIVED', 'CANCELLED'].includes(m.status)) {
+      return res.status(410).json({ message: 'Cette réunion est terminée ou annulée.' });
+    }
+    const name = String(req.body?.name || '').trim().slice(0, 60);
+    if (name.length < 2) {
+      return res.status(400).json({ message: 'Indiquez votre nom pour rejoindre.' });
+    }
+    const pin = String(req.body?.pin || '').trim();
+    const guestId = `guest-${crypto.randomBytes(8).toString('hex')}`;
+    const meetingInfo = {
+      id: m._id.toString(),
+      title: m.title,
+      type: m.type,
+      scheduledAt: m.scheduledAt,
+      durationMin: m.durationMin,
+      timezone: m.timezone,
+    };
+    if (pin) {
+      if (pin !== m.pinCode) {
+        return res.status(403).json({ message: 'Code PIN incorrect.', mode: 'wrong_pin' });
+      }
+      const maxSec = joinTokenMaxSeconds(m.scheduledAt, m.durationMin);
+      const token = jwt.sign(
+        {
+          sub: guestId,
+          typ: 'meeting_join',
+          meetingId: m._id.toString(),
+          roomId: m.roomId,
+          meetingRole: 'guest',
+          name,
+          guest: true,
+        },
+        getJwtSecret(),
+        { expiresIn: maxSec }
+      );
+      return res.json({
+        mode: 'join',
+        token,
+        guestId,
+        name,
+        roomId: m.roomId,
+        meeting: meetingInfo,
+      });
+    }
+    // Pas de PIN → salle d'attente, l'animateur décidera
+    const waitToken = jwt.sign(
+      {
+        sub: guestId,
+        typ: 'meeting_wait',
+        meetingId: m._id.toString(),
+        roomId: m.roomId,
+        name,
+      },
+      getJwtSecret(),
+      { expiresIn: '4h' }
+    );
+    return res.json({
+      mode: 'wait',
+      waitToken,
+      guestId,
+      name,
+      roomId: m.roomId,
+      meeting: meetingInfo,
+    });
+  } catch (err) {
+    console.error('[guestAccess]', err);
+    return res.status(500).json({ message: 'Failed.' });
+  }
+}

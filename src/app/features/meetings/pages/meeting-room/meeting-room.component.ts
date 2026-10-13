@@ -35,6 +35,7 @@ import {
   LucideZoomIn,
   LucideZoomOut,
   LucideDownload,
+  LucideCheck,
 } from '@lucide/angular';
 import { AuthService } from '../../../../core/services/auth.service';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
@@ -42,6 +43,7 @@ import { CalendarApiService } from '../../../../core/services/calendar-api.servi
 import { SocketService } from '../../../../core/services/socket.service';
 import { SelectComponent } from '../../../../shared/components/select/select.component';
 import type { MeetingDto, MeetingParticipantDto } from '../../../../core/models/hr-me-realtime.models';
+import { readGuestSession, type GuestSession } from '../meeting-guest/meeting-guest.component';
 
 type RightTab = 'chat' | 'room';
 
@@ -173,6 +175,7 @@ const TILE_COLORS = [
     LucideZoomIn,
     LucideZoomOut,
     LucideDownload,
+    LucideCheck,
     SelectComponent,
   ],
   templateUrl: './meeting-room.component.html',
@@ -256,9 +259,20 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   );
 
   readonly isHost = computed(() => {
-    const uid = this.auth.user()?.id || '';
+    const uid = this.myId();
     return Boolean(uid && uid === this.hostId());
   });
+
+  /** Session invité (sans compte, entrée par PIN ou approbation). */
+  private guest: GuestSession | null = null;
+
+  /** Demandes d'invités en salle d'attente — visibles par l'animateur. */
+  readonly guestRequests = signal<{ guestId: string; name: string }[]>([]);
+
+  /** Identité locale : compte connecté ou invité temporaire. */
+  private myId(): string {
+    return this.auth.user()?.id || this.guest?.guestId || '';
+  }
 
   chatDraft = '';
   addInviteEmail = '';
@@ -394,11 +408,24 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
     this.meetingId = id;
     const token = typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : '';
-    if (!token) {
-      this.error.set('Connexion requise.');
+    this.guest = readGuestSession(id);
+    if (!token && !this.guest?.token) {
+      this.error.set('Accès à la réunion requis.');
       return;
     }
-    this.socketSvc.connect(token);
+    this.socketSvc.connect(token || this.guest!.token!);
+    if (!token && this.guest) {
+      // Invité sans compte : pas d'accès REST, identité et infos via la session
+      this.meetingTitle.set(this.guest.meeting?.title || 'Réunion');
+      this.meetingType.set(this.guest.meeting?.type || 'general');
+      this.roomId = this.guest.roomId;
+      void (async () => {
+        await this.startMedia();
+        this.joinSocketRoom();
+        this.cdr.markForCheck();
+      })();
+      return;
+    }
     forkJoin({
       meet: this.meetingsApi.get(id),
       join: this.meetingsApi.getJoinToken(id),
@@ -435,7 +462,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   }
 
   isSelfParticipant(p: MeetingParticipantDto): boolean {
-    const myId = this.auth.user()?.id || '';
+    const myId = this.myId();
     const myEmail = (this.auth.user()?.email || '').trim().toLowerCase();
     if (myId && p.userId && p.userId === myId) {
       return true;
@@ -509,7 +536,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     return [...mine, ...others, ...extra];
   });
 
-  selfName = computed(() => this.auth.user()?.name || this.auth.user()?.email || 'Vous');
+  selfName = computed(
+    () => this.auth.user()?.name || this.guest?.name || this.auth.user()?.email || 'Vous'
+  );
 
   selfAvatar = computed(() => {
     const me = this.auth.user();
@@ -735,6 +764,11 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   leaveRoom(): void {
     this.detachMeetingSocketListeners();
     this.leaveMediaAndPc(false);
+    // Un invité sans compte n'a pas accès au lobby authentifié
+    if (this.guest && !this.auth.user()) {
+      void this.router.navigate(['/meetings', this.meetingId, 'invite']);
+      return;
+    }
     void this.router.navigate(['/meetings', this.meetingId, 'lobby']);
   }
 
@@ -828,7 +862,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   }
 
   isSelfMsg(c: ChatMsg): boolean {
-    return Boolean(c.senderId && c.senderId === this.auth.user()?.id);
+    return Boolean(c.senderId && c.senderId === this.myId());
   }
 
   chatInitials(c: ChatMsg): string {
@@ -1080,7 +1114,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         this.presentIds.set(ids);
         this.presentEmails.set(emails);
         // Une tuile par membre déjà présent — ils nous enverront chacun une offre
-        const myId = this.auth.user()?.id || '';
+        const myId = this.myId();
         for (const id of ids) {
           if (id !== myId) {
             this.patchTile(id, {});
@@ -1108,8 +1142,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     // Chaque membre existant crée sa propre connexion vers l'arrivant.
     s.on(
       'meeting:peer-present',
-      async ({ userId: otherId, email }: { userId?: string; email?: string }) => {
-      const myId = this.auth.user()?.id || '';
+      async ({ userId: otherId, email, name }: { userId?: string; email?: string; name?: string }) => {
+      const myId = this.myId();
       if (!otherId || otherId === myId) {
         return;
       }
@@ -1119,7 +1153,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       if (em) {
         this.presentEmails.update((set) => new Set(set).add(em));
       }
-      this.patchTile(otherId, {});
+      this.patchTile(otherId, name ? { name } : {});
       // Informer le nouvel arrivant de notre état cam/mic
       this.emitMediaState();
       const st = await this.ensurePc(otherId);
@@ -1138,7 +1172,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         sdp?: string;
         candidate?: RTCIceCandidateInit;
       }) => {
-        const myId = this.auth.user()?.id || '';
+        const myId = this.myId();
         if (!msg.from || msg.from === myId) {
           return;
         }
@@ -1185,7 +1219,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
 
     // Un participant a quitté : fermer UNIQUEMENT sa connexion, les autres restent
     s.on('meeting:peer-left', ({ userId: otherId, email }: { userId?: string; email?: string }) => {
-      const myId = this.auth.user()?.id || '';
+      const myId = this.myId();
       if (!otherId || otherId === myId) {
         return;
       }
@@ -1223,7 +1257,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         sharing?: boolean;
         name?: string;
       }) => {
-        const myId = this.auth.user()?.id || '';
+        const myId = this.myId();
         if (!msg.userId || msg.userId === myId) {
           return;
         }
@@ -1252,7 +1286,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     });
 
     s.on('meeting:moderation', async (msg: { action?: string; targetUserId?: string }) => {
-      const myId = this.auth.user()?.id || '';
+      const myId = this.myId();
       if (!msg.targetUserId || msg.targetUserId !== myId) {
         return;
       }
@@ -1327,6 +1361,46 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       this.emitMediaState();
       this.cdr.markForCheck();
     });
+
+    // Invité sans PIN en salle d'attente → popup latéral pour l'animateur
+    s.on('meeting:guest-request', (msg: { guestId?: string; name?: string }) => {
+      if (!this.isHost() || !msg?.guestId) {
+        return;
+      }
+      this.guestRequests.update((list) =>
+        list.some((g) => g.guestId === msg.guestId)
+          ? list
+          : [...list, { guestId: String(msg.guestId), name: msg.name || 'Invité' }]
+      );
+      this.cdr.markForCheck();
+    });
+    s.on('meeting:guest-cancel', (msg: { guestId?: string }) => {
+      if (!msg?.guestId) {
+        return;
+      }
+      this.guestRequests.update((list) => list.filter((g) => g.guestId !== msg.guestId));
+      this.cdr.markForCheck();
+    });
+  }
+
+  /** Animateur : admettre l'invité de la salle d'attente. */
+  approveGuest(g: { guestId: string }): void {
+    this.socketSvc.getSocket()?.emit('meeting:guest-decision', {
+      roomId: this.roomId,
+      guestId: g.guestId,
+      approved: true,
+    });
+    this.guestRequests.update((list) => list.filter((x) => x.guestId !== g.guestId));
+  }
+
+  /** Animateur : refuser l'invité de la salle d'attente. */
+  denyGuest(g: { guestId: string }): void {
+    this.socketSvc.getSocket()?.emit('meeting:guest-decision', {
+      roomId: this.roomId,
+      guestId: g.guestId,
+      approved: false,
+    });
+    this.guestRequests.update((list) => list.filter((x) => x.guestId !== g.guestId));
   }
 
   private detachMeetingSocketListeners(): void {
@@ -1345,6 +1419,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     s.off('chat:message');
     s.off('meeting:participants_updated');
     s.off('meeting:moderation');
+    s.off('meeting:guest-request');
+    s.off('meeting:guest-cancel');
   }
 
   /** Connexion mesh : une RTCPeerConnection par pair distant. */

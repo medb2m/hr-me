@@ -138,7 +138,9 @@ export class MeetingLobbyComponent implements OnInit, OnDestroy {
   copyLink(): void {
     const m = this.meeting();
     if (!m) return;
-    navigator.clipboard?.writeText(`${window.location.origin}/meetings/${m.id}/lobby`);
+    // Lien universel « invité » : marche avec ou sans compte (PIN → accès direct,
+    // sans PIN → salle d'attente jusqu'à acceptation de l'animateur).
+    navigator.clipboard?.writeText(`${window.location.origin}/meetings/${m.id}/invite`);
     this.copied.set(true);
     setTimeout(() => this.copied.set(false), 1600);
   }

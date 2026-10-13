@@ -1566,3 +1566,55 @@ $border: #272b36;
     padding: 0.45rem;
   }
 }
+
+/* ── Invités en salle d'attente : pile de cartes à droite ── */
+.guest-reqs {
+  position: fixed; top: 80px; right: 18px; z-index: 2600; width: 300px;
+  background: rgba(24, 26, 35, .96);
+  border: 1px solid rgba(255, 211, 0, .25); border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(10px); overflow: hidden;
+  animation: greqIn .3s cubic-bezier(.2, .9, .3, 1.2);
+}
+@keyframes greqIn {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.guest-req-head {
+  display: flex; align-items: center; gap: 8px; padding: 11px 14px;
+  font-size: .78rem; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: #ffd300;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+.guest-req-head svg { width: 15px; height: 15px; }
+.guest-req-count {
+  margin-left: auto; background: #ffd300; color: #14161d;
+  font-size: .7rem; font-weight: 800; min-width: 20px; height: 20px;
+  border-radius: 10px; display: inline-flex; align-items: center;
+  justify-content: center; padding: 0 6px;
+}
+.guest-req {
+  display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+}
+.guest-req + .guest-req { border-top: 1px solid rgba(255, 255, 255, .06); }
+.guest-req-ava {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .82rem; font-weight: 800;
+}
+.guest-req-info { min-width: 0; flex: 1; }
+.guest-req-info strong {
+  display: block; font-size: .88rem; color: #e9ecf5;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.guest-req-info span { font-size: .72rem; color: rgba(255, 255, 255, .5); }
+.guest-req-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.guest-req-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform .15s, filter .15s;
+}
+.guest-req-btn:hover { transform: scale(1.1); filter: brightness(1.12); }
+.guest-req-btn svg { width: 16px; height: 16px; }
+.guest-req-btn.ok { background: #ffd300; color: #14161d; }
+.guest-req-btn.no { background: rgba(255, 255, 255, .1); color: #ff8a8a; }
