@@ -252,7 +252,7 @@ export const createInterviewSession = async (req, res) => {
         actionUrl: `/interview/pass/${session.inviteToken}`,
         actionLabel: "Passer l'entretien",
         icon: 'bot',
-        color: '#7b1c2e',
+        color: '#0f172a',
         sourceModule: 'interview',
         sourceId: session._id,
       }).catch(() => {});

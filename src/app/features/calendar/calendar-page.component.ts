@@ -332,7 +332,7 @@ export class CalendarPageComponent implements OnInit {
   }
 
   evColor(e: CalendarEventDto): string {
-    return e.color && e.color !== '#7B1C2E' ? e.color : this.typeDef(e.type).color;
+    return e.color && e.color !== '#0f172a' ? e.color : this.typeDef(e.type).color;
   }
 
   fmtTime(iso: string): string {

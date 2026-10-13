@@ -139,7 +139,7 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, { value: string; label: string }[]> =
 /** Couleurs de tuiles (hash userId → hex stable, style Meet). */
 /** Palette d'avatars aux couleurs Al Wassit : bordeaux, or, tons sourds. */
 const TILE_COLORS = [
-  '#7b1c2e',
+  '#0f172a',
   '#a63d52',
   '#b8860b',
   '#8a5a2b',

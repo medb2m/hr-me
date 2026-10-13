@@ -45,7 +45,7 @@ const calendarEventSchema = new mongoose.Schema(
     endsAt: { type: Date, default: null },
     allDay: { type: Boolean, default: false },
     timezoneRef: { type: String, default: 'Africa/Tunis' },
-    color: { type: String, default: '#7B1C2E' },
+    color: { type: String, default: '#0f172a' },
     status: {
       type: String,
       enum: ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'MISSED'],

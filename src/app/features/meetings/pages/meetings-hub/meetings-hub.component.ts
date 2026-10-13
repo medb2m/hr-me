@@ -355,7 +355,7 @@ export class MeetingsHubComponent implements OnInit {
   }
 
   chatColor(key?: string): string {
-    const palette = ['#7b1c2e', '#a63d52', '#b8860b', '#8a5a2b', '#0f766e', '#33415c', '#6d3b8e', '#4d7c0f', '#93512f', '#3e6b8f'];
+    const palette = ['#0f172a', '#a63d52', '#b8860b', '#8a5a2b', '#0f766e', '#33415c', '#6d3b8e', '#4d7c0f', '#93512f', '#3e6b8f'];
     let h = 0;
     const s = key || 'x';
     for (let i = 0; i < s.length; i++) {

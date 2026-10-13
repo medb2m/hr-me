@@ -9,7 +9,7 @@
 .hub-kicker {
   display: inline-flex; align-items: center; gap: 7px;
   margin: 0 0 6px; font-size: 11px; font-weight: 800;
-  letter-spacing: .12em; text-transform: uppercase; color: #7b1c2e;
+  letter-spacing: .12em; text-transform: uppercase; color: #0f172a;
 }
 .hub-kicker svg { color: #ffd300; }
 .hub-head h1 { margin: 0; font-size: 26px; font-weight: 800; }
@@ -29,8 +29,8 @@
   background: transparent; color: var(--clr-text-muted, #7a7686);
   font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: inherit;
 }
-.hub-tabs button.on { background: #7b1c2e; color: #fff; }
-.hub-tabs button:not(.on):hover { background: rgba(123,28,46,.06); color: var(--clr-text, #1d1b26); }
+.hub-tabs button.on { background: #0f172a; color: #fff; }
+.hub-tabs button:not(.on):hover { background: rgba(15,23,42,.06); color: var(--clr-text, #1d1b26); }
 
 .hub-panel { animation: fadein .18s ease; }
 @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
@@ -42,7 +42,7 @@
   font-size: 13.5px; font-family: inherit; background: var(--clr-card, #fff);
   color: var(--clr-text, #1d1b26); outline: none;
 }
-.fl:focus { border-color: #7b1c2e; box-shadow: 0 0 0 3px rgba(123,28,46,.08); }
+.fl:focus { border-color: #0f172a; box-shadow: 0 0 0 3px rgba(15,23,42,.08); }
 textarea.fl { resize: vertical; width: 100%; box-sizing: border-box; }
 
 /* ── Cards ── */
@@ -59,21 +59,21 @@ textarea.fl { resize: vertical; width: 100%; box-sizing: border-box; }
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   margin: 5px 0 0; font-size: 12.5px; color: var(--clr-text-muted, #7a7686);
 }
-.card-meta svg { flex: none; color: #7b1c2e; }
+.card-meta svg { flex: none; color: #0f172a; }
 .muted { color: var(--clr-text-muted, #7a7686); }
-.tpl { font-weight: 700; color: #7b1c2e; }
+.tpl { font-weight: 700; color: #0f172a; }
 .card-topics { display: flex; gap: 5px; flex-wrap: wrap; margin: 8px 0 0; }
 .chip, .badge { border-radius: 999px; font-weight: 700; }
 .chip {
   padding: 3px 9px; font-size: 11px;
-  background: rgba(123,28,46,.07); color: #7b1c2e; border: 1px solid rgba(123,28,46,.12);
+  background: rgba(15,23,42,.07); color: #0f172a; border: 1px solid rgba(15,23,42,.12);
 }
 .badge { padding: 3px 10px; font-size: 11px; font-weight: 800; }
 .b-pending { background: #fef3c7; color: #92400e; }
 .b-in_progress { background: #dbeafe; color: #1d4ed8; }
 .b-completed { background: #d1fae5; color: #065f46; }
 .b-expired { background: #fee2e2; color: #b91c1c; }
-.b-template { background: rgba(123,28,46,.08); color: #7b1c2e; }
+.b-template { background: rgba(15,23,42,.08); color: #0f172a; }
 .b-good { background: #d1fae5; color: #065f46; }
 .b-mid { background: #fef3c7; color: #92400e; }
 .b-bad { background: #fee2e2; color: #b91c1c; }
@@ -82,7 +82,7 @@ textarea.fl { resize: vertical; width: 100%; box-sizing: border-box; }
 .score { display: flex; flex-direction: column; align-items: center; min-width: 58px; }
 .score-v { font-size: 21px; font-weight: 800; }
 .score-v small { font-size: 11px; font-weight: 600; color: var(--clr-text-muted, #7a7686); }
-.score-v.ai { color: #7b1c2e; }
+.score-v.ai { color: #0f172a; }
 .score-v.empty { color: var(--clr-border, #e8e4ea); }
 .score-l {
   display: inline-flex; align-items: center; gap: 4px;
@@ -95,17 +95,17 @@ textarea.fl { resize: vertical; width: 100%; box-sizing: border-box; }
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 10px 20px; border: 0; border-radius: 999px;
-  background: #7b1c2e; color: #fff; font-size: 13.5px; font-weight: 700;
+  background: #0f172a; color: #fff; font-size: 13.5px; font-weight: 700;
   cursor: pointer; font-family: inherit; text-decoration: none;
 }
-.btn:hover { background: #5f1422; }
+.btn:hover { background: #020617; }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 .btn.sm { padding: 7px 13px; font-size: 12.5px; }
 .btn.ghost {
   background: transparent; color: var(--clr-text, #1d1b26);
   border: 1px solid var(--clr-border, #e8e4ea);
 }
-.btn.ghost:hover { border-color: #7b1c2e; color: #7b1c2e; background: rgba(123,28,46,.04); }
+.btn.ghost:hover { border-color: #0f172a; color: #0f172a; background: rgba(15,23,42,.04); }
 .btn.danger { color: #b91c1c; }
 .btn.danger:hover { border-color: #b91c1c; background: #fee2e2; }
 
@@ -118,7 +118,7 @@ textarea.fl { resize: vertical; width: 100%; box-sizing: border-box; }
 
 .linklike {
   background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
-  color: #7b1c2e; font-weight: 700; text-decoration: underline;
+  color: #0f172a; font-weight: 700; text-decoration: underline;
 }
 
 /* ── Créer ── */
@@ -161,7 +161,7 @@ textarea.fl { resize: vertical; width: 100%; box-sizing: border-box; }
 /* ── Démo ── */
 .demo-wrap { max-width: 560px; }
 .demo-wrap h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 16px; }
-.demo-wrap h3 svg { color: #7b1c2e; }
+.demo-wrap h3 svg { color: #0f172a; }
 .demo-form { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
 .demo-form .btn { align-self: flex-start; }
 
@@ -188,16 +188,16 @@ textarea.fl { resize: vertical; width: 100%; box-sizing: border-box; }
 }
 .eval-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
 .eval-head h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 17px; }
-.eval-head h3 svg { color: #7b1c2e; }
+.eval-head h3 svg { color: #0f172a; }
 .eval-head p { margin: 4px 0 0; font-size: 12.5px; }
 .eval-loading { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 0; color: var(--clr-text-muted, #7a7686); }
 .eval-overall {
   display: flex; align-items: baseline; gap: 12px;
   padding: 14px 18px; border-radius: 14px;
-  background: linear-gradient(135deg, rgba(123,28,46,.07), rgba(255,211,0,.08));
-  border: 1px solid rgba(123,28,46,.15); margin-bottom: 14px;
+  background: linear-gradient(135deg, rgba(15,23,42,.07), rgba(255,211,0,.08));
+  border: 1px solid rgba(15,23,42,.15); margin-bottom: 14px;
 }
-.eval-score { font-size: 32px; font-weight: 800; color: #7b1c2e; }
+.eval-score { font-size: 32px; font-weight: 800; color: #0f172a; }
 .eval-score small { font-size: 14px; font-weight: 600; }
 .eval-score-l { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--clr-text-muted, #7a7686); }
 .eval-summary { font-size: 14px; line-height: 1.65; margin: 0 0 16px; }

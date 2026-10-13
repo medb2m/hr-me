@@ -163,7 +163,7 @@ export async function createMeeting(req, res) {
 
     const endsAt = meetingEndTime(meeting);
     const calType = type === 'ai_automated' ? 'AI_INTERVIEW' : 'MEETING';
-    const color = type === 'ai_automated' ? '#A0522D' : '#7B1C2E';
+    const color = type === 'ai_automated' ? '#A0522D' : '#0f172a';
     const videoLink = `${getFrontendBaseUrl()}/meetings/${meeting._id}/lobby`;
 
     const cal = await CalendarEvent.create({
@@ -609,7 +609,7 @@ export async function updateMeeting(req, res) {
         endsAt: meetingEndTime(m),
         allDay: false,
         timezoneRef: m.timezone,
-        color: m.type === 'ai_automated' ? '#A0522D' : '#7B1C2E',
+        color: m.type === 'ai_automated' ? '#A0522D' : '#0f172a',
         status: 'SCHEDULED',
         priority: 'NORMAL',
         agentId: m.createdByAgentId,
