@@ -1,0 +1,92 @@
+<div class="db">
+  <header class="db-head">
+    <div>
+      <p class="db-date">{{ today }}</p>
+      <h1>Bonjour, {{ firstName() }}</h1>
+    </div>
+    <span class="db-role">{{ roleLabel() }}</span>
+  </header>
+
+  @if (loading()) {
+    <div class="db-loading">Chargement de la vue d'ensemble…</div>
+  } @else {
+    @if (kpis().length) {
+      <section class="db-kpis">
+        @for (k of kpis(); track k.label) {
+          <div class="db-kpi">
+            <div class="db-kpi-ic" [attr.data-icon]="k.icon">
+              @switch (k.icon) {
+                @case ('video') { <svg lucideVideo [size]="20"></svg> }
+                @case ('ticket') { <svg lucideTicket [size]="20"></svg> }
+                @case ('users') { <svg lucideUsers [size]="20"></svg> }
+                @case ('briefcase') { <svg lucideBriefcase [size]="20"></svg> }
+                @default { <svg lucideGauge [size]="20"></svg> }
+              }
+            </div>
+            <div class="db-kpi-body">
+              <strong>{{ k.value }}</strong>
+              <span class="db-kpi-label">{{ k.label }}</span>
+              <span class="db-kpi-sub">{{ k.sub }}</span>
+            </div>
+          </div>
+        }
+      </section>
+    }
+
+    <section class="db-cols">
+      <!-- Prochaines réunions -->
+      <div class="db-panel">
+        <div class="db-panel-head">
+          <h2><svg lucideVideo [size]="16"></svg> Prochaines réunions</h2>
+          <a routerLink="/meetings" class="db-more">Tout voir →</a>
+        </div>
+        @if (upcoming().length) {
+          <ul class="db-meets">
+            @for (m of upcoming(); track m.id) {
+              <li class="db-meet">
+                <div class="db-meet-date">
+                  <strong>{{ meetingDay(m) }}</strong>
+                  <span>{{ meetingMonth(m) }}</span>
+                </div>
+                <div class="db-meet-info">
+                  <strong>{{ m.title }}</strong>
+                  <span>{{ meetingWhen(m) }} · {{ m.durationMin }} min</span>
+                </div>
+                <a class="db-meet-join" [routerLink]="['/meetings', m.id, 'lobby']">Lobby</a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="db-empty">Aucune réunion planifiée sur les 14 prochains jours.</p>
+        }
+      </div>
+
+      <!-- Accès rapides -->
+      <div class="db-panel">
+        <div class="db-panel-head"><h2><svg lucideGauge [size]="16"></svg> Accès rapide</h2></div>
+        <div class="db-links">
+          @for (l of quickLinks(); track l.link) {
+            <a class="db-link" [routerLink]="l.link">
+              <span class="db-link-ic">
+                @switch (l.icon) {
+                  @case ('video') { <svg lucideVideo [size]="17"></svg> }
+                  @case ('calendar') { <svg lucideCalendar [size]="17"></svg> }
+                  @case ('ticket') { <svg lucideTicket [size]="17"></svg> }
+                  @case ('bot') { <svg lucideBot [size]="17"></svg> }
+                  @case ('users') { <svg lucideUsers [size]="17"></svg> }
+                  @case ('briefcase') { <svg lucideBriefcase [size]="17"></svg> }
+                  @case ('lifebuoy') { <svg lucideLifeBuoy [size]="17"></svg> }
+                  @default { <svg lucideGauge [size]="17"></svg> }
+                }
+              </span>
+              <span class="db-link-body">
+                <strong>{{ l.label }}</strong>
+                <em>{{ l.sub }}</em>
+              </span>
+            </a>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>

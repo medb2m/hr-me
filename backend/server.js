@@ -11,13 +11,9 @@ import dotenv from 'dotenv';
 import errorHandler from './middleware/error-handler.js';
 
 // Routes
-import candidateRoutes from './routes/candidate.routes.js';
 import offerRoutes from './routes/offer.routes.js';
-import positionRoutes from './routes/position.routes.js';
 import applicationRoutes from './routes/application.routes.js';
-import ticketRoutes from './routes/ticket.routes.js';
 import ticketsRoutes from './routes/tickets.routes.js';
-import skillRoutes from './routes/skill.routes.js';
 import interviewRoutes from './routes/interview.routes.js';
 import ttsRoutes from './routes/tts.routes.js';
 import authRoutes from './routes/auth.routes.js';
@@ -89,19 +85,11 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/meetings', meetingsRoutes);
 app.use('/api/calendar', calendarRoutes);
 
-// Candidates Routes
-app.use('/api/candidates', candidateRoutes);
 // Offer Routes
 app.use('/api/offer', offerRoutes);
-// Position Routes
-app.use('/api/position', positionRoutes);
 // Application Routes
 app.use('/api/application', applicationRoutes);
-// Ticket Routes
-app.use('/api/ticket', ticketRoutes);
 app.use('/api/tickets', ticketsRoutes);
-// Skill Routes
-app.use('/api/skill', skillRoutes);
 // AI Interview sessions
 app.use('/api/interview', interviewRoutes);
 // Free neural TTS (Microsoft Edge online — no API key)

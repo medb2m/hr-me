@@ -60,7 +60,7 @@
     <div class="nav-section-label">Overview</div>
     <ul class="nav-list">
       <li>
-        <a class="nav-item" routerLink="/home" routerLinkActive="active"
+        <a class="nav-item" routerLink="/dashboard" routerLinkActive="active"
            [routerLinkActiveOptions]="{exact:true}" (click)="navigateAndCloseSidebar()">
           <span class="nav-icon"><svg lucideGauge class="lc-icon"></svg></span>
           <span class="nav-label">Dashboard</span>
@@ -68,49 +68,51 @@
       </li>
     </ul>
 
-    @if (auth.user()?.role === 'admin') {
+    @if (isStaff) {
       <div class="nav-section-label">Administration</div>
       <ul class="nav-list">
-        <li>
-          <a
-            class="nav-item"
-            routerLink="/admin/dashboard"
-            routerLinkActive="active"
-            (click)="navigateAndCloseSidebar()">
-            <span class="nav-icon"><svg lucideShield class="lc-icon"></svg></span>
-            <span class="nav-label">Admin console</span>
-          </a>
-        </li>
-        <li>
-          <a
-            class="nav-item"
-            routerLink="/admin/users"
-            routerLinkActive="active"
-            (click)="navigateAndCloseSidebar()">
-            <span class="nav-icon"><svg lucideUserCog class="lc-icon"></svg></span>
-            <span class="nav-label">Utilisateurs</span>
-          </a>
-        </li>
-        <li>
-          <a
-            class="nav-item"
-            routerLink="/admin/contacts"
-            routerLinkActive="active"
-            (click)="navigateAndCloseSidebar()">
-            <span class="nav-icon"><svg lucideInbox class="lc-icon"></svg></span>
-            <span class="nav-label">Contacts</span>
-          </a>
-        </li>
-        <li>
-          <a
-            class="nav-item"
-            routerLink="/admin/offers"
-            routerLinkActive="active"
-            (click)="navigateAndCloseSidebar()">
-            <span class="nav-icon"><svg lucideBriefcase class="lc-icon"></svg></span>
-            <span class="nav-label">Offres</span>
-          </a>
-        </li>
+        @if (isAdmin) {
+          <li>
+            <a
+              class="nav-item"
+              routerLink="/admin/dashboard"
+              routerLinkActive="active"
+              (click)="navigateAndCloseSidebar()">
+              <span class="nav-icon"><svg lucideShield class="lc-icon"></svg></span>
+              <span class="nav-label">Admin console</span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="nav-item"
+              routerLink="/admin/users"
+              routerLinkActive="active"
+              (click)="navigateAndCloseSidebar()">
+              <span class="nav-icon"><svg lucideUserCog class="lc-icon"></svg></span>
+              <span class="nav-label">Utilisateurs</span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="nav-item"
+              routerLink="/admin/contacts"
+              routerLinkActive="active"
+              (click)="navigateAndCloseSidebar()">
+              <span class="nav-icon"><svg lucideInbox class="lc-icon"></svg></span>
+              <span class="nav-label">Contacts</span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="nav-item"
+              routerLink="/admin/offers"
+              routerLinkActive="active"
+              (click)="navigateAndCloseSidebar()">
+              <span class="nav-icon"><svg lucideBriefcase class="lc-icon"></svg></span>
+              <span class="nav-label">Offres</span>
+            </a>
+          </li>
+        }
         <li>
           <a
             class="nav-item"
@@ -122,143 +124,54 @@
             <span class="nav-badge-new">Kanban</span>
           </a>
         </li>
+
+        <li class="nav-group" [class.expanded]="dropdowns['meetings']">
+          <button class="nav-item nav-toggle" (click)="toggleDropdown('meetings')">
+            <span class="nav-icon"><svg lucideMic2 class="lc-icon"></svg></span>
+            <span class="nav-label">Gestion de réunions</span>
+            <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
+          </button>
+          <ul class="nav-submenu" [class.open]="dropdowns['meetings']">
+            <li>
+              <a class="nav-subitem" routerLink="/meetings" (click)="navigateAndCloseSidebar()">
+                <svg lucideVideo class="lc-icon lc-icon--sm"></svg> Mes réunions
+              </a>
+            </li>
+            <li>
+              <a class="nav-subitem" routerLink="/meetings/new" (click)="navigateAndCloseSidebar()">
+                <svg lucidePlusCircle class="lc-icon lc-icon--sm"></svg> Planifier
+              </a>
+            </li>
+            <li>
+              <a class="nav-subitem" routerLink="/calendar" (click)="navigateAndCloseSidebar()">
+                <svg lucideCalendar class="lc-icon lc-icon--sm"></svg> Calendrier
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-group" [class.expanded]="dropdowns['recruitment']">
+          <button class="nav-item nav-toggle" (click)="toggleDropdown('recruitment')">
+            <span class="nav-icon"><svg lucideBot class="lc-icon"></svg></span>
+            <span class="nav-label">AI Recruitment</span>
+            <span class="nav-badge-new">New</span>
+            <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
+          </button>
+          <ul class="nav-submenu" [class.open]="dropdowns['recruitment']">
+            <li>
+              <a class="nav-subitem" routerLink="/recruitment/interview" (click)="navigateAndCloseSidebar()">
+                <svg lucideVideo class="lc-icon lc-icon--sm"></svg> AI Interview
+              </a>
+            </li>
+            <li>
+              <a class="nav-subitem" routerLink="/recruitment/interview/sessions" (click)="navigateAndCloseSidebar()">
+                <svg lucidePlaySquare class="lc-icon lc-icon--sm"></svg> Interview sessions
+              </a>
+            </li>
+          </ul>
+        </li>
       </ul>
     }
-
-    <div class="nav-section-label">Recruitment</div>
-    <ul class="nav-list">
-
-      <li class="nav-group" [class.expanded]="dropdowns['candidate']">
-        <button class="nav-item nav-toggle" (click)="toggleDropdown('candidate')">
-          <span class="nav-icon"><svg lucideUsers class="lc-icon"></svg></span>
-          <span class="nav-label">Candidates</span>
-          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
-        </button>
-        <ul class="nav-submenu" [class.open]="dropdowns['candidate']">
-          <li>
-            <a class="nav-subitem" routerLink="/add-candidate" (click)="navigateAndCloseSidebar()">
-              <svg lucideUserPlus class="lc-icon lc-icon--sm"></svg> Add Candidate
-            </a>
-          </li>
-          <li>
-            <a class="nav-subitem" routerLink="/list-candidate" (click)="navigateAndCloseSidebar()">
-              <svg lucideList class="lc-icon lc-icon--sm"></svg> All Candidates
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="nav-group" [class.expanded]="dropdowns['offer']">
-        <button class="nav-item nav-toggle" (click)="toggleDropdown('offer')">
-          <span class="nav-icon"><svg lucideBriefcase class="lc-icon"></svg></span>
-          <span class="nav-label">Job Offers</span>
-          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
-        </button>
-        <ul class="nav-submenu" [class.open]="dropdowns['offer']">
-          <li>
-            <a class="nav-subitem" routerLink="/add-offer" (click)="navigateAndCloseSidebar()">
-              <svg lucidePlusCircle class="lc-icon lc-icon--sm"></svg> Post Offer
-            </a>
-          </li>
-          <li>
-            <a class="nav-subitem" routerLink="/list-offers" (click)="navigateAndCloseSidebar()">
-              <svg lucideList class="lc-icon lc-icon--sm"></svg> All Offers
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="nav-group" [class.expanded]="dropdowns['recruitment']">
-        <button class="nav-item nav-toggle" (click)="toggleDropdown('recruitment')">
-          <span class="nav-icon"><svg lucideBot class="lc-icon"></svg></span>
-          <span class="nav-label">AI Recruitment</span>
-          <span class="nav-badge-new">New</span>
-          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
-        </button>
-        <ul class="nav-submenu" [class.open]="dropdowns['recruitment']">
-          <li>
-            <a class="nav-subitem" routerLink="/recruitment/interview" (click)="navigateAndCloseSidebar()">
-              <svg lucideVideo class="lc-icon lc-icon--sm"></svg> AI Interview
-            </a>
-          </li>
-          <li>
-            <a class="nav-subitem" routerLink="/recruitment/interview/sessions" (click)="navigateAndCloseSidebar()">
-              <svg lucidePlaySquare class="lc-icon lc-icon--sm"></svg> Interview sessions
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li class="nav-group" [class.expanded]="dropdowns['meetings']">
-        <button class="nav-item nav-toggle" (click)="toggleDropdown('meetings')">
-          <span class="nav-icon"><svg lucideMic2 class="lc-icon"></svg></span>
-          <span class="nav-label">Entretiens en ligne</span>
-          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
-        </button>
-        <ul class="nav-submenu" [class.open]="dropdowns['meetings']">
-          <li>
-            <a class="nav-subitem" routerLink="/meetings" (click)="navigateAndCloseSidebar()">
-              <svg lucideVideo class="lc-icon lc-icon--sm"></svg> Mes entretiens
-            </a>
-          </li>
-          <li>
-            <a class="nav-subitem" routerLink="/meetings/new" (click)="navigateAndCloseSidebar()">
-              <svg lucidePlusCircle class="lc-icon lc-icon--sm"></svg> Planifier
-            </a>
-          </li>
-          <li>
-            <a class="nav-subitem" routerLink="/calendar" (click)="navigateAndCloseSidebar()">
-              <svg lucideCalendar class="lc-icon lc-icon--sm"></svg> Calendrier
-            </a>
-          </li>
-        </ul>
-      </li>
-
-    </ul>
-
-    <div class="nav-section-label">Management</div>
-    <ul class="nav-list">
-
-      <li>
-        <a class="nav-item" routerLink="/position" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
-          <span class="nav-icon"><svg lucideNetwork class="lc-icon"></svg></span>
-          <span class="nav-label">Positions</span>
-        </a>
-      </li>
-
-      <li class="nav-group" [class.expanded]="dropdowns['ticket']">
-        <button class="nav-item nav-toggle" (click)="toggleDropdown('ticket')">
-          <span class="nav-icon"><svg lucideTicket class="lc-icon"></svg></span>
-          <span class="nav-label">Tickets</span>
-          <svg lucideChevronRight class="lc-icon nav-arrow"></svg>
-        </button>
-        <ul class="nav-submenu" [class.open]="dropdowns['ticket']">
-          <li>
-            <a class="nav-subitem" routerLink="/admin/tickets" (click)="navigateAndCloseSidebar()">
-              <svg lucideLayoutGrid class="lc-icon lc-icon--sm"></svg> Kanban board
-            </a>
-          </li>
-          <li>
-            <a class="nav-subitem" routerLink="/admin/tickets" [queryParams]="{kind:'support'}" (click)="navigateAndCloseSidebar()">
-              <svg lucideLifeBuoy class="lc-icon lc-icon--sm"></svg> Demandes support
-            </a>
-          </li>
-          <li>
-            <a class="nav-subitem" routerLink="/admin/tickets" [queryParams]="{kind:'internal'}" (click)="navigateAndCloseSidebar()">
-              <svg lucideList class="lc-icon lc-icon--sm"></svg> Tickets internes
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <li>
-        <a class="nav-item" routerLink="/skill" routerLinkActive="active" (click)="navigateAndCloseSidebar()">
-          <span class="nav-icon"><svg lucideSparkles class="lc-icon"></svg></span>
-          <span class="nav-label">Skills</span>
-        </a>
-      </li>
-
-    </ul>
   </nav>
 
   <div class="sidebar-footer">
@@ -337,6 +250,7 @@
                 >
                   <span class="cmd-item__icon" aria-hidden="true">
                     @switch (it.icon) {
+                      @case ('gauge') { <svg lucideGauge></svg> }
                       @case ('shield') { <svg lucideShield></svg> }
                       @case ('usercog') { <svg lucideUserCog></svg> }
                       @case ('inbox') { <svg lucideInbox></svg> }

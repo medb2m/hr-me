@@ -13,7 +13,6 @@ import {
   LucideUsers,
   LucideBriefcase,
   LucideLayoutGrid,
-  LucideLifeBuoy,
   LucideInfo,
   LucideGauge,
   LucideChevronRight,
@@ -23,7 +22,6 @@ import {
   LucideBot,
   LucideVideo,
   LucidePlaySquare,
-  LucideNetwork,
   LucideTicket,
   LucidePlusCircle,
   LucideSparkles,
@@ -52,10 +50,10 @@ import {
   selector: 'app-navbar',
   imports: [
     CommonModule, RouterLink, RouterLinkActive,
-    LucideUsers, LucideBriefcase, LucideLayoutGrid, LucideLifeBuoy, LucideInfo,
+    LucideUsers, LucideBriefcase, LucideLayoutGrid, LucideInfo,
     LucideGauge, LucideChevronRight, LucideChevronDown, LucideUserPlus,
     LucideList, LucideBot, LucideVideo, LucidePlaySquare,
-    LucideNetwork, LucideTicket, LucidePlusCircle, LucideSparkles,
+    LucideTicket, LucidePlusCircle, LucideSparkles,
     LucideLogOut, LucideLogIn, LucideBell, LucideSettings, LucideX,
     LucideCalendar, LucideMic2, LucideShield, LucideUserCog, LucideUserCircle,
     LucideInbox, LucideSearch, FormsModule,
@@ -77,9 +75,6 @@ export class NavbarComponent implements OnInit {
   isUserConnected = false;
 
   dropdowns: { [key: string]: boolean } = {
-    candidate:   false,
-    offer:       false,
-    ticket:      false,
     recruitment: false,
     meetings:    false,
   };
@@ -94,6 +89,11 @@ export class NavbarComponent implements OnInit {
     return this.auth.user()?.role === 'admin';
   }
 
+  /** Équipe interne : admin, agent, directeur, recruteur. */
+  get isStaff(): boolean {
+    return ['admin', 'agent', 'director', 'recruiter'].includes(this.auth.user()?.role || '');
+  }
+
   /** Index des fonctionnalités — crumbs = chemin affiché (Settings > …). */
   private readonly searchIndex: {
     icon: string;
@@ -102,23 +102,18 @@ export class NavbarComponent implements OnInit {
     link: string;
     kw: string;
   }[] = [
+    { icon: 'gauge', label: 'Dashboard', crumbs: ['Overview'], link: '/dashboard', kw: 'dashboard vue ensemble overview stats accueil' },
     { icon: 'shield', label: 'Console admin', crumbs: ['Administration'], link: '/admin/dashboard', kw: 'admin console dashboard tableau bord stats' },
     { icon: 'usercog', label: 'Utilisateurs', crumbs: ['Administration'], link: '/admin/users', kw: 'users comptes roles gestion create' },
     { icon: 'inbox', label: 'Contacts', crumbs: ['Administration'], link: '/admin/contacts', kw: 'messages contact formulaire demandes inbox' },
-    { icon: 'userplus', label: 'Ajouter un candidat', crumbs: ['Recrutement', 'Candidats'], link: '/add-candidate', kw: 'candidate add nouveau create inscription' },
-    { icon: 'users', label: 'Tous les candidats', crumbs: ['Recrutement', 'Candidats'], link: '/list-candidate', kw: 'candidates list liste dossiers' },
-    { icon: 'list', label: 'Liste (vue simple)', crumbs: ['Recrutement', 'Candidats'], link: '/list', kw: 'candidates liste simple' },
     { icon: 'briefcase', label: 'Offres d\u2019emploi', crumbs: ['Administration'], link: '/admin/offers', kw: 'offers list jobs emplois gestion offre' },
     { icon: 'pluscircle', label: 'Publier une offre', crumbs: ['Administration', 'Offres'], link: '/admin/offers/new', kw: 'offer add job emploi nouvelle create publier' },
-    { icon: 'briefcase', label: 'Offres (vue legacy)', crumbs: ['Recrutement', 'Offres'], link: '/list-offers', kw: 'offers legacy liste ancienne' },
-    { icon: 'network', label: 'Postes', crumbs: ['Recrutement'], link: '/position', kw: 'position poste job title' },
-    { icon: 'bot', label: 'Entretiens IA', crumbs: ['Recrutement', 'Entretiens'], link: '/recruitment/interview', kw: 'interview entretien ia ai video hub' },
-    { icon: 'video', label: 'Sessions d\u2019entretien', crumbs: ['Recrutement', 'Entretiens'], link: '/recruitment/interview/sessions', kw: 'interview sessions entretien' },
-    { icon: 'pluscircle', label: 'Créer un ticket', crumbs: ['Recrutement', 'Tickets'], link: '/add-ticket', kw: 'ticket add support nouveau create demande' },
-    { icon: 'ticket', label: 'Liste des tickets', crumbs: ['Recrutement', 'Tickets'], link: '/list-ticket', kw: 'tickets support list liste demandes' },
-    { icon: 'sparkles', label: 'Compétences', crumbs: ['Recrutement'], link: '/skill', kw: 'skills competences skill' },
-    { icon: 'video', label: 'Réunions', crumbs: ['Outils'], link: '/meetings', kw: 'meetings reunion visio call video' },
-    { icon: 'calendar', label: 'Calendrier', crumbs: ['Outils'], link: '/calendar', kw: 'calendar rdv rendez-vous agenda' },
+    { icon: 'ticket', label: 'Tickets', crumbs: ['Administration'], link: '/admin/tickets', kw: 'tickets kanban support board demandes' },
+    { icon: 'bot', label: 'Entretiens IA', crumbs: ['Administration', 'AI Recruitment'], link: '/recruitment/interview', kw: 'interview entretien ia ai video hub' },
+    { icon: 'video', label: 'Sessions d\u2019entretien', crumbs: ['Administration', 'AI Recruitment'], link: '/recruitment/interview/sessions', kw: 'interview sessions entretien' },
+    { icon: 'video', label: 'Réunions', crumbs: ['Administration', 'Gestion de réunions'], link: '/meetings', kw: 'meetings reunion visio call video' },
+    { icon: 'pluscircle', label: 'Planifier une réunion', crumbs: ['Administration', 'Gestion de réunions'], link: '/meetings/new', kw: 'meeting reunion planifier create new' },
+    { icon: 'calendar', label: 'Calendrier', crumbs: ['Administration', 'Gestion de réunions'], link: '/calendar', kw: 'calendar rdv rendez-vous agenda' },
     { icon: 'usercircle', label: 'Espace candidat', crumbs: ['Espaces'], link: '/candidat/overview', kw: 'candidat espace overview profil' },
     { icon: 'settings', label: 'Paramètres', crumbs: ['Compte'], link: '/settings', kw: 'settings parametres compte profil' },
   ];
