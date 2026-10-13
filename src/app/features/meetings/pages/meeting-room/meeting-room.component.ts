@@ -28,6 +28,9 @@ import {
   LucideUsers,
   LucideMonitor,
   LucideMonitorOff,
+  LucideSend,
+  LucidePaperclip,
+  LucideX,
 } from '@lucide/angular';
 import { AuthService } from '../../../../core/services/auth.service';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
@@ -37,6 +40,16 @@ import { SelectComponent } from '../../../../shared/components/select/select.com
 import type { MeetingDto, MeetingParticipantDto } from '../../../../core/models/hr-me-realtime.models';
 
 type RightTab = 'chat' | 'room';
+
+/** Message de chat enrichi par le serveur (profil + image éventuelle). */
+interface ChatMsg {
+  senderId?: string;
+  senderName?: string;
+  senderAvatar?: string;
+  content: string;
+  imageUrl?: string;
+  sentAt: string;
+}
 
 interface AttendeeItem {
   id: string;
@@ -149,6 +162,9 @@ const TILE_COLORS = [
     LucideUsers,
     LucideMonitor,
     LucideMonitorOff,
+    LucideSend,
+    LucidePaperclip,
+    LucideX,
     SelectComponent,
   ],
   templateUrl: './meeting-room.component.html',
@@ -158,6 +174,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   @ViewChild('localV') localV!: ElementRef<HTMLVideoElement>;
   @ViewChildren('rv') remoteVs!: QueryList<ElementRef<HTMLVideoElement>>;
   @ViewChild('pv') presentV?: ElementRef<HTMLVideoElement>;
+  @ViewChild('chatScroll') chatScroll?: ElementRef<HTMLElement>;
   @ViewChild('roomShell') roomShell?: ElementRef<HTMLElement>;
 
   private readonly route = inject(ActivatedRoute);
@@ -170,7 +187,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
 
   readonly status = signal<string>('Initialisation…');
   readonly error = signal<string | null>(null);
-  readonly chatMessages = signal<{ senderId?: string; content: string; sentAt: string }[]>([]);
+  readonly chatMessages = signal<ChatMsg[]>([]);
+  /** Image en attente d'envoi (collée depuis le presse-papiers ou jointe). */
+  readonly chatImage = signal<{ dataUrl: string; name: string } | null>(null);
   readonly micOn = signal(true);
   readonly camOn = signal(true);
   /** Verrou posé par l'animateur : impossible de rallumer soi-même. */
@@ -710,16 +729,113 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
 
   sendChat(): void {
     const text = this.chatDraft.trim();
-    if (!text) {
+    const img = this.chatImage();
+    if (!text && !img) {
       return;
     }
-    this.socketSvc.getSocket()?.emit('chat:message', { roomId: this.roomId, content: text });
+    this.socketSvc.getSocket()?.emit('chat:message', {
+      roomId: this.roomId,
+      content: text,
+      image: img?.dataUrl || undefined,
+    });
     this.chatDraft = '';
+    this.chatImage.set(null);
   }
 
   onChatKey(ev: KeyboardEvent): void {
     if (ev.key === 'Enter') {
       this.sendChat();
+    }
+  }
+
+  /** Coller une image depuis le presse-papiers dans le champ message. */
+  onChatPaste(ev: ClipboardEvent): void {
+    const items = ev.clipboardData?.items;
+    if (!items) {
+      return;
+    }
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (it.type.startsWith('image/')) {
+        const file = it.getAsFile();
+        if (file) {
+          ev.preventDefault();
+          this.readChatImage(file);
+          return;
+        }
+      }
+    }
+  }
+
+  /** Bouton trombone : sélection d'une image depuis le disque. */
+  onChatFile(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      this.readChatImage(file);
+    }
+    input.value = '';
+  }
+
+  removeChatImage(): void {
+    this.chatImage.set(null);
+  }
+
+  private readChatImage(file: File): void {
+    const reader = new FileReader();
+    reader.onload = () => {
+      void this.compressChatImage(String(reader.result || '')).then((dataUrl) => {
+        this.chatImage.set({ dataUrl, name: file.name || 'image.png' });
+        this.cdr.markForCheck();
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /** Réduit l'image (max 1280px, JPEG 82%) pour rester sous la limite socket. */
+  private compressChatImage(dataUrl: string): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 1280;
+        let w = img.width;
+        let h = img.height;
+        if (Math.max(w, h) > max) {
+          const r = max / Math.max(w, h);
+          w = Math.round(w * r);
+          h = Math.round(h * r);
+        }
+        const cv = document.createElement('canvas');
+        cv.width = w;
+        cv.height = h;
+        cv.getContext('2d')?.drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  isSelfMsg(c: ChatMsg): boolean {
+    return Boolean(c.senderId && c.senderId === this.auth.user()?.id);
+  }
+
+  chatInitials(c: ChatMsg): string {
+    return this.initials(c.senderName || 'P');
+  }
+
+  openChatImage(url?: string): void {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  }
+
+  private scrollChatToBottom(): void {
+    const el = this.chatScroll?.nativeElement;
+    if (el) {
+      setTimeout(() => {
+        el.scrollTop = el.scrollHeight;
+      }, 30);
     }
   }
 
@@ -1058,8 +1174,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       }
     );
 
-    s.on('chat:message', (msg: { senderId?: string; content: string; sentAt: string }) => {
+    s.on('chat:message', (msg: ChatMsg) => {
       this.chatMessages.update((list) => [...list, msg].slice(-200));
+      this.scrollChatToBottom();
     });
 
     s.on('meeting:participants_updated', (payload: { participants?: MeetingParticipantDto[] }) => {

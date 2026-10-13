@@ -29,6 +29,8 @@ export function attachSocketIo(httpServer, frontendOrigin) {
 
   const io = new Server(httpServer, {
     path: '/socket.io',
+    // Images collées dans le chat (data URL compressée côté client)
+    maxHttpBufferSize: 8e6,
     cors: {
       origin: corsOrigin.includes(',') ? corsOrigin.split(',').map((s) => s.trim()) : corsOrigin,
       methods: ['GET', 'POST'],
@@ -268,16 +270,58 @@ export function attachSocketIo(httpServer, frontendOrigin) {
       }
     });
 
-    socket.on('chat:message', (payload) => {
+    socket.on('chat:message', async (payload) => {
       const roomId = payload?.roomId;
       if (typeof roomId !== 'string' || !socket.rooms.has(`meeting:${roomId}`)) {
         return;
       }
-      io.to(`meeting:${roomId}`).emit('chat:message', {
-        senderId: socket.data.userId,
-        content: String(payload.content || '').slice(0, 4000),
-        sentAt: new Date().toISOString(),
-      });
+      try {
+        // Image collée : data URL image/* uniquement (compressée côté client)
+        let image = '';
+        const raw = payload?.image;
+        if (
+          typeof raw === 'string' &&
+          /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(raw) &&
+          raw.length <= 7_000_000
+        ) {
+          image = raw;
+        }
+        const content = String(payload?.content || '').slice(0, 4000);
+        if (!content && !image) {
+          return;
+        }
+        // Nom + avatar résolus depuis les participants déclarés de la réunion
+        let senderName = '';
+        let senderAvatar = '';
+        try {
+          const meeting = await Meeting.findOne({ roomId }).lean();
+          const myEmail = normalizeSocketEmail(socket.data.email);
+          const me = meeting?.participants?.find(
+            (p) =>
+              (p.userId && p.userId.toString() === socket.data.userId) ||
+              (myEmail && normalizeSocketEmail(p.email) === myEmail)
+          );
+          if (me) {
+            senderName = me.name || me.email || '';
+            senderAvatar = me.avatarUrl || '';
+          }
+        } catch {
+          /* */
+        }
+        if (!senderName) {
+          senderName = socket.data.email || '';
+        }
+        io.to(`meeting:${roomId}`).emit('chat:message', {
+          senderId: socket.data.userId,
+          senderName,
+          senderAvatar,
+          content,
+          imageUrl: image,
+          sentAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.error('[chat:message]', e);
+      }
     });
   });
 

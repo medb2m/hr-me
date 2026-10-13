@@ -184,23 +184,74 @@
           <div class="rail-body">
             @if (rightTab() === 'chat') {
               <div class="rail-pane rail-pane--chat">
-                <ul class="chat-list">
-                  @for (c of chatMessages(); track c.sentAt + c.content) {
-                    <li class="chat-li">
-                      <span class="chat-msg">{{ c.content }}</span>
-                      <span class="chat-meta">{{ c.sentAt | date : 'shortTime' }}</span>
+                <ul class="chat-list" #chatScroll>
+                  @for (c of chatMessages(); track c.sentAt + c.senderId) {
+                    <li class="chat-li" [class.chat-li--me]="isSelfMsg(c)">
+                      <span class="chat-ava">
+                        @if (c.senderAvatar) {
+                          <img class="chat-ava-img" [src]="c.senderAvatar" [alt]="c.senderName" />
+                        } @else {
+                          <span class="chat-ava-init" [style.background]="tileColor(c.senderId || c.senderName || '')">{{ chatInitials(c) }}</span>
+                        }
+                      </span>
+                      <div class="chat-body">
+                        <div class="chat-head">
+                          <span class="chat-who">{{ isSelfMsg(c) ? 'Vous' : (c.senderName || 'Participant') }}</span>
+                          <span class="chat-meta">{{ c.sentAt | date : 'shortTime' }}</span>
+                        </div>
+                        <div class="chat-bubble">
+                          @if (c.content) {
+                            <p class="chat-msg">{{ c.content }}</p>
+                          }
+                          @if (c.imageUrl) {
+                            <img class="chat-img" [src]="c.imageUrl" alt="Image partagée" (click)="openChatImage(c.imageUrl)" />
+                          }
+                        </div>
+                      </div>
+                    </li>
+                  }
+                  @if (!chatMessages().length) {
+                    <li class="chat-empty">
+                      Aucun message pour l’instant.<br />Lancez la discussion ou collez une image (Ctrl+V).
                     </li>
                   }
                 </ul>
+
+                <!-- Aperçu de l'image prête à envoyer -->
+                @if (chatImage(); as ci) {
+                  <div class="chat-attach">
+                    <img class="chat-attach-thumb" [src]="ci.dataUrl" [alt]="ci.name" />
+                    <div class="chat-attach-info">
+                      <strong>{{ ci.name }}</strong>
+                      <span>Ajoutez un message puis envoyez</span>
+                    </div>
+                    <button type="button" class="chat-attach-x" (click)="removeChatImage()" aria-label="Retirer l’image">
+                      <svg lucideX></svg>
+                    </button>
+                  </div>
+                }
+
                 <div class="chat-row">
+                  <button
+                    type="button"
+                    class="chat-clip"
+                    (click)="chatFile.click()"
+                    title="Joindre une image"
+                    aria-label="Joindre une image">
+                    <svg lucidePaperclip></svg>
+                  </button>
+                  <input #chatFile type="file" accept="image/*" hidden (change)="onChatFile($event)" />
                   <input
                     type="text"
                     [(ngModel)]="chatDraft"
                     (keydown)="onChatKey($event)"
-                    placeholder="Écrire un message…"
+                    (paste)="onChatPaste($event)"
+                    placeholder="Écrire un message ou coller une image…"
                     aria-label="Message"
                   />
-                  <button type="button" class="chat-send" (click)="sendChat()">Envoyer</button>
+                  <button type="button" class="chat-send" (click)="sendChat()" [disabled]="!chatDraft.trim() && !chatImage()" aria-label="Envoyer">
+                    <svg lucideSend></svg>
+                  </button>
                 </div>
               </div>
             } @else {
