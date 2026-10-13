@@ -65,6 +65,8 @@ interface RemoteTileState {
   active: boolean;
   camOn: boolean;
   micOn: boolean;
+  micLocked: boolean;
+  camLocked: boolean;
   speaking: boolean;
   sharing: boolean;
   name: string;
@@ -169,6 +171,11 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   readonly chatMessages = signal<{ senderId?: string; content: string; sentAt: string }[]>([]);
   readonly micOn = signal(true);
   readonly camOn = signal(true);
+  /** Verrou posé par l'animateur : impossible de rallumer soi-même. */
+  readonly micLocked = signal(false);
+  readonly camLocked = signal(false);
+  /** Menu de modération ouvert (uid-mic / uid-cam). */
+  readonly modMenu = signal('');
   readonly meetingTitle = signal('');
   readonly rightTab = signal<RightTab>('chat');
   readonly participants = signal<MeetingParticipantDto[]>([]);
@@ -329,6 +336,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
             active: false,
             camOn: true,
             micOn: true,
+            micLocked: false,
+            camLocked: false,
             speaking: false,
             sharing: false,
             name: '',
@@ -513,14 +522,25 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     });
   }
 
-  moderateParticipant(p: MeetingParticipantDto, action: 'mute_audio' | 'mute_video'): void {
+  /** Vrai si l'animateur a verrouillé le micro ou la caméra de ce pair. */
+  peerLock(uid: string, device: 'mic' | 'cam'): boolean {
+    const t = this.remoteTiles().find((x) => x.userId === uid);
+    return device === 'mic' ? Boolean(t?.micLocked) : Boolean(t?.camLocked);
+  }
+
+  toggleModMenu(key: string): void {
+    this.modMenu.set(this.modMenu() === key ? '' : key);
+  }
+
+  moderateParticipant(p: MeetingParticipantDto, action: string): void {
     if (!p.userId) {
       return;
     }
+    this.modMenu.set('');
     this.sendModeration(p.userId, action);
   }
 
-  sendModeration(targetUserId: string, action: 'mute_audio' | 'mute_video'): void {
+  sendModeration(targetUserId: string, action: string): void {
     const s = this.socketSvc.getSocket();
     s?.emit(
       'meeting:moderation',
@@ -567,6 +587,10 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   }
 
   toggleMic(): void {
+    if (this.micLocked()) {
+      this.status.set('Micro désactivé par l’animateur — impossible de le rallumer.');
+      return;
+    }
     const on = !this.micOn();
     this.micOn.set(on);
     const t = this.localStream?.getAudioTracks()[0];
@@ -577,6 +601,10 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   }
 
   toggleCam(): void {
+    if (this.camLocked()) {
+      this.status.set('Caméra désactivée par l’animateur — impossible de la rallumer.');
+      return;
+    }
     const on = !this.camOn();
     this.camOn.set(on);
     if (this.cameraVideoTrack) {
@@ -659,6 +687,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       roomId: this.roomId,
       micOn: this.micOn(),
       camOn: this.camOn(),
+      micLocked: this.micLocked(),
+      camLocked: this.camLocked(),
       sharing: this.screenSharing(),
       name: this.selfName(),
     });
@@ -936,6 +966,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         email?: string;
         micOn?: boolean;
         camOn?: boolean;
+        micLocked?: boolean;
+        camLocked?: boolean;
         sharing?: boolean;
         name?: string;
       }) => {
@@ -946,6 +978,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         this.patchTile(msg.userId, {
           camOn: msg.camOn !== false,
           micOn: msg.micOn !== false,
+          micLocked: msg.micLocked === true,
+          camLocked: msg.camLocked === true,
           sharing: msg.sharing === true,
           ...(msg.name ? { name: msg.name } : {}),
         });
@@ -969,22 +1003,66 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       if (!msg.targetUserId || msg.targetUserId !== myId) {
         return;
       }
-      if (msg.action === 'mute_audio') {
-        this.micOn.set(false);
-        const a = this.localStream?.getAudioTracks()[0];
-        if (a) {
-          a.enabled = false;
-        }
-        this.status.set('Micro coupé par l’animateur');
-      } else if (msg.action === 'mute_video') {
-        await this.stopScreenShare();
-        this.camOn.set(false);
-        const cam = this.cameraVideoTrack;
-        if (cam) {
-          cam.enabled = false;
-        }
-        this.status.set('Caméra coupée par l’animateur');
+      const audio = this.localStream?.getAudioTracks()[0];
+      const cam = this.cameraVideoTrack;
+      switch (msg.action) {
+        // Couper : simple extinction, l'utilisateur peut rallumer
+        case 'mute_audio':
+          this.micOn.set(false);
+          if (audio) {
+            audio.enabled = false;
+          }
+          this.status.set('Micro coupé par l’animateur');
+          break;
+        case 'mute_video':
+          this.camOn.set(false);
+          if (cam) {
+            cam.enabled = false;
+          }
+          this.status.set('Caméra coupée par l’animateur');
+          break;
+        // Désactiver : extinction + verrou (l'utilisateur ne peut PAS rallumer)
+        case 'disable_audio':
+          this.micLocked.set(true);
+          this.micOn.set(false);
+          if (audio) {
+            audio.enabled = false;
+          }
+          this.status.set('Micro désactivé par l’animateur');
+          break;
+        case 'disable_video':
+          this.camLocked.set(true);
+          await this.stopScreenShare();
+          this.camOn.set(false);
+          if (cam) {
+            cam.enabled = false;
+          }
+          this.status.set('Caméra désactivée par l’animateur');
+          break;
+        // Réactiver : lever le verrou et rallumer
+        case 'unmute_audio':
+          this.micLocked.set(false);
+          this.micOn.set(true);
+          if (audio) {
+            audio.enabled = true;
+          }
+          this.status.set('Micro réactivé par l’animateur');
+          break;
+        case 'unmute_video':
+          this.camLocked.set(false);
+          this.camOn.set(Boolean(this.cameraVideoTrack));
+          if (cam) {
+            cam.enabled = true;
+          }
+          this.status.set('Caméra réactivée par l’animateur');
+          break;
+        default:
+          return;
       }
+      this.syncLocalVideo();
+      // Propager l'état : les autres voient l'avatar/l'icône mis à jour
+      this.emitMediaState();
+      this.cdr.markForCheck();
     });
   }
 

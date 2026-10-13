@@ -93,29 +93,33 @@
               type="button"
               class="tb-btn"
               [class.tb-btn--off]="!micOn()"
+              [disabled]="micLocked()"
               (click)="toggleMic()"
               [attr.aria-pressed]="micOn()"
+              [attr.title]="micLocked() ? 'Micro désactivé par l’animateur' : ''"
               [attr.aria-label]="micOn() ? 'Couper le micro' : 'Activer le micro'">
               @if (micOn()) {
                 <svg lucideMic class="tb-ic"></svg>
               } @else {
                 <svg lucideMicOff class="tb-ic"></svg>
               }
-              <span class="tb-lbl">{{ micOn() ? 'Micro' : 'Micro off' }}</span>
+              <span class="tb-lbl">{{ micLocked() ? 'Verrouillé' : micOn() ? 'Micro' : 'Micro off' }}</span>
             </button>
             <button
               type="button"
               class="tb-btn"
               [class.tb-btn--off]="!camOn()"
+              [disabled]="camLocked()"
               (click)="toggleCam()"
               [attr.aria-pressed]="camOn()"
+              [attr.title]="camLocked() ? 'Caméra désactivée par l’animateur' : ''"
               [attr.aria-label]="camOn() ? 'Couper la caméra' : 'Activer la caméra'">
               @if (camOn()) {
                 <svg lucideVideo class="tb-ic"></svg>
               } @else {
                 <svg lucideVideoOff class="tb-ic"></svg>
               }
-              <span class="tb-lbl">{{ camOn() ? 'Caméra' : 'Cam off' }}</span>
+              <span class="tb-lbl">{{ camLocked() ? 'Verrouillée' : camOn() ? 'Caméra' : 'Cam off' }}</span>
             </button>
             <button
               type="button"
@@ -186,6 +190,9 @@
               </div>
             } @else {
               <div class="rail-pane rail-pane--room">
+                @if (modMenu()) {
+                  <div class="mod-backdrop" (click)="modMenu.set('')"></div>
+                }
                 <!-- Panneau « Dans la salle » façon Teams -->
                 <div class="inroom">
                   <div class="inroom-head">
@@ -230,12 +237,74 @@
                       }
                       @if (canModerateParticipant(p)) {
                         <div class="part-actions">
-                          <button type="button" class="part-btn" (click)="moderateParticipant(p, 'mute_audio')">
-                            Couper micro
-                          </button>
-                          <button type="button" class="part-btn" (click)="moderateParticipant(p, 'mute_video')">
-                            Couper caméra
-                          </button>
+                          <!-- Menu micro -->
+                          <div class="mod-drop">
+                            <button
+                              type="button"
+                              class="part-btn part-btn--ic"
+                              [class.part-btn--locked]="peerLock(p.userId!, 'mic')"
+                              (click)="toggleModMenu(p.userId + '-mic')"
+                              [attr.aria-label]="'Modérer le micro de ' + (p.name || p.email)"
+                              [attr.aria-expanded]="modMenu() === p.userId + '-mic'">
+                              @if (peerLock(p.userId!, 'mic')) {
+                                <svg lucideMicOff></svg>
+                              } @else {
+                                <svg lucideMic></svg>
+                              }
+                            </button>
+                            @if (modMenu() === p.userId + '-mic') {
+                              <div class="mod-menu">
+                                @if (peerLock(p.userId!, 'mic')) {
+                                  <button type="button" class="mod-item mod-item--ok" (click)="moderateParticipant(p, 'unmute_audio')">
+                                    Réactiver le micro
+                                  </button>
+                                } @else {
+                                  <button type="button" class="mod-item" (click)="moderateParticipant(p, 'mute_audio')">
+                                    Couper le micro
+                                    <small>temporaire — il peut le rallumer</small>
+                                  </button>
+                                  <button type="button" class="mod-item mod-item--danger" (click)="moderateParticipant(p, 'disable_audio')">
+                                    Désactiver le micro
+                                    <small>verrouillé — il ne peut plus le rallumer</small>
+                                  </button>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <!-- Menu caméra -->
+                          <div class="mod-drop">
+                            <button
+                              type="button"
+                              class="part-btn part-btn--ic"
+                              [class.part-btn--locked]="peerLock(p.userId!, 'cam')"
+                              (click)="toggleModMenu(p.userId + '-cam')"
+                              [attr.aria-label]="'Modérer la caméra de ' + (p.name || p.email)"
+                              [attr.aria-expanded]="modMenu() === p.userId + '-cam'">
+                              @if (peerLock(p.userId!, 'cam')) {
+                                <svg lucideVideoOff></svg>
+                              } @else {
+                                <svg lucideVideo></svg>
+                              }
+                            </button>
+                            @if (modMenu() === p.userId + '-cam') {
+                              <div class="mod-menu">
+                                @if (peerLock(p.userId!, 'cam')) {
+                                  <button type="button" class="mod-item mod-item--ok" (click)="moderateParticipant(p, 'unmute_video')">
+                                    Réactiver la caméra
+                                  </button>
+                                } @else {
+                                  <button type="button" class="mod-item" (click)="moderateParticipant(p, 'mute_video')">
+                                    Couper la caméra
+                                    <small>temporaire — il peut la rallumer</small>
+                                  </button>
+                                  <button type="button" class="mod-item mod-item--danger" (click)="moderateParticipant(p, 'disable_video')">
+                                    Désactiver la caméra
+                                    <small>verrouillée — il ne peut plus la rallumer</small>
+                                  </button>
+                                }
+                              </div>
+                            }
+                          </div>
                         </div>
                       }
                     </li>

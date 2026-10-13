@@ -208,6 +208,8 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         email: socket.data.email || '',
         micOn: payload.micOn !== false,
         camOn: payload.camOn !== false,
+        micLocked: payload.micLocked === true,
+        camLocked: payload.camLocked === true,
         sharing: payload.sharing === true,
         name: typeof payload.name === 'string' ? payload.name.slice(0, 80) : '',
       });
@@ -232,7 +234,15 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         const roomId = typeof payload?.roomId === 'string' ? payload.roomId : '';
         const action = payload?.action;
         const targetUserId = typeof payload?.targetUserId === 'string' ? payload.targetUserId : '';
-        if (!roomId || !targetUserId || !['mute_audio', 'mute_video'].includes(action)) {
+        const allowedActions = [
+          'mute_audio',
+          'mute_video',
+          'disable_audio',
+          'disable_video',
+          'unmute_audio',
+          'unmute_video',
+        ];
+        if (!roomId || !targetUserId || !allowedActions.includes(action)) {
           cb?.({ ok: false, message: 'Invalid payload.' });
           return;
         }
