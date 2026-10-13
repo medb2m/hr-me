@@ -337,6 +337,38 @@ $border: #272b36;
   background: #050608;
 }
 
+/* Bouton « Arrêter la présentation » — visible par l'animateur sur la tuile écran */
+.present-stop {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  background: rgba(24, 27, 35, 0.92);
+  color: #fca5a5;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  &:hover {
+    background: rgba(220, 38, 38, 0.85);
+    border-color: #ef4444;
+    color: #fff;
+  }
+}
+
 /* Point de présence dans la liste */
 .part-dot {
   width: 8px;
@@ -730,6 +762,22 @@ $border: #272b36;
     background: rgba(220, 38, 38, 0.25);
     border-color: #ef4444;
     color: #fca5a5;
+  }
+
+  &--sharing {
+    background: rgba(255, 211, 0, 0.18);
+    border-color: #ffd300;
+    color: #ffd300;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: #4b5563;
+      color: #e5e7eb;
+    }
   }
 }
 

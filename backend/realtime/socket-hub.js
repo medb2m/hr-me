@@ -241,6 +241,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
           'disable_video',
           'unmute_audio',
           'unmute_video',
+          'stop_share',
         ];
         if (!roomId || !targetUserId || !allowedActions.includes(action)) {
           cb?.({ ok: false, message: 'Invalid payload.' });

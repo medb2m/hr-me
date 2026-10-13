@@ -33,6 +33,16 @@
               <div class="tile tile--present">
                 <video #pv class="tile-video tile-video--screen" autoplay playsinline></video>
                 <span class="tile-tag">{{ presenterName() }} — écran</span>
+                @if (isHost() && presenterUid() !== 'me') {
+                  <button
+                    type="button"
+                    class="present-stop"
+                    (click)="stopRemotePresentation()"
+                    [attr.title]="'Arrêter la présentation de ' + presenterName()">
+                    <svg lucideMonitorOff></svg>
+                    Arrêter la présentation
+                  </button>
+                }
               </div>
             }
 
@@ -310,6 +320,17 @@
                               </div>
                             }
                           </div>
+                          <!-- Partage d'écran : arrêt direct -->
+                          <button
+                            type="button"
+                            class="part-btn part-btn--ic"
+                            [class.part-btn--sharing]="peerSharing(p.userId!)"
+                            [disabled]="!peerSharing(p.userId!)"
+                            (click)="moderateParticipant(p, 'stop_share')"
+                            [attr.title]="peerSharing(p.userId!) ? 'Arrêter le partage d’écran de ' + (p.name || p.email) : (p.name || p.email) + ' ne partage pas'"
+                            [attr.aria-label]="'Arrêter le partage d’écran de ' + (p.name || p.email)">
+                            <svg lucideMonitorOff></svg>
+                          </button>
                         </div>
                       }
                     </li>

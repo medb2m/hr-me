@@ -27,6 +27,7 @@ import {
   LucideSearch,
   LucideUsers,
   LucideMonitor,
+  LucideMonitorOff,
 } from '@lucide/angular';
 import { AuthService } from '../../../../core/services/auth.service';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
@@ -147,6 +148,7 @@ const TILE_COLORS = [
     LucideSearch,
     LucideUsers,
     LucideMonitor,
+    LucideMonitorOff,
     SelectComponent,
   ],
   templateUrl: './meeting-room.component.html',
@@ -546,6 +548,19 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     return device === 'mic' ? t.micOn && !t.micLocked : t.camOn && !t.camLocked;
   }
 
+  /** Ce pair partage-t-il actuellement son écran ? */
+  peerSharing(uid: string): boolean {
+    return this.remoteTiles().find((x) => x.userId === uid)?.sharing === true;
+  }
+
+  /** L'animateur coupe le partage d'écran du présentateur distant. */
+  stopRemotePresentation(): void {
+    const uid = this.presenterUid();
+    if (uid && uid !== 'me') {
+      this.sendModeration(uid, 'stop_share');
+    }
+  }
+
   toggleModMenu(key: string): void {
     this.modMenu.set(this.modMenu() === key ? '' : key);
   }
@@ -587,6 +602,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         } else if (action === 'unmute_video') {
           patch.camOn = true;
           patch.camLocked = false;
+        } else if (action === 'stop_share') {
+          patch.sharing = false;
         }
         this.patchTile(targetUserId, patch);
         this.cdr.markForCheck();
@@ -1113,6 +1130,12 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
           }
           this.status.set('Caméra réactivée par l’animateur');
           this.showModNotice('L’animateur a réactivé votre caméra.');
+          break;
+        // L'animateur coupe notre partage d'écran
+        case 'stop_share':
+          await this.stopScreenShare();
+          this.status.set('Partage d’écran arrêté par l’animateur');
+          this.showModNotice('L’animateur a arrêté votre partage d’écran.');
           break;
         default:
           return;
