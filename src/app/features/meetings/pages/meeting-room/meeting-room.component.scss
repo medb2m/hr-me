@@ -285,21 +285,27 @@ $border: #272b36;
   color: #ffd300;
 }
 
-/* ── Mode présentation : partage 75% + colonne participants 25% ── */
+/* ── Mode présentation : écran 75% gauche pleine hauteur + participants 25% ── */
 .tile-grid.presenting {
+  position: relative;
   grid-template-columns: minmax(0, 3fr) minmax(200px, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-  grid-auto-rows: min-content;
-  align-content: stretch;
+  align-content: start;
+  overflow-y: auto;
 }
+/* L'écran est retiré du flux : position absolue = hauteur garantie à 100%,
+   aucun chevauchement possible avec la colonne des participants */
 .tile-grid.presenting .tile--present {
-  grid-column: 1;
-  grid-row: 1 / span 99;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  bottom: 92px; /* au-dessus de la barre de contrôle flottante */
+  right: calc(25% + 24px);
   aspect-ratio: unset;
-  min-height: 0;
-  height: 100%;
-  align-self: stretch;
+  width: auto;
+  height: auto;
+  z-index: 1;
 }
+/* Participants empilés proprement dans la colonne de droite */
 .tile-grid.presenting .tile:not(.tile--present) {
   grid-column: 2;
   align-self: start;
@@ -1063,17 +1069,17 @@ $border: #272b36;
 
   .tile-grid.presenting {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 55%) max-content;
-    grid-auto-rows: max-content;
+    padding-top: 56vh; /* réserve l'espace de l'écran en haut */
   }
   .tile-grid.presenting .tile--present {
-    grid-column: 1;
-    grid-row: 1;
-    height: 100%;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    bottom: auto;
+    height: calc(56vh - 24px);
   }
   .tile-grid.presenting .tile:not(.tile--present) {
     grid-column: 1;
-    grid-row: auto;
   }
 
   .room-toolbar {
