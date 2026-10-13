@@ -12,50 +12,76 @@
       </header>
 
       <div class="room-workspace">
-        <main class="room-stage" [class.solo]="!remoteActive()">
-          <video #remoteV class="vid-remote" autoplay playsinline></video>
-
-          <!-- Pair distant : avatar quand sa caméra est coupée -->
-          @if (remoteActive() && !remoteCamOn()) {
-            <div class="remote-card" [class.speaking]="remoteSpeaking()">
-              @if (remoteAvatar()) {
-                <img class="tile-avatar" [src]="remoteAvatar()" [alt]="remoteName()" />
-              } @else {
-                <span class="tile-initials">{{ remoteInitials() }}</span>
-              }
-              <span class="tile-name">{{ remoteName() }}</span>
-              @if (!remoteMicOn()) {
-                <span class="tile-sub">Micro coupé</span>
-              }
-            </div>
+        <main class="room-stage">
+          <!-- Badge « X présente » -->
+          @if (presenting()) {
+            <div class="present-tag"><svg lucideMonitor class="present-ic"></svg> {{ presenterName() }} présente</div>
           }
 
-          <!-- Étiquette du pair (nom + micro) quand sa vidéo est visible -->
-          @if (remoteActive() && remoteCamOn()) {
-            <div class="remote-tag" [class.speaking]="remoteSpeaking()">
-              <span class="remote-tag-name">{{ remoteName() }}</span>
-              @if (!remoteMicOn()) {
-                <svg lucideMicOff class="remote-tag-ic"></svg>
-              }
-            </div>
-          }
-
-          <!-- Caméra locale : PiP en appel, plein écran si seul -->
-          <div class="room-local-pip" [class.speaking]="selfSpeaking()">
-            <video #localV class="vid-local" autoplay playsinline muted></video>
-            @if (!camOn()) {
-              <div class="cam-off-overlay">
-                @if (selfAvatar()) {
-                  <img class="pip-avatar" [src]="selfAvatar()" [alt]="selfName()" />
-                } @else {
-                  <span class="pip-initials">{{ selfInitials() }}</span>
+          <!-- ══ Grille de tuiles participants ══ -->
+          <div
+            class="tile-grid"
+            [class.solo]="!remoteUserId() && !remoteActive()"
+            [class.presenting]="presenting()">
+            <!-- Tuile distante -->
+            @if (remoteUserId() || remoteActive()) {
+              <div
+                class="tile"
+                [class.tile--present]="remoteSharing()"
+                [class.speaking]="remoteSpeaking()">
+                <video
+                  #remoteV
+                  class="tile-video"
+                  autoplay
+                  playsinline
+                  [class.off]="!remoteCamOn() || !remoteActive()"></video>
+                @if (!remoteCamOn() || !remoteActive()) {
+                  <div class="tile-center">
+                    @if (remoteAvatar()) {
+                      <img class="tile-avatar" [src]="remoteAvatar()" [alt]="remoteName()" />
+                    } @else {
+                      <span class="tile-initials" [style.background]="tileColor(remoteUserId() || remoteName())">{{ remoteInitials() }}</span>
+                    }
+                  </div>
                 }
+                <span class="tile-tag">{{ remoteName() }}</span>
+                <span class="tile-mic" [class.muted]="!remoteMicOn()">
+                  @if (!remoteMicOn()) {
+                    <svg lucideMicOff></svg>
+                  } @else if (remoteSpeaking()) {
+                    <i class="wave"><b></b><b></b><b></b></i>
+                  }
+                </span>
               </div>
             }
-            <span class="pip-name">Vous</span>
-            @if (screenSharing()) {
-              <div class="pip-badge">Écran</div>
-            }
+
+            <!-- Tuile locale -->
+            <div
+              class="tile tile--local"
+              [class.tile--present]="screenSharing()"
+              [class.speaking]="selfSpeaking()">
+              <video #localV class="tile-video" autoplay playsinline muted [class.off]="!camOn()"></video>
+              @if (!camOn()) {
+                <div class="tile-center">
+                  @if (selfAvatar()) {
+                    <img class="tile-avatar" [src]="selfAvatar()" [alt]="selfName()" />
+                  } @else {
+                    <span class="tile-initials" [style.background]="tileColor(selfName())">{{ selfInitials() }}</span>
+                  }
+                </div>
+              }
+              <span class="tile-tag">Vous</span>
+              <span class="tile-mic" [class.muted]="!micOn()">
+                @if (!micOn()) {
+                  <svg lucideMicOff></svg>
+                } @else if (selfSpeaking()) {
+                  <i class="wave"><b></b><b></b><b></b></i>
+                }
+              </span>
+              @if (screenSharing()) {
+                <span class="tile-share-tag">Votre écran</span>
+              }
+            </div>
           </div>
 
           <nav class="room-toolbar" aria-label="Contrôles de la salle">
@@ -186,51 +212,106 @@
                 </ul>
 
                 @if (isHost()) {
-                  <div class="add-invite">
-                    <h4 class="add-invite-h">Ajouter un participant</h4>
-                    <p class="add-invite-note">
-                      E-mail du compte Al Wassit. Optionnel : ID utilisateur (24 car.) pour lier le compte.
-                    </p>
+                  <section class="inv">
+                    <h4 class="inv-h">Ajouter un participant</h4>
+                    <p class="inv-note">Cherchez un utilisateur Al Wassit ou saisissez un e-mail libre.</p>
+
+                    <div class="inv-search">
+                      <svg lucideSearch class="inv-search-ic"></svg>
+                      <input
+                        [value]="inviteQuery()"
+                        (input)="onInviteQuery($any($event.target).value)"
+                        placeholder="Nom ou e-mail…" />
+                    </div>
+
+                    @if (inviteBusy()) {
+                      <p class="inv-hint">Recherche…</p>
+                    }
+                    @if (inviteQuery() && !inviteBusy() && !inviteResults().length) {
+                      <p class="inv-hint">Aucun compte trouvé — invitez par e-mail libre ci-dessous.</p>
+                    }
+
+                    @for (a of inviteResults(); track a.id || a.email) {
+                      <div class="inv-person">
+                        @if (a.avatarUrl) {
+                          <img class="inv-avatar" [src]="a.avatarUrl" [alt]="a.name" />
+                        } @else {
+                          <span class="inv-initials" [style.background]="tileColor(a.id || a.email)">{{ initials(a.name || a.email) }}</span>
+                        }
+                        <span class="inv-p-info">
+                          <span class="inv-p-name">{{ a.name || a.email }}</span>
+                          <span class="inv-p-mail">{{ a.email }}</span>
+                        </span>
+                        <button
+                          type="button"
+                          class="inv-add"
+                          [disabled]="addParticipantBusy()"
+                          (click)="inviteAttendee(a)"
+                          aria-label="Inviter">
+                          <svg lucidePlus></svg>
+                        </button>
+                      </div>
+                    }
+
+                    @if (!inviteQuery() && recentPeople().length) {
+                      <p class="inv-sub">Récemment invités</p>
+                      @for (a of recentPeople(); track a.email) {
+                        <div class="inv-person">
+                          @if (a.avatarUrl) {
+                            <img class="inv-avatar" [src]="a.avatarUrl" [alt]="a.name" />
+                          } @else {
+                            <span class="inv-initials" [style.background]="tileColor(a.id || a.email)">{{ initials(a.name || a.email) }}</span>
+                          }
+                          <span class="inv-p-info">
+                            <span class="inv-p-name">{{ a.name || a.email }}</span>
+                            <span class="inv-p-mail">{{ a.email }}</span>
+                          </span>
+                          <button
+                            type="button"
+                            class="inv-add"
+                            [disabled]="addParticipantBusy()"
+                            (click)="inviteAttendee(a)"
+                            aria-label="Inviter">
+                            <svg lucidePlus></svg>
+                          </button>
+                        </div>
+                      }
+                    }
+
+                    <div class="inv-role">
+                      <label>Rôle attribué</label>
+                      <app-select [(ngModel)]="addInviteRole" [options]="inviteRoleOptions()" />
+                    </div>
+
+                    <details class="inv-manual">
+                      <summary>Invitation par e-mail libre</summary>
+                      <div class="add-grid">
+                        <div class="field">
+                          <label for="add-email">E-mail</label>
+                          <input id="add-email" [(ngModel)]="addInviteEmail" type="email" placeholder="email@exemple.com" />
+                        </div>
+                        <div class="field">
+                          <label for="add-name">Nom</label>
+                          <input id="add-name" [(ngModel)]="addInviteName" placeholder="Nom (optionnel)" />
+                        </div>
+                        <div class="field">
+                          <label for="add-uid">ID utilisateur</label>
+                          <input id="add-uid" [(ngModel)]="addInviteUserId" placeholder="ID Mongo (optionnel)" />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        class="btn btn--yellow btn--sm"
+                        [disabled]="addParticipantBusy()"
+                        (click)="submitAddParticipant()">
+                        {{ addParticipantBusy() ? 'Envoi…' : 'Envoyer l’invitation' }}
+                      </button>
+                    </details>
+
                     @if (addParticipantErr()) {
                       <p class="add-invite-err">{{ addParticipantErr() }}</p>
                     }
-                    <label class="sr-only" for="add-email">E-mail</label>
-                    <input
-                      id="add-email"
-                      type="email"
-                      [(ngModel)]="addInviteEmail"
-                      placeholder="email@exemple.com"
-                      class="add-field"
-                    />
-                    <label class="sr-only" for="add-name">Nom</label>
-                    <input
-                      id="add-name"
-                      type="text"
-                      [(ngModel)]="addInviteName"
-                      placeholder="Nom (optionnel)"
-                      class="add-field"
-                    />
-                    <label class="sr-only" for="add-role">Rôle</label>
-                    <select id="add-role" [(ngModel)]="addInviteRole" class="add-field">
-                      <option value="recruiter">Recruteur</option>
-                      <option value="candidate">Candidat</option>
-                    </select>
-                    <label class="sr-only" for="add-uid">ID utilisateur</label>
-                    <input
-                      id="add-uid"
-                      type="text"
-                      [(ngModel)]="addInviteUserId"
-                      placeholder="ID Mongo (optionnel)"
-                      class="add-field"
-                    />
-                    <button
-                      type="button"
-                      class="add-submit"
-                      [disabled]="addParticipantBusy()"
-                      (click)="submitAddParticipant()">
-                      {{ addParticipantBusy() ? 'Ajout…' : 'Inviter' }}
-                    </button>
-                  </div>
+                  </section>
                 } @else {
                   <p class="room-guest-hint">Seul l’animateur peut inviter ou modérer les participants.</p>
                 }

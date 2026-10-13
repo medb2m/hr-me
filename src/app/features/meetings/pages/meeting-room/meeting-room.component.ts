@@ -21,15 +21,85 @@ import {
   LucideLogOut,
   LucideMaximize2,
   LucideMessageSquare,
+  LucidePlus,
+  LucideSearch,
   LucideUsers,
   LucideMonitor,
 } from '@lucide/angular';
 import { AuthService } from '../../../../core/services/auth.service';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
+import { CalendarApiService } from '../../../../core/services/calendar-api.service';
 import { SocketService } from '../../../../core/services/socket.service';
+import { SelectComponent } from '../../../../shared/components/select/select.component';
 import type { MeetingDto, MeetingParticipantDto } from '../../../../core/models/hr-me-realtime.models';
 
 type RightTab = 'chat' | 'room';
+
+interface AttendeeItem {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarUrl: string;
+}
+
+/** Rôles proposés selon le type de réunion (comme la page de création). */
+const ROLE_OPTIONS_BY_TYPE: Record<string, { value: string; label: string }[]> = {
+  general: [
+    { value: 'recruiter', label: 'Participant' },
+    { value: 'candidate', label: 'Invité' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+  team: [
+    { value: 'recruiter', label: 'Membre' },
+    { value: 'candidate', label: 'Invité' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+  partner: [
+    { value: 'recruiter', label: 'Partenaire' },
+    { value: 'candidate', label: 'Invité' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+  client: [
+    { value: 'recruiter', label: 'Client' },
+    { value: 'candidate', label: 'Invité' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+  screening: [
+    { value: 'recruiter', label: 'Recruteur' },
+    { value: 'candidate', label: 'Candidat' },
+    { value: 'observer', label: 'Évaluateur' },
+  ],
+  technical: [
+    { value: 'recruiter', label: 'Recruteur' },
+    { value: 'candidate', label: 'Candidat' },
+    { value: 'observer', label: 'Évaluateur' },
+  ],
+  final: [
+    { value: 'recruiter', label: 'Recruteur' },
+    { value: 'candidate', label: 'Candidat' },
+    { value: 'observer', label: 'Évaluateur' },
+  ],
+  ai_automated: [
+    { value: 'candidate', label: 'Candidat' },
+    { value: 'recruiter', label: 'Superviseur' },
+    { value: 'observer', label: 'Observateur' },
+  ],
+};
+
+/** Couleurs de tuiles (hash userId → hex stable, style Meet). */
+const TILE_COLORS = [
+  '#7c3aed',
+  '#2563eb',
+  '#0891b2',
+  '#059669',
+  '#d97706',
+  '#dc2626',
+  '#db2777',
+  '#65a30d',
+  '#0d9488',
+  '#4f46e5',
+];
 
 @Component({
   selector: 'app-meeting-room',
@@ -44,8 +114,11 @@ type RightTab = 'chat' | 'room';
     LucideLogOut,
     LucideMaximize2,
     LucideMessageSquare,
+    LucidePlus,
+    LucideSearch,
     LucideUsers,
     LucideMonitor,
+    SelectComponent,
   ],
   templateUrl: './meeting-room.component.html',
   styleUrl: './meeting-room.component.scss',
@@ -58,6 +131,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly meetingsApi = inject(MeetingsApiService);
+  private readonly calendarApi = inject(CalendarApiService);
   private readonly socketSvc = inject(SocketService);
   private readonly auth = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -83,8 +157,28 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   readonly remoteMicOn = signal(true);
   readonly remoteSpeaking = signal(false);
   readonly selfSpeaking = signal(false);
+  readonly remoteSharing = signal(false);
+  readonly meetingType = signal('general');
+  /** Panneau « Ajouter » (style page de création). */
+  readonly inviteQuery = signal('');
+  readonly inviteResults = signal<AttendeeItem[]>([]);
+  readonly recentPeople = signal<AttendeeItem[]>([]);
+  readonly inviteBusy = signal(false);
 
-  private remoteUserId = '';
+  /** Id du pair actuellement en appel (signal : pilote la tuile distante). */
+  readonly remoteUserId = signal('');
+  private inviteTimer: ReturnType<typeof setTimeout> | null = null;
+  private remoteStream: MediaStream | null = null;
+
+  /** Mode présentation : partage d'écran actif (local ou distant). */
+  readonly presenting = computed(() => this.screenSharing() || this.remoteSharing());
+  readonly presenterName = computed(() =>
+    this.screenSharing() ? 'Vous' : this.remoteName()
+  );
+
+  readonly inviteRoleOptions = computed(
+    () => ROLE_OPTIONS_BY_TYPE[this.meetingType()] ?? ROLE_OPTIONS_BY_TYPE['general']
+  );
 
   readonly isHost = computed(() => {
     const uid = this.auth.user()?.id || '';
@@ -94,8 +188,91 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   chatDraft = '';
   addInviteEmail = '';
   addInviteName = '';
-  addInviteRole: 'recruiter' | 'candidate' = 'recruiter';
+  addInviteRole = 'recruiter';
   addInviteUserId = '';
+
+  /** Couleur de tuile stable par utilisateur (comme les avatars Meet). */
+  tileColor(key: string): string {
+    let h = 0;
+    const s = key || 'x';
+    for (let i = 0; i < s.length; i++) {
+      h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    }
+    return TILE_COLORS[h % TILE_COLORS.length];
+  }
+
+  onInviteQuery(q: string): void {
+    this.inviteQuery.set(q);
+    if (this.inviteTimer) {
+      clearTimeout(this.inviteTimer);
+    }
+    this.inviteTimer = setTimeout(() => {
+      const query = this.inviteQuery().trim();
+      this.inviteBusy.set(true);
+      this.calendarApi.attendees(query).subscribe({
+        next: (r) => {
+          this.inviteResults.set(this.filterInvitees(r.attendees || []));
+          this.inviteBusy.set(false);
+          this.cdr.markForCheck();
+        },
+        error: () => this.inviteBusy.set(false),
+      });
+    }, 250);
+  }
+
+  private filterInvitees(list: AttendeeItem[]): AttendeeItem[] {
+    const existing = new Set(
+      this.participants().map((p) => (p.email || '').trim().toLowerCase())
+    );
+    const myEmail = (this.auth.user()?.email || '').trim().toLowerCase();
+    return list.filter(
+      (a) => a.email && !existing.has(a.email.trim().toLowerCase()) && a.email.trim().toLowerCase() !== myEmail
+    );
+  }
+
+  inviteAttendee(a: AttendeeItem): void {
+    this.addParticipantBusy.set(true);
+    this.meetingsApi
+      .addParticipant(this.meetingId, {
+        email: a.email,
+        name: a.name,
+        role: this.addInviteRole,
+        userId: a.id,
+      })
+      .subscribe({
+        next: (r) => {
+          this.applyMeetingDto(r.meeting);
+          this.inviteResults.update((list) => list.filter((x) => x.id !== a.id));
+          this.recentPeople.update((list) => list.filter((x) => x.id !== a.id));
+          this.addParticipantBusy.set(false);
+          this.cdr.markForCheck();
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.addParticipantErr.set(err.error?.message || 'Ajout impossible.');
+          this.addParticipantBusy.set(false);
+        },
+      });
+  }
+
+  private loadRecentPeople(): void {
+    this.meetingsApi.recentParticipants().subscribe({
+      next: (r) => {
+        this.recentPeople.set(
+          this.filterInvitees(
+            (r.items || []).map((x) => ({
+              id: x.id || '',
+              name: x.name,
+              email: x.email,
+              role: x.role,
+              avatarUrl: x.avatarUrl || '',
+            }))
+          )
+        );
+        this.cdr.markForCheck();
+      },
+      error: () => {},
+    });
+  }
 
   private meetingId = '';
   private roomId = '';
@@ -129,6 +306,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }).subscribe({
       next: async ({ meet, join }) => {
         this.applyMeetingDto(meet.meeting);
+        this.loadRecentPeople();
         this.roomId = join.roomId;
         await this.startMedia();
         this.joinSocketRoom();
@@ -188,11 +366,11 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   }
 
   remoteName = computed(() => {
-    const p = this.findParticipantByUserId(this.remoteUserId);
+    const p = this.findParticipantByUserId(this.remoteUserId());
     return p?.name || p?.email || 'Participant';
   });
 
-  remoteAvatar = computed(() => this.findParticipantByUserId(this.remoteUserId)?.avatarUrl || '');
+  remoteAvatar = computed(() => this.findParticipantByUserId(this.remoteUserId())?.avatarUrl || '');
 
   remoteInitials = computed(() => this.initials(this.remoteName()));
 
@@ -293,6 +471,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       this.screenSharing.set(true);
       this.camOn.set(vt.enabled);
       this.syncLocalVideo();
+      this.emitMediaState();
     } catch {
       this.status.set('Partage d’écran annulé ou refusé.');
     }
@@ -364,6 +543,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
 
   private applyMeetingDto(m: MeetingDto): void {
     this.meetingTitle.set(m.title);
+    this.meetingType.set(m.type || 'general');
     this.hostId.set(m.createdByAgentId);
     this.participants.set(m.participants || []);
   }
@@ -396,6 +576,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       roomId: this.roomId,
       micOn: this.micOn(),
       camOn: this.camOn(),
+      sharing: this.screenSharing(),
       name: this.selfName(),
     });
   }
@@ -513,7 +694,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         const myId = this.auth.user()?.id || '';
         const other = [...ids].find((id) => id !== myId);
         if (other) {
-          this.remoteUserId = other;
+          this.remoteUserId.set(other);
         }
         this.emitMediaState();
         this.startSpeakingDetection();
@@ -542,7 +723,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       if (!otherId || otherId === myId) {
         return;
       }
-      this.remoteUserId = otherId;
+      this.remoteUserId.set(otherId);
       this.presentIds.update((set) => new Set(set).add(otherId));
       const part = this.findParticipantByUserId(otherId);
       const em = (email || part?.email || '').trim().toLowerCase();
@@ -565,7 +746,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         if (!msg.from || msg.from === myId) {
           return;
         }
-        this.remoteUserId = msg.from;
+        this.remoteUserId.set(msg.from);
         await this.ensurePc();
         if (!this.pc) {
           return;
@@ -625,7 +806,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       }
       this.remoteActive.set(false);
       this.remoteSpeaking.set(false);
+      this.remoteSharing.set(false);
       this.remoteAnalyser = null;
+      this.remoteUserId.set('');
       this.closePc();
       this.status.set('Participant parti — en attente…');
       this.cdr.markForCheck();
@@ -634,14 +817,15 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     // État micro/caméra du pair (avatar + indicateurs)
     s.on(
       'meeting:media-state',
-      (msg: { userId?: string; email?: string; micOn?: boolean; camOn?: boolean }) => {
+      (msg: { userId?: string; email?: string; micOn?: boolean; camOn?: boolean; sharing?: boolean }) => {
         const myId = this.auth.user()?.id || '';
         if (!msg.userId || msg.userId === myId) {
           return;
         }
-        this.remoteUserId = msg.userId;
+        this.remoteUserId.set(msg.userId);
         this.remoteCamOn.set(msg.camOn !== false);
         this.remoteMicOn.set(msg.micOn !== false);
+        this.remoteSharing.set(msg.sharing === true);
         this.cdr.markForCheck();
       }
     );
@@ -722,12 +906,14 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     };
     this.pc.ontrack = (ev) => {
       const [stream] = ev.streams;
-      if (stream && this.remoteV?.nativeElement) {
-        this.remoteV.nativeElement.srcObject = stream;
-        this.attachRemoteAnalyser(stream);
-        this.remoteActive.set(true);
-        this.cdr.markForCheck();
+      if (!stream) {
+        return;
       }
+      this.remoteStream = stream;
+      // La tuile distante est dans un @if : forcer le rendu pour monter l'élément <video>
+      this.cdr.detectChanges();
+      this.attachRemoteVideo();
+      this.cdr.markForCheck();
     };
     if (this.localStream) {
       for (const track of this.localStream.getTracks()) {
@@ -772,6 +958,20 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     this.screenSharing.set(false);
     this.camOn.set(this.cameraVideoTrack?.enabled ?? true);
     queueMicrotask(() => this.syncLocalVideo());
+    this.emitMediaState();
+  }
+
+  /** Attache le flux distant à sa tuile (peut arriver avant que la tuile existe). */
+  private attachRemoteVideo(): void {
+    const el = this.remoteV?.nativeElement;
+    if (!el || !this.remoteStream) {
+      return;
+    }
+    if (el.srcObject !== this.remoteStream) {
+      el.srcObject = this.remoteStream;
+    }
+    this.attachRemoteAnalyser(this.remoteStream);
+    this.remoteActive.set(true);
   }
 
   /** Ferme la connexion pair et nettoie la vidéo distante (le flux local reste actif). */
@@ -779,6 +979,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     this.pc?.close();
     this.pc = null;
     this.videoSender = null;
+    this.remoteStream = null;
     if (this.remoteV?.nativeElement) {
       this.remoteV.nativeElement.srcObject = null;
     }

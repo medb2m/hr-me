@@ -208,6 +208,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         email: socket.data.email || '',
         micOn: payload.micOn !== false,
         camOn: payload.camOn !== false,
+        sharing: payload.sharing === true,
         name: typeof payload.name === 'string' ? payload.name.slice(0, 80) : '',
       });
     });
