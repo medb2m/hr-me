@@ -535,13 +535,20 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
 
     // Le membre DÉJÀ présent reçoit l'événement du nouvel arrivant → c'est lui qui offre
     // (le nouvel arrivant ne sait pas qui est en salle : il ne peut pas offrir).
-    s.on('meeting:peer-present', async ({ userId: otherId }: { userId?: string }) => {
+    s.on(
+      'meeting:peer-present',
+      async ({ userId: otherId, email }: { userId?: string; email?: string }) => {
       const myId = this.auth.user()?.id || '';
       if (!otherId || otherId === myId) {
         return;
       }
       this.remoteUserId = otherId;
       this.presentIds.update((set) => new Set(set).add(otherId));
+      const part = this.findParticipantByUserId(otherId);
+      const em = (email || part?.email || '').trim().toLowerCase();
+      if (em) {
+        this.presentEmails.update((set) => new Set(set).add(em));
+      }
       // Informer le nouvel arrivant de notre état cam/mic
       this.emitMediaState();
       await this.ensurePc();
@@ -596,7 +603,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     );
 
     // L'autre participant a quitté : fermer le pc pour que son retour re-négocie proprement
-    s.on('meeting:peer-left', ({ userId: otherId }: { userId?: string }) => {
+    s.on('meeting:peer-left', ({ userId: otherId, email }: { userId?: string; email?: string }) => {
       const myId = this.auth.user()?.id || '';
       if (!otherId || otherId === myId) {
         return;
@@ -606,6 +613,16 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         next.delete(otherId);
         return next;
       });
+      // Nettoyer aussi l'email (jeton meeting_join : pas toujours socket.data.email)
+      const part = this.findParticipantByUserId(otherId);
+      const em = (email || part?.email || '').trim().toLowerCase();
+      if (em) {
+        this.presentEmails.update((set) => {
+          const next = new Set(set);
+          next.delete(em);
+          return next;
+        });
+      }
       this.remoteActive.set(false);
       this.remoteSpeaking.set(false);
       this.remoteAnalyser = null;

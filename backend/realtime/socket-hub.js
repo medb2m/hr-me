@@ -149,7 +149,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         };
         if (join?.roomId === roomId && join.meetingId === meeting._id.toString()) {
           socket.join(`meeting:${roomId}`);
-          socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId });
+          socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId, email: socket.data.email || '' });
           cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers() });
           return;
         }
@@ -165,7 +165,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
           return;
         }
         socket.join(`meeting:${roomId}`);
-        socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId });
+        socket.to(`meeting:${roomId}`).emit('meeting:peer-present', { userId, email: socket.data.email || '' });
         cb?.({ ok: true, meetingId: meeting._id.toString(), members: await roomMembers() });
       } catch (e) {
         console.error('[meeting:join-room]', e);
@@ -179,14 +179,20 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         return;
       }
       socket.leave(`meeting:${roomId}`);
-      socket.to(`meeting:${roomId}`).emit('meeting:peer-left', { userId: socket.data.userId });
+      socket.to(`meeting:${roomId}`).emit('meeting:peer-left', {
+        userId: socket.data.userId,
+        email: socket.data.email || '',
+      });
     });
 
     // Déconnexion brutale (onglet fermé, perte réseau) : prévenir les salles occupées
     socket.on('disconnecting', () => {
       for (const r of socket.rooms) {
         if (r.startsWith('meeting:')) {
-          socket.to(r).emit('meeting:peer-left', { userId: socket.data.userId });
+          socket.to(r).emit('meeting:peer-left', {
+            userId: socket.data.userId,
+            email: socket.data.email || '',
+          });
         }
       }
     });
