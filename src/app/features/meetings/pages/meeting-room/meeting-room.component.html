@@ -204,7 +204,7 @@
                             <p class="chat-msg">{{ c.content }}</p>
                           }
                           @if (c.imageUrl) {
-                            <img class="chat-img" [src]="c.imageUrl" alt="Image partagée" (click)="openChatImage(c.imageUrl)" />
+                            <img class="chat-img" [src]="c.imageUrl" alt="Image partagée" (click)="openChatImage(c)" />
                           }
                         </div>
                       </div>
@@ -496,6 +496,42 @@
             }
           </div>
         </aside>
+      </div>
+    </div>
+  }
+
+  <!-- ══ Visionneuse d'image (lightbox) ══ -->
+  @if (lightbox(); as lb) {
+    <div class="lb" (click)="closeLightbox()" role="dialog" aria-modal="true" aria-label="Aperçu de l’image">
+      <div class="lb-head" (click)="$event.stopPropagation()">
+        <span class="lb-who">{{ lb.sender }}</span>
+        <span class="lb-at">{{ lb.sentAt | date : 'MMM d, HH:mm' }}</span>
+        <button type="button" class="lb-x" (click)="closeLightbox()" aria-label="Fermer">
+          <svg lucideX></svg>
+        </button>
+      </div>
+      <div class="lb-stage" (click)="$event.stopPropagation()" (wheel)="onLightboxWheel($event)">
+        <img
+          class="lb-img"
+          [src]="lb.src"
+          alt="Image partagée en grand"
+          [style.transform]="'scale(' + lightboxZoom() + ')'"
+          draggable="false" />
+      </div>
+      <div class="lb-tools" (click)="$event.stopPropagation()">
+        <button type="button" class="lb-btn" (click)="zoomLightbox(-0.25)" aria-label="Zoom arrière">
+          <svg lucideZoomOut></svg>
+        </button>
+        <button type="button" class="lb-zoom" (click)="lightboxZoom.set(1)" title="Réinitialiser le zoom">
+          {{ lightboxZoomPct() }}
+        </button>
+        <button type="button" class="lb-btn" (click)="zoomLightbox(0.25)" aria-label="Zoom avant">
+          <svg lucideZoomIn></svg>
+        </button>
+        <span class="lb-sep"></span>
+        <button type="button" class="lb-btn" (click)="downloadLightbox()" aria-label="Télécharger l’image" title="Télécharger">
+          <svg lucideDownload></svg>
+        </button>
       </div>
     </div>
   }

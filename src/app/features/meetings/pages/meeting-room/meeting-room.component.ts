@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   OnDestroy,
   QueryList,
   ViewChild,
@@ -31,6 +32,9 @@ import {
   LucideSend,
   LucidePaperclip,
   LucideX,
+  LucideZoomIn,
+  LucideZoomOut,
+  LucideDownload,
 } from '@lucide/angular';
 import { AuthService } from '../../../../core/services/auth.service';
 import { MeetingsApiService } from '../../../../core/services/meetings-api.service';
@@ -131,17 +135,18 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, { value: string; label: string }[]> =
 };
 
 /** Couleurs de tuiles (hash userId → hex stable, style Meet). */
+/** Palette d'avatars aux couleurs Al Wassit : bordeaux, or, tons sourds. */
 const TILE_COLORS = [
-  '#7c3aed',
-  '#2563eb',
-  '#0891b2',
-  '#059669',
-  '#d97706',
-  '#dc2626',
-  '#db2777',
-  '#65a30d',
-  '#0d9488',
-  '#4f46e5',
+  '#7b1c2e',
+  '#a63d52',
+  '#b8860b',
+  '#8a5a2b',
+  '#0f766e',
+  '#33415c',
+  '#6d3b8e',
+  '#4d7c0f',
+  '#93512f',
+  '#3e6b8f',
 ];
 
 @Component({
@@ -165,6 +170,9 @@ const TILE_COLORS = [
     LucideSend,
     LucidePaperclip,
     LucideX,
+    LucideZoomIn,
+    LucideZoomOut,
+    LucideDownload,
     SelectComponent,
   ],
   templateUrl: './meeting-room.component.html',
@@ -190,6 +198,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   readonly chatMessages = signal<ChatMsg[]>([]);
   /** Image en attente d'envoi (collée depuis le presse-papiers ou jointe). */
   readonly chatImage = signal<{ dataUrl: string; name: string } | null>(null);
+  /** Visionneuse d'image du chat (lightbox). */
+  readonly lightbox = signal<{ src: string; sender: string; sentAt: string } | null>(null);
+  readonly lightboxZoom = signal(1);
   readonly micOn = signal(true);
   readonly camOn = signal(true);
   /** Verrou posé par l'animateur : impossible de rallumer soi-même. */
@@ -824,9 +835,57 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     return this.initials(c.senderName || 'P');
   }
 
-  openChatImage(url?: string): void {
-    if (url) {
-      window.open(url, '_blank');
+  /** Ouvre la visionneuse plein écran sur l'image du message. */
+  openChatImage(c: ChatMsg): void {
+    if (!c.imageUrl) {
+      return;
+    }
+    this.lightboxZoom.set(1);
+    this.lightbox.set({
+      src: c.imageUrl,
+      sender: this.isSelfMsg(c) ? 'Vous' : c.senderName || 'Participant',
+      sentAt: c.sentAt,
+    });
+  }
+
+  closeLightbox(): void {
+    this.lightbox.set(null);
+  }
+
+  /** Zoom molette ou boutons, borné 0.5×–4×. */
+  zoomLightbox(delta: number): void {
+    const z = Math.min(4, Math.max(0.5, this.lightboxZoom() + delta));
+    this.lightboxZoom.set(Math.round(z * 100) / 100);
+  }
+
+  onLightboxWheel(ev: WheelEvent): void {
+    ev.preventDefault();
+    this.zoomLightbox(ev.deltaY < 0 ? 0.25 : -0.25);
+  }
+
+  lightboxZoomPct(): string {
+    return `${Math.round(this.lightboxZoom() * 100)} %`;
+  }
+
+  downloadLightbox(): void {
+    const lb = this.lightbox();
+    if (!lb) {
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = lb.src;
+    a.download = `alwassit-${Date.now()}.jpg`;
+    a.click();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void {
+    if (this.lightbox()) {
+      this.closeLightbox();
+      return;
+    }
+    if (this.modMenu()) {
+      this.modMenu.set('');
     }
   }
 
