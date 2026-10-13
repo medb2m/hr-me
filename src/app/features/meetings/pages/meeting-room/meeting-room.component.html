@@ -18,47 +18,51 @@
             <div class="present-tag"><svg lucideMonitor class="present-ic"></svg> {{ presenterName() }} présente</div>
           }
 
-          <!-- ══ Grille de tuiles participants ══ -->
+          <!-- ══ Grille de tuiles participants (mesh : une tuile par pair) ══ -->
           <div
             class="tile-grid"
-            [class.solo]="!remoteUserId() && !remoteActive()"
+            [class.solo]="!remoteTiles().length"
             [class.presenting]="presenting()">
-            <!-- Tuile distante -->
-            @if (remoteUserId() || remoteActive()) {
+            <!-- Tuiles distantes -->
+            @for (t of remoteTiles(); track t.userId) {
               <div
                 class="tile"
-                [class.tile--present]="remoteSharing()"
-                [class.speaking]="remoteSpeaking()">
+                [class.tile--present]="presenterUid() === t.userId"
+                [class.speaking]="t.speaking">
                 <video
-                  #remoteV
+                  #rv
+                  [attr.data-uid]="t.userId"
                   class="tile-video"
                   autoplay
                   playsinline
-                  [class.off]="!remoteCamOn() || !remoteActive()"></video>
-                @if (!remoteCamOn() || !remoteActive()) {
+                  [class.off]="!t.camOn || !t.active"></video>
+                @if (!t.camOn || !t.active) {
                   <div class="tile-center">
-                    @if (remoteAvatar()) {
-                      <img class="tile-avatar" [src]="remoteAvatar()" [alt]="remoteName()" />
+                    @if (peerAvatar(t.userId)) {
+                      <img class="tile-avatar" [src]="peerAvatar(t.userId)" [alt]="peerName(t.userId)" />
                     } @else {
-                      <span class="tile-initials" [style.background]="tileColor(remoteUserId() || remoteName())">{{ remoteInitials() }}</span>
+                      <span class="tile-initials" [style.background]="tileColor(t.userId)">{{ peerInitials(t.userId) }}</span>
                     }
                   </div>
                 }
-                <span class="tile-tag">{{ remoteName() }}</span>
-                <span class="tile-mic" [class.muted]="!remoteMicOn()">
-                  @if (!remoteMicOn()) {
+                <span class="tile-tag">{{ peerName(t.userId) }}</span>
+                <span class="tile-mic" [class.muted]="!t.micOn">
+                  @if (!t.micOn) {
                     <svg lucideMicOff></svg>
-                  } @else if (remoteSpeaking()) {
+                  } @else if (t.speaking) {
                     <i class="wave"><b></b><b></b><b></b></i>
                   }
                 </span>
+                @if (presenterUid() === t.userId) {
+                  <span class="tile-share-tag">Présente</span>
+                }
               </div>
             }
 
             <!-- Tuile locale -->
             <div
               class="tile tile--local"
-              [class.tile--present]="screenSharing()"
+              [class.tile--present]="presenterUid() === 'me'"
               [class.speaking]="selfSpeaking()">
               <video #localV class="tile-video" autoplay playsinline muted [class.off]="!camOn()"></video>
               @if (!camOn()) {
@@ -182,6 +186,33 @@
               </div>
             } @else {
               <div class="rail-pane rail-pane--room">
+                <!-- Panneau « Dans la salle » façon Teams -->
+                <div class="inroom">
+                  <div class="inroom-head">
+                    <svg lucideUsers class="inroom-ic"></svg>
+                    <h4 class="inroom-title">Dans la salle</h4>
+                    <span class="inroom-count">{{ inRoomList().length }}</span>
+                  </div>
+                  <div class="inroom-row">
+                    @for (p of inRoomList().slice(0, 8); track p.userId || p.email) {
+                      <span class="inroom-person" [attr.title]="p.name || p.email">
+                        @if (p.avatarUrl) {
+                          <img class="inroom-avatar" [src]="p.avatarUrl" [alt]="p.name || p.email" />
+                        } @else {
+                          <span class="inroom-initials" [style.background]="tileColor(p.userId || p.email)">{{ initials(p.name || p.email) }}</span>
+                        }
+                        <span class="inroom-name">{{ p.name || p.email }}{{ isSelfParticipant(p) ? ' (vous)' : '' }}</span>
+                      </span>
+                    }
+                    @if (inRoomList().length > 8) {
+                      <span class="inroom-more" [attr.title]="(inRoomList().length - 8) + ' autres dans la salle'">+{{ inRoomList().length - 8 }}</span>
+                    }
+                    @if (!inRoomList().length) {
+                      <span class="inroom-empty">Personne pour l’instant</span>
+                    }
+                  </div>
+                </div>
+
                 <h3 class="room-pane-h">Participants</h3>
                 <ul class="part-list">
                   @for (p of participants(); track $index) {

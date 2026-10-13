@@ -5,7 +5,9 @@ import {
   Component,
   ElementRef,
   OnDestroy,
+  QueryList,
   ViewChild,
+  ViewChildren,
   computed,
   inject,
   signal,
@@ -41,6 +43,26 @@ interface AttendeeItem {
   email: string;
   role: string;
   avatarUrl: string;
+}
+
+/** État WebRTC d'un pair distant (mesh : une connexion par participant). */
+interface PeerState {
+  userId: string;
+  pc: RTCPeerConnection;
+  videoSender: RTCRtpSender | null;
+  stream: MediaStream | null;
+  analyser: AnalyserNode | null;
+}
+
+/** État affiché d'une tuile distante. */
+interface RemoteTileState {
+  userId: string;
+  active: boolean;
+  camOn: boolean;
+  micOn: boolean;
+  speaking: boolean;
+  sharing: boolean;
+  name: string;
 }
 
 /** Rôles proposés selon le type de réunion (comme la page de création). */
@@ -125,7 +147,7 @@ const TILE_COLORS = [
 })
 export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   @ViewChild('localV') localV!: ElementRef<HTMLVideoElement>;
-  @ViewChild('remoteV') remoteV!: ElementRef<HTMLVideoElement>;
+  @ViewChildren('rv') remoteVs!: QueryList<ElementRef<HTMLVideoElement>>;
   @ViewChild('roomShell') roomShell?: ElementRef<HTMLElement>;
 
   private readonly route = inject(ActivatedRoute);
@@ -151,13 +173,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   /** Présence en salle (userIds / emails connectés). */
   readonly presentIds = signal<Set<string>>(new Set());
   readonly presentEmails = signal<Set<string>>(new Set());
-  /** Pair distant connecté (négociation établie). */
-  readonly remoteActive = signal(false);
-  readonly remoteCamOn = signal(true);
-  readonly remoteMicOn = signal(true);
-  readonly remoteSpeaking = signal(false);
+  /** Tuiles des pairs distants (mesh : une tuile par participant connecté). */
+  readonly remoteTiles = signal<RemoteTileState[]>([]);
   readonly selfSpeaking = signal(false);
-  readonly remoteSharing = signal(false);
   readonly meetingType = signal('general');
   /** Panneau « Ajouter » (style page de création). */
   readonly inviteQuery = signal('');
@@ -165,16 +183,25 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   readonly recentPeople = signal<AttendeeItem[]>([]);
   readonly inviteBusy = signal(false);
 
-  /** Id du pair actuellement en appel (signal : pilote la tuile distante). */
-  readonly remoteUserId = signal('');
   private inviteTimer: ReturnType<typeof setTimeout> | null = null;
-  private remoteStream: MediaStream | null = null;
+  /** Connexions WebRTC par pair (userId → état). */
+  private readonly peers = new Map<string, PeerState>();
 
-  /** Mode présentation : partage d'écran actif (local ou distant). */
-  readonly presenting = computed(() => this.screenSharing() || this.remoteSharing());
-  readonly presenterName = computed(() =>
-    this.screenSharing() ? 'Vous' : this.remoteName()
-  );
+  /** Mode présentation : un seul présentateur à la fois (moi prioritaire). */
+  readonly presenterUid = computed(() => {
+    if (this.screenSharing()) {
+      return 'me';
+    }
+    return this.remoteTiles().find((t) => t.sharing)?.userId || '';
+  });
+  readonly presenting = computed(() => Boolean(this.presenterUid()));
+  readonly presenterName = computed(() => {
+    const uid = this.presenterUid();
+    if (uid === 'me') {
+      return 'Vous';
+    }
+    return uid ? this.peerName(uid) : '';
+  });
 
   readonly inviteRoleOptions = computed(
     () => ROLE_OPTIONS_BY_TYPE[this.meetingType()] ?? ROLE_OPTIONS_BY_TYPE['general']
@@ -276,16 +303,38 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
 
   private meetingId = '';
   private roomId = '';
-  private pc: RTCPeerConnection | null = null;
   private localStream: MediaStream | null = null;
-  private videoSender: RTCRtpSender | null = null;
   private cameraVideoTrack: MediaStreamTrack | null = null;
   private screenStream: MediaStream | null = null;
   private onSocketReconnect: (() => void) | null = null;
   private audioCtx: AudioContext | null = null;
   private localAnalyser: AnalyserNode | null = null;
-  private remoteAnalyser: AnalyserNode | null = null;
   private speakTimer: ReturnType<typeof setInterval> | null = null;
+
+  /** Crée/met à jour une tuile distante. */
+  private patchTile(uid: string, patch: Partial<RemoteTileState>): void {
+    this.remoteTiles.update((list) => {
+      const i = list.findIndex((t) => t.userId === uid);
+      if (i === -1) {
+        return [
+          ...list,
+          {
+            userId: uid,
+            active: false,
+            camOn: true,
+            micOn: true,
+            speaking: false,
+            sharing: false,
+            name: '',
+            ...patch,
+          },
+        ];
+      }
+      const next = [...list];
+      next[i] = { ...next[i], ...patch };
+      return next;
+    });
+  }
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -365,14 +414,44 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     return this.participants().find((x) => String(x.userId) === uid);
   }
 
-  remoteName = computed(() => {
-    const p = this.findParticipantByUserId(this.remoteUserId());
-    return p?.name || p?.email || 'Participant';
+  /** Nom d'un pair distant : participant déclaré, sinon nom relayé par media-state. */
+  peerName(uid: string): string {
+    const p = this.findParticipantByUserId(uid);
+    if (p) {
+      return p.name || p.email || 'Participant';
+    }
+    return this.remoteTiles().find((t) => t.userId === uid)?.name || 'Participant';
+  }
+
+  peerAvatar(uid: string): string {
+    return this.findParticipantByUserId(uid)?.avatarUrl || '';
+  }
+
+  peerInitials(uid: string): string {
+    return this.initials(this.peerName(uid));
+  }
+
+  /** Participants actuellement en salle (panneau « Dans la salle »). */
+  readonly inRoomList = computed(() => {
+    const mine = this.participants().filter((p) => this.isSelfParticipant(p));
+    const others = this.participants().filter(
+      (p) => !this.isSelfParticipant(p) && this.isPresent(p)
+    );
+    const seen = new Set(others.map((p) => String(p.userId || p.email)));
+    // Pairs en salle non déclarés dans la liste des participants
+    const extra = this.remoteTiles()
+      .filter((t) => !seen.has(t.userId))
+      .map(
+        (t): MeetingParticipantDto => ({
+          userId: t.userId,
+          email: '',
+          name: t.name || 'Participant',
+          role: 'observer',
+          avatarUrl: '',
+        })
+      );
+    return [...mine, ...others, ...extra];
   });
-
-  remoteAvatar = computed(() => this.findParticipantByUserId(this.remoteUserId())?.avatarUrl || '');
-
-  remoteInitials = computed(() => this.initials(this.remoteName()));
 
   selfName = computed(() => this.auth.user()?.name || this.auth.user()?.email || 'Vous');
 
@@ -453,8 +532,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       await this.stopScreenShare();
       return;
     }
-    if (!this.pc || !this.videoSender) {
-      this.status.set('Connexion pair requise avant le partage écran.');
+    if (!this.peers.size) {
+      this.status.set('Partage possible une fois un participant connecté.');
       return;
     }
     try {
@@ -467,7 +546,12 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       vt.onended = () => {
         void this.stopScreenShare();
       };
-      await this.videoSender.replaceTrack(vt);
+      // Diffuser l'écran à TOUS les pairs (mesh)
+      for (const st of this.peers.values()) {
+        if (st.videoSender) {
+          await st.videoSender.replaceTrack(vt);
+        }
+      }
       this.screenSharing.set(true);
       this.camOn.set(vt.enabled);
       this.syncLocalVideo();
@@ -493,13 +577,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     if (this.cameraVideoTrack) {
       this.cameraVideoTrack.enabled = on;
     }
-    // Ne pas couper la piste d'écran pendant un partage
-    if (!this.screenSharing()) {
-      const vt = this.videoSender?.track;
-      if (vt && vt.kind === 'video') {
-        vt.enabled = on;
-      }
-    }
+    // La piste caméra est partagée par tous les senders : pas besoin de boucler
     this.syncLocalVideo();
     this.emitMediaState();
   }
@@ -609,7 +687,18 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       if (!this.speakTimer) {
         this.speakTimer = setInterval(() => {
           this.selfSpeaking.set(this.levelOf(this.localAnalyser) > 0.045);
-          this.remoteSpeaking.set(this.levelOf(this.remoteAnalyser) > 0.045);
+          let changed = false;
+          for (const st of this.peers.values()) {
+            const speaking = this.levelOf(st.analyser) > 0.045;
+            const tile = this.remoteTiles().find((t) => t.userId === st.userId);
+            if (tile && tile.speaking !== speaking) {
+              this.patchTile(st.userId, { speaking });
+              changed = true;
+            }
+          }
+          if (changed) {
+            this.cdr.markForCheck();
+          }
         }, 200);
       }
     } catch {
@@ -617,15 +706,16 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  private attachRemoteAnalyser(stream: MediaStream): void {
+  private attachRemoteAnalyser(uid: string, stream: MediaStream): void {
+    const st = this.peers.get(uid);
     try {
-      if (!this.audioCtx || this.remoteAnalyser) {
+      if (!this.audioCtx || !st || st.analyser) {
         return;
       }
       const src = this.audioCtx.createMediaStreamSource(stream);
-      this.remoteAnalyser = this.audioCtx.createAnalyser();
-      this.remoteAnalyser.fftSize = 512;
-      src.connect(this.remoteAnalyser);
+      st.analyser = this.audioCtx.createAnalyser();
+      st.analyser.fftSize = 512;
+      src.connect(st.analyser);
     } catch {
       /* */
     }
@@ -637,7 +727,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       this.speakTimer = null;
     }
     this.localAnalyser = null;
-    this.remoteAnalyser = null;
+    for (const st of this.peers.values()) {
+      st.analyser = null;
+    }
     void this.audioCtx?.close().catch(() => {});
     this.audioCtx = null;
   }
@@ -690,11 +782,12 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         }
         this.presentIds.set(ids);
         this.presentEmails.set(emails);
-        // Un autre membre déjà en salle = le pair à afficher
+        // Une tuile par membre déjà présent — ils nous enverront chacun une offre
         const myId = this.auth.user()?.id || '';
-        const other = [...ids].find((id) => id !== myId);
-        if (other) {
-          this.remoteUserId.set(other);
+        for (const id of ids) {
+          if (id !== myId) {
+            this.patchTile(id, {});
+          }
         }
         this.emitMediaState();
         this.startSpeakingDetection();
@@ -714,8 +807,8 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     };
     s.on('connect', this.onSocketReconnect);
 
-    // Le membre DÉJÀ présent reçoit l'événement du nouvel arrivant → c'est lui qui offre
-    // (le nouvel arrivant ne sait pas qui est en salle : il ne peut pas offrir).
+    // Mesh : le membre DÉJÀ présent reçoit l'événement du nouvel arrivant → c'est lui qui offre.
+    // Chaque membre existant crée sa propre connexion vers l'arrivant.
     s.on(
       'meeting:peer-present',
       async ({ userId: otherId, email }: { userId?: string; email?: string }) => {
@@ -723,59 +816,68 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       if (!otherId || otherId === myId) {
         return;
       }
-      this.remoteUserId.set(otherId);
       this.presentIds.update((set) => new Set(set).add(otherId));
       const part = this.findParticipantByUserId(otherId);
       const em = (email || part?.email || '').trim().toLowerCase();
       if (em) {
         this.presentEmails.update((set) => new Set(set).add(em));
       }
+      this.patchTile(otherId, {});
       // Informer le nouvel arrivant de notre état cam/mic
       this.emitMediaState();
-      await this.ensurePc();
-      if (this.pc && !this.pc.remoteDescription) {
-        await this.createOffer();
+      const st = await this.ensurePc(otherId);
+      if (st && !st.pc.remoteDescription) {
+        await this.createOffer(otherId);
       }
       this.cdr.markForCheck();
     });
 
     s.on(
       'meeting:signal',
-      async (msg: { from?: string; type?: string; sdp?: string; candidate?: RTCIceCandidateInit }) => {
+      async (msg: {
+        from?: string;
+        to?: string;
+        type?: string;
+        sdp?: string;
+        candidate?: RTCIceCandidateInit;
+      }) => {
         const myId = this.auth.user()?.id || '';
         if (!msg.from || msg.from === myId) {
           return;
         }
-        this.remoteUserId.set(msg.from);
-        await this.ensurePc();
-        if (!this.pc) {
+        // Signaux adressés à un autre pair (mesh) : ignorer
+        if (msg.to && msg.to !== myId) {
           return;
         }
+        this.patchTile(msg.from, {});
+        const st = await this.ensurePc(msg.from);
+        if (!st) {
+          return;
+        }
+        const pc = st.pc;
         if (msg.type === 'offer' && msg.sdp) {
           // Glare (double offre si join simultané) : le plus petit id cède (« polite peer »)
-          if (this.pc.signalingState !== 'stable') {
-            if (myId.localeCompare(msg.from) > 0) {
+          if (pc.signalingState !== 'stable') {
+            if (pc.signalingState === 'have-local-offer' && myId.localeCompare(msg.from) > 0) {
               return; // impoli : notre offre gagne
             }
-            await this.pc.setLocalDescription({ type: 'rollback' } as RTCSessionDescriptionInit);
+            await pc.setLocalDescription({ type: 'rollback' } as RTCSessionDescriptionInit);
           }
-          await this.pc.setRemoteDescription({ type: 'offer', sdp: msg.sdp });
-          const answer = await this.pc.createAnswer();
-          await this.pc.setLocalDescription(answer);
-          s.emit('meeting:signal', { roomId: this.roomId, type: 'answer', sdp: answer.sdp });
-          this.remoteActive.set(true);
+          await pc.setRemoteDescription({ type: 'offer', sdp: msg.sdp });
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          s.emit('meeting:signal', { roomId: this.roomId, to: msg.from, type: 'answer', sdp: answer.sdp });
           this.status.set('En appel');
           this.cdr.markForCheck();
         } else if (msg.type === 'answer' && msg.sdp) {
-          if (this.pc.signalingState === 'have-local-offer') {
-            await this.pc.setRemoteDescription({ type: 'answer', sdp: msg.sdp });
+          if (pc.signalingState === 'have-local-offer') {
+            await pc.setRemoteDescription({ type: 'answer', sdp: msg.sdp });
           }
-          this.remoteActive.set(true);
           this.status.set('En appel');
           this.cdr.markForCheck();
         } else if (msg.type === 'ice' && msg.candidate) {
           try {
-            await this.pc.addIceCandidate(msg.candidate);
+            await pc.addIceCandidate(msg.candidate);
           } catch {
             /* */
           }
@@ -783,7 +885,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       }
     );
 
-    // L'autre participant a quitté : fermer le pc pour que son retour re-négocie proprement
+    // Un participant a quitté : fermer UNIQUEMENT sa connexion, les autres restent
     s.on('meeting:peer-left', ({ userId: otherId, email }: { userId?: string; email?: string }) => {
       const myId = this.auth.user()?.id || '';
       if (!otherId || otherId === myId) {
@@ -804,28 +906,33 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
           return next;
         });
       }
-      this.remoteActive.set(false);
-      this.remoteSpeaking.set(false);
-      this.remoteSharing.set(false);
-      this.remoteAnalyser = null;
-      this.remoteUserId.set('');
-      this.closePc();
-      this.status.set('Participant parti — en attente…');
+      const who = this.peerName(otherId);
+      this.closePeer(otherId);
+      this.status.set(`${who} a quitté la salle.`);
       this.cdr.markForCheck();
     });
 
-    // État micro/caméra du pair (avatar + indicateurs)
+    // État micro/caméra/partage de chaque pair (avatar + indicateurs)
     s.on(
       'meeting:media-state',
-      (msg: { userId?: string; email?: string; micOn?: boolean; camOn?: boolean; sharing?: boolean }) => {
+      (msg: {
+        userId?: string;
+        email?: string;
+        micOn?: boolean;
+        camOn?: boolean;
+        sharing?: boolean;
+        name?: string;
+      }) => {
         const myId = this.auth.user()?.id || '';
         if (!msg.userId || msg.userId === myId) {
           return;
         }
-        this.remoteUserId.set(msg.userId);
-        this.remoteCamOn.set(msg.camOn !== false);
-        this.remoteMicOn.set(msg.micOn !== false);
-        this.remoteSharing.set(msg.sharing === true);
+        this.patchTile(msg.userId, {
+          camOn: msg.camOn !== false,
+          micOn: msg.micOn !== false,
+          sharing: msg.sharing === true,
+          ...(msg.name ? { name: msg.name } : {}),
+        });
         this.cdr.markForCheck();
       }
     );
@@ -860,10 +967,6 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         if (cam) {
           cam.enabled = false;
         }
-        const vt = this.videoSender?.track;
-        if (vt?.kind === 'video') {
-          vt.enabled = false;
-        }
         this.status.set('Caméra coupée par l’animateur');
       }
     });
@@ -887,59 +990,80 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     s.off('meeting:moderation');
   }
 
-  private async ensurePc(): Promise<void> {
-    if (this.pc) {
-      return;
+  /** Connexion mesh : une RTCPeerConnection par pair distant. */
+  private async ensurePc(uid: string): Promise<PeerState | null> {
+    const existing = this.peers.get(uid);
+    if (existing && existing.pc.signalingState !== 'closed') {
+      return existing;
     }
-    this.pc = new RTCPeerConnection({
+    const pc = new RTCPeerConnection({
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
     });
+    const st: PeerState = { userId: uid, pc, videoSender: null, stream: null, analyser: null };
+    this.peers.set(uid, st);
     const s = this.socketSvc.getSocket();
-    this.pc.onicecandidate = (ev) => {
+    pc.onicecandidate = (ev) => {
       if (ev.candidate && s) {
         s.emit('meeting:signal', {
           roomId: this.roomId,
+          to: uid,
           type: 'ice',
           candidate: ev.candidate.toJSON(),
         });
       }
     };
-    this.pc.ontrack = (ev) => {
+    pc.ontrack = (ev) => {
       const [stream] = ev.streams;
       if (!stream) {
         return;
       }
-      this.remoteStream = stream;
-      // La tuile distante est dans un @if : forcer le rendu pour monter l'élément <video>
+      st.stream = stream;
+      this.patchTile(uid, { active: true });
+      // Forcer le rendu pour monter l'élément <video> de la tuile
       this.cdr.detectChanges();
-      this.attachRemoteVideo();
+      this.attachPeerVideo(uid);
       this.cdr.markForCheck();
+    };
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === 'failed') {
+        this.patchTile(uid, { active: false });
+        this.cdr.markForCheck();
+      }
     };
     if (this.localStream) {
       for (const track of this.localStream.getTracks()) {
-        this.pc.addTrack(track, this.localStream);
+        pc.addTrack(track, this.localStream);
       }
     }
-    this.videoSender = this.pc.getSenders().find((x) => x.track?.kind === 'video') ?? null;
+    st.videoSender = pc.getSenders().find((x) => x.track?.kind === 'video') ?? null;
     // Qualité HD : ~2,5 Mbps, pas de réduction de résolution
-    if (this.videoSender) {
-      const params = this.videoSender.getParameters();
+    if (st.videoSender) {
+      const params = st.videoSender.getParameters();
       params.encodings = [{ maxBitrate: 2_500_000, scaleResolutionDownBy: 1 }];
-      void this.videoSender.setParameters(params).catch(() => {});
+      void st.videoSender.setParameters(params).catch(() => {});
+    }
+    // Si un partage d'écran est déjà actif, ce pair reçoit directement l'écran
+    if (this.screenSharing() && this.screenStream && st.videoSender) {
+      const vt = this.screenStream.getVideoTracks()[0];
+      if (vt) {
+        void st.videoSender.replaceTrack(vt).catch(() => {});
+      }
     }
     if (!this.cameraVideoTrack) {
       this.cameraVideoTrack = this.localStream?.getVideoTracks()[0] ?? null;
     }
+    return st;
   }
 
-  private async createOffer(): Promise<void> {
+  private async createOffer(uid: string): Promise<void> {
     const s = this.socketSvc.getSocket();
-    if (!this.pc || !s) {
+    const st = this.peers.get(uid);
+    if (!st || !s) {
       return;
     }
-    const offer = await this.pc.createOffer();
-    await this.pc.setLocalDescription(offer);
-    s.emit('meeting:signal', { roomId: this.roomId, type: 'offer', sdp: offer.sdp });
+    const offer = await st.pc.createOffer();
+    await st.pc.setLocalDescription(offer);
+    s.emit('meeting:signal', { roomId: this.roomId, to: uid, type: 'offer', sdp: offer.sdp });
   }
 
   private async stopScreenShare(): Promise<void> {
@@ -948,11 +1072,13 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
     this.screenStream?.getTracks().forEach((t) => t.stop());
     this.screenStream = null;
-    if (this.videoSender && this.cameraVideoTrack) {
-      try {
-        await this.videoSender.replaceTrack(this.cameraVideoTrack);
-      } catch {
-        /* */
+    for (const st of this.peers.values()) {
+      if (st.videoSender && this.cameraVideoTrack) {
+        try {
+          await st.videoSender.replaceTrack(this.cameraVideoTrack);
+        } catch {
+          /* */
+        }
       }
     }
     this.screenSharing.set(false);
@@ -961,34 +1087,54 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     this.emitMediaState();
   }
 
-  /** Attache le flux distant à sa tuile (peut arriver avant que la tuile existe). */
-  private attachRemoteVideo(): void {
-    const el = this.remoteV?.nativeElement;
-    if (!el || !this.remoteStream) {
+  /** Attache le flux d'un pair à sa tuile (peut arriver avant que la tuile existe). */
+  private attachPeerVideo(uid: string): void {
+    const st = this.peers.get(uid);
+    if (!st?.stream) {
       return;
     }
-    if (el.srcObject !== this.remoteStream) {
-      el.srcObject = this.remoteStream;
+    const ref = this.remoteVs?.find(
+      (v) => v.nativeElement.dataset['uid'] === uid
+    );
+    const el = ref?.nativeElement;
+    if (!el) {
+      return;
     }
-    this.attachRemoteAnalyser(this.remoteStream);
-    this.remoteActive.set(true);
+    if (el.srcObject !== st.stream) {
+      el.srcObject = st.stream;
+    }
+    this.attachRemoteAnalyser(uid, st.stream);
   }
 
-  /** Ferme la connexion pair et nettoie la vidéo distante (le flux local reste actif). */
-  private closePc(): void {
-    this.pc?.close();
-    this.pc = null;
-    this.videoSender = null;
-    this.remoteStream = null;
-    if (this.remoteV?.nativeElement) {
-      this.remoteV.nativeElement.srcObject = null;
+  /** Ferme la connexion d'un pair et retire sa tuile (les autres restent). */
+  private closePeer(uid: string): void {
+    const st = this.peers.get(uid);
+    if (st) {
+      st.analyser = null;
+      try {
+        st.pc.close();
+      } catch {
+        /* */
+      }
+      this.peers.delete(uid);
+    }
+    const ref = this.remoteVs?.find(
+      (v) => v.nativeElement.dataset['uid'] === uid
+    );
+    if (ref?.nativeElement) {
+      ref.nativeElement.srcObject = null;
+    }
+    this.remoteTiles.update((list) => list.filter((t) => t.userId !== uid));
+  }
+
+  private closeAllPeers(): void {
+    for (const uid of [...this.peers.keys()]) {
+      this.closePeer(uid);
     }
   }
 
   private leaveMediaAndPc(navigate: boolean): void {
     this.stopSpeakingDetection();
-    this.remoteActive.set(false);
-    this.remoteSpeaking.set(false);
     // Prévenir les autres que l'on quitte la salle
     if (this.roomId) {
       this.socketSvc.getSocket()?.emit('meeting:leave-room', { roomId: this.roomId });
@@ -996,22 +1142,15 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     if (this.screenSharing()) {
       this.screenStream?.getTracks().forEach((t) => t.stop());
       this.screenStream = null;
-      if (this.pc && this.videoSender && this.cameraVideoTrack) {
-        void this.videoSender.replaceTrack(this.cameraVideoTrack);
-      }
       this.screenSharing.set(false);
     }
     this.localStream?.getTracks().forEach((t) => t.stop());
     this.localStream = null;
     this.cameraVideoTrack = null;
-    this.videoSender = null;
     if (this.localV?.nativeElement) {
       this.localV.nativeElement.srcObject = null;
     }
-    if (this.remoteV?.nativeElement) {
-      this.remoteV.nativeElement.srcObject = null;
-    }
-    this.closePc();
+    this.closeAllPeers();
     if (navigate) {
       void this.router.navigate(['/meetings', this.meetingId, 'lobby']);
     }

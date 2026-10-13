@@ -220,6 +220,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
       }
       socket.to(`meeting:${roomId}`).emit('meeting:signal', {
         from: socket.data.userId,
+        to: typeof payload.to === 'string' ? payload.to : '',
         type: payload.type,
         sdp: payload.sdp,
         candidate: payload.candidate,
