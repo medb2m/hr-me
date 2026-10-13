@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideBot,
@@ -25,6 +25,9 @@ import {
   InterviewTemplate,
 } from '../../../models/interview-session';
 import { InterviewService } from '../../../services/interview.service';
+import { SelectComponent, SelectOption } from '../../../shared/components/select/select.component';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
+import { TimePickerComponent } from '../../../shared/components/time-picker/time-picker.component';
 
 type HubTab = 'sessions' | 'create' | 'templates' | 'demo';
 
@@ -32,6 +35,7 @@ type HubTab = 'sessions' | 'create' | 'templates' | 'demo';
   selector: 'app-interview-hub',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     RouterLink,
     LucideBot,
@@ -50,6 +54,9 @@ type HubTab = 'sessions' | 'create' | 'templates' | 'demo';
     LucideTrash2,
     LucideUser,
     LucideX,
+    SelectComponent,
+    DatePickerComponent,
+    TimePickerComponent,
   ],
   providers: [DatePipe],
   templateUrl: './interview-hub.component.html',
@@ -70,6 +77,23 @@ export class InterviewHubComponent implements OnInit {
   readonly statusFilter = signal<string>('');
   readonly templateFilter = signal<string>('');
   readonly sortBy = signal<string>('recent');
+
+  readonly statusOptions: SelectOption[] = [
+    { value: '', label: 'Tous les statuts' },
+    { value: 'pending', label: 'À passer' },
+    { value: 'in_progress', label: 'En cours' },
+    { value: 'completed', label: 'Terminés' },
+    { value: 'expired', label: 'Expirés' },
+  ];
+  readonly sortOptions: SelectOption[] = [
+    { value: 'recent', label: 'Plus récents' },
+    { value: 'oldest', label: 'Plus anciens' },
+    { value: 'score_desc', label: 'Meilleures notes' },
+    { value: 'score_asc', label: 'Notes les plus basses' },
+    { value: 'ai_desc', label: 'Meilleures notes IA' },
+  ];
+  /** Préréglages de la fenêtre de passage (heures), façon chips plateforme. */
+  readonly deadlinePresets = [24, 48, 72, 168];
   readonly evaluationFor = signal<InterviewSessionListItem | null>(null);
   readonly evaluating = signal(false);
   readonly reviewEditing = signal<string | null>(null);
@@ -81,7 +105,8 @@ export class InterviewHubComponent implements OnInit {
     title: ['', [Validators.required, Validators.maxLength(140)]],
     assigneeName: ['', [Validators.maxLength(120)]],
     assigneeEmail: ['', [Validators.email, Validators.maxLength(190)]],
-    scheduledAt: [''],
+    scheduledDate: [''],
+    scheduledTime: [''],
     deadlineHours: [48, [Validators.min(1), Validators.max(720)]],
     templateId: [''],
     topics: [''],
@@ -113,7 +138,25 @@ export class InterviewHubComponent implements OnInit {
   readonly demoSubmitting = signal(false);
   readonly demoError = signal<string | null>(null);
 
+  templateOptions(): SelectOption[] {
+    return [
+      { value: '', label: '— Aucun (entretien libre) —' },
+      ...this.templates().map((t) => ({ value: t._id, label: `${t.name} — ${t.title}` })),
+    ];
+  }
+
+  templateFilterOptions(): SelectOption[] {
+    return [
+      { value: '', label: 'Tous les templates' },
+      ...this.templates().map((t) => ({ value: t._id, label: t.name })),
+    ];
+  }
+
   ngOnInit(): void {
+    // Choix d'un template → pré-remplit titre, sujets, délai, consignes
+    this.createForm.controls.templateId.valueChanges.subscribe((id) => {
+      if (id) this.applyTemplate(id);
+    });
     this.route.queryParamMap.subscribe((params) => {
       const t = params.get('tab');
       if (t === 'create' || t === 'templates' || t === 'demo' || t === 'sessions') {
@@ -259,12 +302,15 @@ export class InterviewHubComponent implements OnInit {
     this.createError.set(null);
     this.createdInviteUrl.set(null);
     const v = this.createForm.getRawValue();
+    const scheduledAt = v.scheduledDate
+      ? new Date(`${v.scheduledDate}T${v.scheduledTime || '09:00'}`).toISOString()
+      : null;
     this.interviewService
       .createSession({
         title: v.title.trim(),
         assigneeName: v.assigneeName.trim(),
         assigneeEmail: v.assigneeEmail.trim(),
-        scheduledAt: v.scheduledAt || null,
+        scheduledAt,
         deadlineHours: v.deadlineHours || null,
         templateId: v.templateId || null,
         topics: v.topics.split('\n').map((t) => t.trim()).filter(Boolean),
@@ -280,7 +326,8 @@ export class InterviewHubComponent implements OnInit {
             title: '',
             assigneeName: '',
             assigneeEmail: '',
-            scheduledAt: '',
+            scheduledDate: '',
+            scheduledTime: '',
             deadlineHours: 48,
             templateId: '',
             topics: '',
@@ -293,6 +340,15 @@ export class InterviewHubComponent implements OnInit {
           this.createError.set(err?.error?.message || 'Création impossible.');
         },
       });
+  }
+
+  /** Préréglage de fenêtre (chips) — 168 h = 7 jours. */
+  setDeadlinePreset(h: number): void {
+    this.createForm.controls.deadlineHours.setValue(h);
+  }
+
+  deadlineLabelPreset(h: number): string {
+    return h >= 168 && h % 24 === 0 && h > 96 ? `${h / 24} j` : `${h} h`;
   }
 
   /** Remplit le formulaire avec le contenu d'un template. */

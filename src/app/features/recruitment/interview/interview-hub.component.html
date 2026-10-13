@@ -48,24 +48,27 @@
   <!-- ═══════════ SESSIONS ═══════════ -->
   <section *ngIf="tab() === 'sessions'" class="hub-panel">
     <div class="filters">
-      <select class="fl" [value]="statusFilter()" (change)="onStatusFilter($any($event.target).value)">
-        <option value="">Tous les statuts</option>
-        <option value="pending">À passer</option>
-        <option value="in_progress">En cours</option>
-        <option value="completed">Terminés</option>
-        <option value="expired">Expirés</option>
-      </select>
-      <select class="fl" [value]="templateFilter()" (change)="onTemplateFilter($any($event.target).value)">
-        <option value="">Tous les templates</option>
-        <option *ngFor="let t of templates()" [value]="t._id">{{ t.name }}</option>
-      </select>
-      <select class="fl" [value]="sortBy()" (change)="onSort($any($event.target).value)">
-        <option value="recent">Plus récents</option>
-        <option value="oldest">Plus anciens</option>
-        <option value="score_desc">Meilleures notes</option>
-        <option value="score_asc">Notes les plus basses</option>
-        <option value="ai_desc">Meilleures notes IA</option>
-      </select>
+      <app-select
+        class="filter-sel"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusFilter($event)"
+        [options]="statusOptions"
+        placeholder="Statut"
+      />
+      <app-select
+        class="filter-sel"
+        [ngModel]="templateFilter()"
+        (ngModelChange)="onTemplateFilter($event)"
+        [options]="templateFilterOptions()"
+        placeholder="Template"
+      />
+      <app-select
+        class="filter-sel"
+        [ngModel]="sortBy()"
+        (ngModelChange)="onSort($event)"
+        [options]="sortOptions"
+        placeholder="Trier par"
+      />
       <button type="button" class="btn ghost" (click)="loadSessions()">Rafraîchir</button>
     </div>
 
@@ -174,20 +177,38 @@
         <input type="email" class="fl" formControlName="assigneeEmail" placeholder="candidat@exemple.com" />
       </div>
       <div class="field">
-        <label>Planifié le (jour + heure)</label>
-        <input type="datetime-local" class="fl" formControlName="scheduledAt" />
+        <label>Planifié le — date</label>
+        <app-date-picker formControlName="scheduledDate" placeholder="Choisir une date" />
       </div>
       <div class="field">
-        <label>Fenêtre pour le passer (heures)</label>
-        <input type="number" class="fl" formControlName="deadlineHours" min="1" max="720" />
-        <small class="hint">Ex. 48 → « vous avez 48 h pour passer le test ».</small>
+        <label>Heure</label>
+        <app-time-picker formControlName="scheduledTime" />
+      </div>
+      <div class="field span2">
+        <label>Fenêtre pour le passer</label>
+        <div class="deadline-row">
+          <div class="dl-chips">
+            <button
+              type="button"
+              *ngFor="let d of deadlinePresets"
+              class="dl-chip"
+              [class.sel]="createForm.controls.deadlineHours.value === d"
+              (click)="setDeadlinePreset(d)"
+            >{{ deadlineLabelPreset(d) }}</button>
+          </div>
+          <div class="dl-custom">
+            <input
+              type="number" class="fl dl-input"
+              formControlName="deadlineHours" min="1" max="720"
+            />
+            <span class="dl-unit">heures</span>
+          </div>
+        </div>
+        <small class="hint">Ex. 48 → le candidat reçoit « vous avez 48 h pour passer le test ».</small>
       </div>
       <div class="field span2">
         <label>Template d'entretien</label>
-        <select class="fl" formControlName="templateId" (change)="applyTemplate($any($event.target).value)">
-          <option value="">— Aucun (entretien libre) —</option>
-          <option *ngFor="let t of templates()" [value]="t._id">{{ t.name }} — {{ t.title }}</option>
-        </select>
+        <app-select formControlName="templateId" [options]="templateOptions()" placeholder="Choisir un template" />
       </div>
       <div class="field span2">
         <label>Sujets à couvrir par l'IA (un par ligne)</label>
