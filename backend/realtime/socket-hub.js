@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { getJwtSecret } from '../utils/jwt.js';
 import { Meeting } from '../models/meeting.model.js';
 import { Notification } from '../models/notification.model.js';
+import { User } from '../models/user.model.js';
 
 function normalizeSocketEmail(e) {
   return typeof e === 'string' ? e.trim().toLowerCase() : '';
@@ -290,7 +291,7 @@ export function attachSocketIo(httpServer, frontendOrigin) {
         if (!content && !image) {
           return;
         }
-        // Nom + avatar résolus depuis les participants déclarés de la réunion
+        // Nom résolu depuis les participants déclarés de la réunion
         let senderName = '';
         let senderAvatar = '';
         try {
@@ -303,7 +304,24 @@ export function attachSocketIo(httpServer, frontendOrigin) {
           );
           if (me) {
             senderName = me.name || me.email || '';
-            senderAvatar = me.avatarUrl || '';
+          }
+        } catch {
+          /* */
+        }
+        // Photo de profil : toujours depuis la fiche User (par id, sinon e-mail)
+        try {
+          const u = await User.findOne(
+            socket.data.userId
+              ? { _id: socket.data.userId }
+              : { email: normalizeSocketEmail(socket.data.email) }
+          )
+            .select('name avatarUrl')
+            .lean();
+          if (u) {
+            senderAvatar = u.avatarUrl || '';
+            if (!senderName) {
+              senderName = u.name || '';
+            }
           }
         } catch {
           /* */
