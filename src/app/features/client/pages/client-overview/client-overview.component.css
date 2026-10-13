@@ -191,8 +191,8 @@
   margin: 0 0 1.75rem;
   padding: 1.1rem 1.2rem;
   border-radius: 1.1rem;
-  background: linear-gradient(135deg, rgba(15,23,42,.06), rgba(255,211,0,.07));
-  border: 1px solid rgba(15,23,42,.18);
+  background: linear-gradient(135deg, rgba(255,211,0,.14), rgba(230,184,0,.07));
+  border: 1px solid rgba(230,184,0,.35);
 }
 
 .ep-todos__title {
@@ -202,14 +202,14 @@
   margin: 0 0 0.9rem;
   font-size: 0.95rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #a16207;
 }
 
 .ep-todos__count {
   padding: 1px 9px;
   border-radius: 999px;
-  background: #0f172a;
-  color: #fff;
+  background: linear-gradient(135deg, #ffd300, #e6b800);
+  color: #0f172a;
   font-size: 0.72rem;
 }
 
@@ -226,13 +226,13 @@
   padding: 0.75rem 0.95rem;
   border-radius: 0.85rem;
   background: var(--clr-card, #fff);
-  border: 1px solid rgba(15,23,42,.14);
+  border: 1px solid rgba(230,184,0,.3);
   text-decoration: none;
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
 .ep-todo:hover {
-  border-color: #0f172a;
+  border-color: #e6b800;
   transform: translateY(-1px);
 }
 
@@ -244,8 +244,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0f172a;
-  color: #ffd300;
+  background: linear-gradient(135deg, #ffd300, #e6b800);
+  color: #0f172a;
+  box-shadow: 0 4px 10px rgba(230,184,0,.3);
 }
 
 .ep-todo__body {
@@ -284,5 +285,5 @@
 
 .ep-todo__go {
   flex: none;
-  color: #0f172a;
+  color: #a16207;
 }
