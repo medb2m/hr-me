@@ -176,6 +176,9 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   readonly camLocked = signal(false);
   /** Menu de modération ouvert (uid-mic / uid-cam). */
   readonly modMenu = signal('');
+  /** Bannière visible quand l'animateur agit sur nos périphériques. */
+  readonly modNotice = signal('');
+  private modNoticeTimer: ReturnType<typeof setTimeout> | null = null;
   readonly meetingTitle = signal('');
   readonly rightTab = signal<RightTab>('chat');
   readonly participants = signal<MeetingParticipantDto[]>([]);
@@ -385,6 +388,12 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
+    if (this.modNoticeTimer) {
+      clearTimeout(this.modNoticeTimer);
+    }
+    if (this.inviteTimer) {
+      clearTimeout(this.inviteTimer);
+    }
     this.detachMeetingSocketListeners();
     this.leaveMediaAndPc(false);
   }
@@ -528,6 +537,15 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     return device === 'mic' ? Boolean(t?.micLocked) : Boolean(t?.camLocked);
   }
 
+  /** Périphérique du pair actuellement allumé (sinon coupé ou verrouillé). */
+  peerDeviceOn(uid: string, device: 'mic' | 'cam'): boolean {
+    const t = this.remoteTiles().find((x) => x.userId === uid);
+    if (!t) {
+      return true; // pas en salle : on considère allumé
+    }
+    return device === 'mic' ? t.micOn && !t.micLocked : t.camOn && !t.camLocked;
+  }
+
   toggleModMenu(key: string): void {
     this.modMenu.set(this.modMenu() === key ? '' : key);
   }
@@ -548,7 +566,30 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       (ack: { ok?: boolean; message?: string }) => {
         if (!ack?.ok) {
           this.status.set(ack?.message || 'Action refusée.');
+          return;
         }
+        // Patch optimiste : la tuile bascule tout de suite (avatar, verrou)
+        // — la media-state de la victime confirmera
+        const patch: Partial<RemoteTileState> = {};
+        if (action === 'mute_audio') {
+          patch.micOn = false;
+        } else if (action === 'disable_audio') {
+          patch.micOn = false;
+          patch.micLocked = true;
+        } else if (action === 'unmute_audio') {
+          patch.micOn = true;
+          patch.micLocked = false;
+        } else if (action === 'mute_video') {
+          patch.camOn = false;
+        } else if (action === 'disable_video') {
+          patch.camOn = false;
+          patch.camLocked = true;
+        } else if (action === 'unmute_video') {
+          patch.camOn = true;
+          patch.camLocked = false;
+        }
+        this.patchTile(targetUserId, patch);
+        this.cdr.markForCheck();
       }
     );
   }
@@ -586,9 +627,21 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
   }
 
+  private showModNotice(text: string): void {
+    this.modNotice.set(text);
+    if (this.modNoticeTimer) {
+      clearTimeout(this.modNoticeTimer);
+    }
+    this.modNoticeTimer = setTimeout(() => {
+      this.modNotice.set('');
+      this.cdr.markForCheck();
+    }, 6000);
+  }
+
   toggleMic(): void {
     if (this.micLocked()) {
       this.status.set('Micro désactivé par l’animateur — impossible de le rallumer.');
+      this.showModNotice('Votre micro est désactivé par l’animateur.');
       return;
     }
     const on = !this.micOn();
@@ -603,6 +656,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   toggleCam(): void {
     if (this.camLocked()) {
       this.status.set('Caméra désactivée par l’animateur — impossible de la rallumer.');
+      this.showModNotice('Votre caméra est désactivée par l’animateur.');
       return;
     }
     const on = !this.camOn();
@@ -1029,6 +1083,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
             audio.enabled = false;
           }
           this.status.set('Micro désactivé par l’animateur');
+          this.showModNotice('L’animateur a désactivé votre micro — vous ne pouvez plus le rallumer.');
           break;
         case 'disable_video':
           this.camLocked.set(true);
@@ -1038,6 +1093,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
             cam.enabled = false;
           }
           this.status.set('Caméra désactivée par l’animateur');
+          this.showModNotice('L’animateur a désactivé votre caméra — vous ne pouvez plus la rallumer.');
           break;
         // Réactiver : lever le verrou et rallumer
         case 'unmute_audio':
@@ -1047,6 +1103,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
             audio.enabled = true;
           }
           this.status.set('Micro réactivé par l’animateur');
+          this.showModNotice('L’animateur a réactivé votre micro.');
           break;
         case 'unmute_video':
           this.camLocked.set(false);
@@ -1055,6 +1112,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
             cam.enabled = true;
           }
           this.status.set('Caméra réactivée par l’animateur');
+          this.showModNotice('L’animateur a réactivé votre caméra.');
           break;
         default:
           return;

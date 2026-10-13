@@ -285,6 +285,26 @@ $border: #272b36;
   color: #ffd300;
 }
 
+/* Notification de modération (bannière visible en bas) */
+.mod-notice {
+  position: absolute;
+  bottom: 104px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  max-width: min(90%, 460px);
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(24, 27, 35, 0.94);
+  border: 1px solid rgba(255, 211, 0, 0.5);
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+
 /* ── Mode présentation : écran 75% gauche pleine hauteur + participants 25% ── */
 .tile-grid.presenting {
   position: relative;

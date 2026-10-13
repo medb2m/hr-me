@@ -18,6 +18,11 @@
             <div class="present-tag"><svg lucideMonitor class="present-ic"></svg> {{ presenterName() }} présente</div>
           }
 
+          <!-- Notification de modération (micro/caméra coupé·e ou désactivé·e par l'animateur) -->
+          @if (modNotice()) {
+            <div class="mod-notice">{{ modNotice() }}</div>
+          }
+
           <!-- ══ Grille de tuiles participants (mesh : une tuile par pair) ══ -->
           <div
             class="tile-grid"
@@ -246,7 +251,7 @@
                               (click)="toggleModMenu(p.userId + '-mic')"
                               [attr.aria-label]="'Modérer le micro de ' + (p.name || p.email)"
                               [attr.aria-expanded]="modMenu() === p.userId + '-mic'">
-                              @if (peerLock(p.userId!, 'mic')) {
+                              @if (!peerDeviceOn(p.userId!, 'mic')) {
                                 <svg lucideMicOff></svg>
                               } @else {
                                 <svg lucideMic></svg>
@@ -254,7 +259,7 @@
                             </button>
                             @if (modMenu() === p.userId + '-mic') {
                               <div class="mod-menu">
-                                @if (peerLock(p.userId!, 'mic')) {
+                                @if (!peerDeviceOn(p.userId!, 'mic')) {
                                   <button type="button" class="mod-item mod-item--ok" (click)="moderateParticipant(p, 'unmute_audio')">
                                     Réactiver le micro
                                   </button>
@@ -280,7 +285,7 @@
                               (click)="toggleModMenu(p.userId + '-cam')"
                               [attr.aria-label]="'Modérer la caméra de ' + (p.name || p.email)"
                               [attr.aria-expanded]="modMenu() === p.userId + '-cam'">
-                              @if (peerLock(p.userId!, 'cam')) {
+                              @if (!peerDeviceOn(p.userId!, 'cam')) {
                                 <svg lucideVideoOff></svg>
                               } @else {
                                 <svg lucideVideo></svg>
@@ -288,7 +293,7 @@
                             </button>
                             @if (modMenu() === p.userId + '-cam') {
                               <div class="mod-menu">
-                                @if (peerLock(p.userId!, 'cam')) {
+                                @if (!peerDeviceOn(p.userId!, 'cam')) {
                                   <button type="button" class="mod-item mod-item--ok" (click)="moderateParticipant(p, 'unmute_video')">
                                     Réactiver la caméra
                                   </button>
