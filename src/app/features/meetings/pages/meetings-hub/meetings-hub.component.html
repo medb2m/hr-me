@@ -265,11 +265,11 @@
   </div>
 }
 
-<!-- ══ Transcription de la discussion de salle ══ -->
+<!-- ══ Transcription de la discussion — panneau coulissant ══ -->
 @if (chatView(); as m) {
-  <div class="mh-modal" (click)="closeChat()">
-    <div class="mh-modal-card mh-modal-card--chat" (click)="$event.stopPropagation()">
-      <div class="mh-modal-head">
+  <div class="mh-drawer-backdrop" (click)="closeChat()"></div>
+  <aside class="mh-drawer" role="dialog" aria-modal="true" aria-label="Discussion de la réunion">
+      <div class="mh-modal-head mh-drawer-head">
         <div>
           <h3><svg lucideMessageSquare [size]="17"></svg> Discussion de la réunion</h3>
           <p class="mh-modal-sub">{{ m.title }} · {{ dateLong(m) }}</p>
@@ -309,8 +309,7 @@
           </ul>
         }
       </div>
-    </div>
-  </div>
+  </aside>
 }
 
 <!-- ══ Visionneuse d'image (lightbox) ══ -->
