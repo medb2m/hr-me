@@ -174,10 +174,16 @@
 }
 
 .client-sidebar__icon {
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0.85;
-  width: 1.1rem;
-  text-align: center;
+  width: 1.25rem;
+  flex-shrink: 0;
+}
+
+.client-sidebar__icon svg {
+  display: block;
 }
 
 .client-sidebar__link.is-active .client-sidebar__icon {
