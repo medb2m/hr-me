@@ -3,8 +3,8 @@ import { NotFoundComponent } from './shared/components/not-found/not-found.compo
 import { HomeComponent } from './shared/components/home/home.component';
 import { InterviewHubComponent } from './features/recruitment/interview/interview-hub.component';
 import { InterviewRoomComponent } from './features/recruitment/interview/interview-room.component';
-import { InterviewSessionsListComponent } from './features/recruitment/interview/interview-sessions-list.component';
 import { InterviewSessionDetailComponent } from './features/recruitment/interview/interview-session-detail.component';
+import { InterviewPassComponent } from './features/recruitment/interview/interview-pass.component';
 import { AboutPageComponent } from './shared/components/public/about-page/about-page.component';
 import { ContactPageComponent } from './shared/components/public/contact-page/contact-page.component';
 import { LegalPageComponent } from './shared/components/public/legal-page/legal-page.component';
@@ -124,11 +124,30 @@ export const routes: Routes = [
         ),
     },
 
-    // Recruitment => AI interview
-    { path: 'recruitment/interview', component: InterviewHubComponent },
-    { path: 'recruitment/interview/room/:sessionId', component: InterviewRoomComponent },
-    { path: 'recruitment/interview/sessions', component: InterviewSessionsListComponent },
-    { path: 'recruitment/interview/sessions/:sessionId', component: InterviewSessionDetailComponent },
+    // Recruitment => AI interview (staff : hub onglets, salle démo, transcript)
+    {
+      path: 'recruitment/interview',
+      component: InterviewHubComponent,
+      canActivate: [authRequiredGuard],
+    },
+    {
+      path: 'recruitment/interview/room/:sessionId',
+      component: InterviewRoomComponent,
+      canActivate: [authRequiredGuard],
+    },
+    {
+      path: 'recruitment/interview/sessions',
+      redirectTo: '/recruitment/interview',
+      pathMatch: 'full',
+    },
+    {
+      path: 'recruitment/interview/sessions/:sessionId',
+      component: InterviewSessionDetailComponent,
+      canActivate: [authRequiredGuard],
+    },
+
+    // Entretien IA côté personne affectée (lien tokenisé, sans compte)
+    { path: 'interview/pass/:token', component: InterviewPassComponent },
 
     // 404
     { path: '**', component: NotFoundComponent}

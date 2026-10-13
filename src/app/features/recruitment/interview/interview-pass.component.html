@@ -1,0 +1,123 @@
+<div class="pass-page">
+  <div class="pass-shell">
+    <header class="pass-head">
+      <div class="brand">
+        <svg lucideBot [size]="22"></svg>
+        <div>
+          <p class="brand-k">Al Wassit — Entretien IA</p>
+          <h1>{{ session()?.title || 'Entretien automatisé' }}</h1>
+        </div>
+      </div>
+      <div class="head-right" *ngIf="countdown()">
+        <svg lucideClock [size]="14"></svg>
+        <span>{{ countdown() }}</span>
+      </div>
+    </header>
+
+    <!-- Chargement -->
+    <div class="pass-state" *ngIf="phase() === 'loading'">
+      <svg lucideLoader2 [size]="34" class="spin"></svg>
+      <p>Chargement de votre entretien…</p>
+    </div>
+
+    <!-- Erreur -->
+    <div class="pass-state" *ngIf="phase() === 'error'">
+      <svg lucideAlertTriangle [size]="34"></svg>
+      <h2>Lien invalide</h2>
+      <p>{{ error() || 'Ce lien est invalide ou a déjà été utilisé. Contactez votre recruteur.' }}</p>
+    </div>
+
+    <!-- Prêt : écran d'accueil -->
+    <div class="pass-state" *ngIf="phase() === 'ready'">
+      <svg lucideBot [size]="44" class="bot-big"></svg>
+      <h2>Bienvenue{{ session()?.assignee?.name ? ', ' + session()!.assignee!.name : '' }}</h2>
+      <p class="lead">
+        Vous allez passer un entretien en ligne avec notre assistant IA.
+        Répondez clairement à chaque question — vos réponses seront évaluées.
+      </p>
+      <div class="info-grid">
+        <div class="info" *ngIf="session()?.deadlineHours">
+          <span class="info-l">Fenêtre</span>
+          <span class="info-v">{{ session()!.deadlineHours }} h pour le passer</span>
+        </div>
+        <div class="info" *ngIf="session()?.expiresAt">
+          <span class="info-l">Avant le</span>
+          <span class="info-v">{{ session()!.expiresAt | date: 'EEEE d MMM à HH:mm' }}</span>
+        </div>
+        <div class="info" *ngIf="session()?.scheduledAt">
+          <span class="info-l">Prévu</span>
+          <span class="info-v">{{ scheduledLabel() }}</span>
+        </div>
+      </div>
+      <div class="tips">
+        <p><strong>Conseils :</strong> installez-vous au calme · répondez de façon structurée ·
+          l'entretien dure environ 10 minutes · il ne peut être fait qu'une seule fois.</p>
+      </div>
+      <div class="topics" *ngIf="session()?.topics?.length">
+        <p class="topics-l">Thèmes qui seront abordés</p>
+        <div>
+          <span class="chip" *ngFor="let t of session()!.topics">{{ t }}</span>
+        </div>
+      </div>
+      <button type="button" class="btn big" (click)="start()" [disabled]="starting()">
+        <svg lucideLoader2 [size]="16" class="spin" *ngIf="starting()"></svg>
+        {{ starting() ? 'Préparation…' : "Commencer l'entretien" }}
+      </button>
+      <p class="err" *ngIf="error()">{{ error() }}</p>
+    </div>
+
+    <!-- Chat -->
+    <ng-container *ngIf="phase() === 'chat'">
+      <div class="pass-messages">
+        <div
+          class="msg"
+          *ngFor="let m of messages()"
+          [class.me]="m.role === 'user'"
+        >
+          <div class="msg-ava" *ngIf="m.role !== 'user'"><svg lucideBot [size]="16"></svg></div>
+          <div class="bubble">
+            <p class="bubble-txt">{{ m.content }}</p>
+          </div>
+          <div class="msg-ava me-ava" *ngIf="m.role === 'user'"><svg lucideUser [size]="16"></svg></div>
+        </div>
+        <div class="msg" *ngIf="sending()">
+          <div class="msg-ava"><svg lucideBot [size]="16"></svg></div>
+          <div class="bubble typing"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+      <form class="pass-input" (ngSubmit)="onEnter($event)">
+        <input
+          type="text" class="fl" placeholder="Votre réponse…"
+          [value]="draft()"
+          (input)="onDraft($any($event.target).value)"
+        />
+        <button type="submit" class="btn round" [disabled]="sending() || !draft().trim()" title="Envoyer">
+          <svg lucideSend [size]="16"></svg>
+        </button>
+        <button type="button" class="btn ghost" (click)="finish()" [disabled]="finishing()">
+          {{ finishing() ? 'Clôture…' : "Terminer l'entretien" }}
+        </button>
+      </form>
+    </ng-container>
+
+    <!-- Terminé -->
+    <div class="pass-state" *ngIf="phase() === 'done'">
+      <svg lucideCheckCircle2 [size]="44" class="ok"></svg>
+      <h2>Entretien terminé — merci !</h2>
+      <p class="lead">
+        Votre entretien a été enregistré. L'équipe Al Wassit analysera vos réponses
+        et reviendra vers vous prochainement.
+      </p>
+    </div>
+
+    <!-- Expiré -->
+    <div class="pass-state" *ngIf="phase() === 'expired'">
+      <svg lucideAlertTriangle [size]="44" class="warn"></svg>
+      <h2>Délai dépassé</h2>
+      <p class="lead">
+        La fenêtre pour passer cet entretien est terminée.
+        Contactez votre recruteur si vous souhaitez une nouvelle invitation.
+      </p>
+    </div>
+  </div>
+</div>

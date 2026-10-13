@@ -8,6 +8,30 @@
     </p>
   </header>
 
+  <section class="ep-todos" *ngIf="tasks().length" aria-label="À faire">
+    <h2 class="ep-todos__title">
+      <svg lucideListChecks [size]="18"></svg> À faire
+      <span class="ep-todos__count">{{ tasks().length }}</span>
+    </h2>
+    <div class="ep-todos__list">
+      @for (t of tasks(); track t.link) {
+        <a [routerLink]="t.link" class="ep-todo">
+          <span class="ep-todo__icon">
+            <svg lucideBot [size]="20"></svg>
+          </span>
+          <span class="ep-todo__body">
+            <strong>Entretien IA — {{ t.title }}</strong>
+            <span class="ep-todo__desc">{{ t.desc }}</span>
+          </span>
+          <span class="ep-todo__due" *ngIf="t.deadline">
+            <svg lucideClock [size]="12"></svg> {{ deadlineLabel(t) }}
+          </span>
+          <svg class="ep-todo__go" lucideArrowRight [size]="16"></svg>
+        </a>
+      }
+    </div>
+  </section>
+
   <section class="ep-grid" aria-label="Accès rapides">
     @for (t of tiles; track t.link) {
       <a [routerLink]="t.link" class="ep-card">

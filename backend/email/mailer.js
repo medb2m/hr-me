@@ -200,6 +200,50 @@ function escHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
+/** Invitation à un entretien IA : lien tokenisé + délai + thèmes + conseils. */
+export async function sendInterviewInviteEmail({
+  to,
+  name,
+  title,
+  topics,
+  deadlineHours,
+  scheduledAt,
+  passUrl,
+  organizerName,
+}) {
+  const deadline = deadlineHours
+    ? `Vous avez ${deadlineHours} h pour le réaliser`
+    : 'À réaliser dès que possible';
+  const scheduled = scheduledAt
+    ? new Intl.DateTimeFormat('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date(scheduledAt))
+    : 'Dès maintenant';
+  const topicsText =
+    Array.isArray(topics) && topics.length ? topics.join(' · ') : 'Parcours et expérience';
+  const v = templateDefaults({
+    participantName: name ? ` ${name}` : '',
+    title,
+    organizerName: organizerName || "l'équipe Al Wassit",
+    deadline,
+    scheduled,
+    topics: topicsText,
+    passUrl,
+  });
+  const html = renderTemplate('interview-invite.html', v);
+  const text = `Bonjour${v.participantName},\n\n${v.organizerName} vous invite à passer l'entretien automatisé « ${title} ».\n${deadline} — prévu : ${scheduled}.\nThèmes : ${topicsText}\n\nCommencer : ${passUrl}\n\n— ${v.appName}`;
+  return sendMail({
+    to,
+    subject: `[${v.appName}] Entretien IA à passer : ${title}`,
+    html,
+    text,
+  });
+}
+
 /** Récap envoyé au CRÉATEUR d'une réunion (≠ invitation des participants). */
 export async function sendMeetingCreatedEmail({
   to,

@@ -160,12 +160,22 @@
           <ul class="nav-submenu" [class.open]="dropdowns['recruitment']">
             <li>
               <a class="nav-subitem" routerLink="/recruitment/interview" (click)="navigateAndCloseSidebar()">
-                <svg lucideVideo class="lc-icon lc-icon--sm"></svg> AI Interview
+                <svg lucideVideo class="lc-icon lc-icon--sm"></svg> Sessions
               </a>
             </li>
             <li>
-              <a class="nav-subitem" routerLink="/recruitment/interview/sessions" (click)="navigateAndCloseSidebar()">
-                <svg lucidePlaySquare class="lc-icon lc-icon--sm"></svg> Interview sessions
+              <a class="nav-subitem" routerLink="/recruitment/interview" [queryParams]="{tab:'create'}" (click)="navigateAndCloseSidebar()">
+                <svg lucidePlaySquare class="lc-icon lc-icon--sm"></svg> Créer un entretien
+              </a>
+            </li>
+            <li>
+              <a class="nav-subitem" routerLink="/recruitment/interview" [queryParams]="{tab:'templates'}" (click)="navigateAndCloseSidebar()">
+                <svg lucidePlaySquare class="lc-icon lc-icon--sm"></svg> Templates
+              </a>
+            </li>
+            <li>
+              <a class="nav-subitem" routerLink="/recruitment/interview" [queryParams]="{tab:'demo'}" (click)="navigateAndCloseSidebar()">
+                <svg lucidePlaySquare class="lc-icon lc-icon--sm"></svg> Démo
               </a>
             </li>
           </ul>

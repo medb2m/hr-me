@@ -4,14 +4,40 @@ export interface InterviewMessage {
   createdAt?: string;
 }
 
+export type InterviewStatus = 'pending' | 'in_progress' | 'completed' | 'expired';
+
+export interface InterviewTopicScore {
+  topic: string;
+  score: number | null;
+  comment: string;
+}
+
+export interface InterviewEvaluation {
+  summary: string;
+  overall: number | null;
+  topics: InterviewTopicScore[];
+  generatedAt?: string | null;
+}
+
 export interface InterviewSession {
   _id: string;
   title: string;
   candidateName: string;
-  status: 'in_progress' | 'completed';
+  assignee?: { name: string; email: string; userId?: string | null };
+  topics: string[];
+  instructions?: string;
+  scheduledAt?: string | null;
+  deadlineHours?: number | null;
+  expiresAt?: string | null;
+  templateId?: { _id: string; name: string; title: string } | string | null;
+  isDemo?: boolean;
+  inviteToken?: string;
+  status: InterviewStatus;
   messages: InterviewMessage[];
   completedAt?: string;
   recruiterSummary?: string;
+  evaluation?: InterviewEvaluation;
+  review?: { score: number | null; comment: string; updatedAt?: string | null };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -19,6 +45,17 @@ export interface InterviewSession {
 export interface InterviewSessionListItem
   extends Omit<InterviewSession, 'messages'> {
   messages?: InterviewMessage[];
+}
+
+export interface InterviewTemplate {
+  _id: string;
+  name: string;
+  title: string;
+  topics: string[];
+  instructions: string;
+  deadlineHours: number;
+  usageCount?: number;
+  createdAt?: string;
 }
 
 export interface CreateInterviewSessionResponse {
@@ -39,5 +76,11 @@ export interface SendMessageResponse {
     assistantMessage: string;
     session: InterviewSession;
   };
+  message?: string;
+}
+
+export interface ApiOk<T> {
+  success: boolean;
+  data: T;
   message?: string;
 }

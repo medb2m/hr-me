@@ -3,9 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
+  ApiOk,
   CreateInterviewSessionResponse,
   InterviewSession,
+  InterviewSessionListItem,
   InterviewSessionsListResponse,
+  InterviewTemplate,
   SendMessageResponse,
 } from '../models/interview-session';
 
@@ -18,6 +21,14 @@ export class InterviewService {
   createSession(body: {
     title: string;
     candidateName?: string;
+    isDemo?: boolean;
+    assigneeName?: string;
+    assigneeEmail?: string;
+    topics?: string[];
+    instructions?: string;
+    scheduledAt?: string | null;
+    deadlineHours?: number | null;
+    templateId?: string | null;
   }): Observable<CreateInterviewSessionResponse> {
     return this.http.post<CreateInterviewSessionResponse>(
       `${this.base}/sessions`,
@@ -35,6 +46,8 @@ export class InterviewService {
     status?: string;
     page?: number;
     limit?: number;
+    templateId?: string;
+    sort?: string;
   }): Observable<InterviewSessionsListResponse> {
     let httpParams = new HttpParams();
     if (params?.status) {
@@ -46,9 +59,93 @@ export class InterviewService {
     if (params?.limit != null) {
       httpParams = httpParams.set('limit', String(params.limit));
     }
+    if (params?.templateId) {
+      httpParams = httpParams.set('templateId', params.templateId);
+    }
+    if (params?.sort) {
+      httpParams = httpParams.set('sort', params.sort);
+    }
     return this.http.get<InterviewSessionsListResponse>(`${this.base}/sessions`, {
       params: httpParams,
     });
+  }
+
+  /** Évaluation IA : avis rédigé + note par sujet. */
+  evaluateSession(sessionId: string): Observable<ApiOk<NonNullable<InterviewSession['evaluation']>>> {
+    return this.http.post<ApiOk<NonNullable<InterviewSession['evaluation']>>>(
+      `${this.base}/sessions/${sessionId}/evaluate`,
+      {}
+    );
+  }
+
+  /** Note manuelle recruteur (0-10 + commentaire). */
+  reviewSession(
+    sessionId: string,
+    review: { score: number | null; comment: string }
+  ): Observable<ApiOk<InterviewSessionListItem>> {
+    return this.http.patch<ApiOk<InterviewSessionListItem>>(
+      `${this.base}/sessions/${sessionId}/review`,
+      review
+    );
+  }
+
+  /** « Mes entretiens à passer » — espace de la personne affectée. */
+  mySessions(): Observable<ApiOk<InterviewSessionListItem[]>> {
+    return this.http.get<ApiOk<InterviewSessionListItem[]>>(`${this.base}/mine`);
+  }
+
+  // ── Templates ──
+
+  listTemplates(): Observable<ApiOk<InterviewTemplate[]>> {
+    return this.http.get<ApiOk<InterviewTemplate[]>>(`${this.base}/templates`);
+  }
+
+  createTemplate(body: {
+    name: string;
+    title: string;
+    topics?: string[];
+    instructions?: string;
+    deadlineHours?: number;
+  }): Observable<ApiOk<InterviewTemplate>> {
+    return this.http.post<ApiOk<InterviewTemplate>>(`${this.base}/templates`, body);
+  }
+
+  updateTemplate(
+    id: string,
+    body: Partial<{
+      name: string;
+      title: string;
+      topics: string[];
+      instructions: string;
+      deadlineHours: number;
+    }>
+  ): Observable<ApiOk<InterviewTemplate>> {
+    return this.http.patch<ApiOk<InterviewTemplate>>(`${this.base}/templates/${id}`, body);
+  }
+
+  deleteTemplate(id: string): Observable<ApiOk<unknown>> {
+    return this.http.delete<ApiOk<unknown>>(`${this.base}/templates/${id}`);
+  }
+
+  // ── Accès public par jeton (personne affectée, sans compte) ──
+
+  accessSession(token: string): Observable<ApiOk<InterviewSession>> {
+    return this.http.get<ApiOk<InterviewSession>>(`${this.base}/access/${token}`);
+  }
+
+  accessStart(token: string): Observable<ApiOk<InterviewSession>> {
+    return this.http.post<ApiOk<InterviewSession>>(`${this.base}/access/${token}/start`, {});
+  }
+
+  accessMessage(token: string, text: string): Observable<ApiOk<{ assistantMessage: string }>> {
+    return this.http.post<ApiOk<{ assistantMessage: string }>>(
+      `${this.base}/access/${token}/messages`,
+      { text }
+    );
+  }
+
+  accessComplete(token: string): Observable<ApiOk<InterviewSession>> {
+    return this.http.post<ApiOk<InterviewSession>>(`${this.base}/access/${token}/complete`, {});
   }
 
   sendCandidateMessage(
@@ -75,6 +172,8 @@ export class InterviewService {
     }
   ): Promise<void> {
     const url = `${this.base}/sessions/${encodeURIComponent(sessionId)}/messages`;
+    const token =
+      typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null;
     let res: Response;
     try {
       res = await fetch(url, {
@@ -82,6 +181,7 @@ export class InterviewService {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'text/event-stream',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ text, stream: true }),
       });

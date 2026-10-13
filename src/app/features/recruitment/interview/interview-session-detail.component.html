@@ -1,65 +1,111 @@
-<div class="container py-4 session-detail" *ngIf="!loading && session && !error; else stateTpl">
-  <nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb mb-0">
-      <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
-      <li class="breadcrumb-item">
-        <a routerLink="/recruitment/interview/sessions">Interview sessions</a>
-      </li>
-      <li class="breadcrumb-item active" aria-current="page">{{ session.title }}</li>
-    </ol>
-  </nav>
+<div class="detail" *ngIf="!loading() && session() && !error(); else stateTpl">
+  <a routerLink="/recruitment/interview" class="back">
+    <svg lucideArrowLeft [size]="15"></svg> Retour aux sessions
+  </a>
 
-  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <header class="head">
     <div>
-      <h1 class="h4 mb-1">{{ session.title }}</h1>
-      <p class="text-secondary small mb-0">
-        Candidate: {{ session.candidateName || '—' }} ·
-        <span
-          class="badge"
-          [class.text-bg-warning]="session.status === 'in_progress'"
-          [class.text-bg-success]="session.status === 'completed'"
-        >{{ session.status === 'in_progress' ? 'In progress' : 'Completed' }}</span>
-        · Updated {{ session.updatedAt | date: 'medium' }}
+      <h1>{{ session()!.title }}</h1>
+      <p class="meta">
+        <span class="badge" [class]="'b-' + session()!.status">{{ statusLabel() }}</span>
+        <span><svg lucideUser [size]="13"></svg>
+          {{ session()!.assignee?.name || session()!.candidateName || '—' }}
+          <em *ngIf="session()!.assignee?.email">· {{ session()!.assignee!.email }}</em>
+        </span>
+        <span><svg lucideClock [size]="13"></svg>
+          Planifié : {{ fmtDate(session()!.scheduledAt) }}
+        </span>
+      </p>
+      <p class="topics" *ngIf="session()!.topics?.length">
+        <span class="chip" *ngFor="let t of session()!.topics">{{ t }}</span>
       </p>
     </div>
-    <a
-      *ngIf="session.status === 'in_progress'"
-      class="btn btn-sm btn-primary"
-      [routerLink]="['/recruitment/interview/room', sessionId]"
-    >Resume room</a>
-  </div>
-
-  <div class="card border-0 shadow-sm mb-4" *ngIf="session.recruiterSummary">
-    <div class="card-body">
-      <h2 class="h6 text-uppercase text-secondary">Recruiter summary (AI)</h2>
-      <pre class="summary-text mb-0">{{ session.recruiterSummary }}</pre>
+    <div class="head-actions">
+      <button type="button" class="btn" (click)="evaluate()" [disabled]="evaluating() || !visibleMessages.length">
+        <svg lucideLoader2 [size]="15" class="spin" *ngIf="evaluating()"></svg>
+        <svg lucideSparkles [size]="15" *ngIf="!evaluating()"></svg>
+        {{ evaluating() ? 'Analyse IA…' : (session()!.evaluation ? 'Régénérer le résumé' : 'Résumé IA') }}
+      </button>
+      <a *ngIf="session()!.isDemo && session()!.status === 'in_progress'" class="btn ghost" [routerLink]="['/recruitment/interview/room', sessionId]">
+        <svg lucidePlay [size]="15"></svg> Reprendre la salle
+      </a>
     </div>
-  </div>
+  </header>
 
-  <div class="card border-0 shadow-sm">
-    <div class="card-body">
-      <h2 class="h6 text-uppercase text-secondary">Full transcript</h2>
-      <div class="transcript">
-        <div
-          *ngFor="let m of visibleMessages"
-          class="msg"
-          [class.msg-user]="m.role === 'user'"
-          [class.msg-ai]="m.role === 'assistant'"
-        >
-          <span class="msg-label">{{ m.role === 'user' ? 'Candidate' : 'AI' }}</span>
-          <p class="msg-body mb-0">{{ m.content }}</p>
-        </div>
+  <!-- Évaluation IA -->
+  <section class="panel" *ngIf="session()!.evaluation as ev">
+    <h2 class="panel-t"><svg lucideSparkles [size]="16"></svg> Évaluation IA</h2>
+    <div class="eval-row" *ngIf="ev.overall != null">
+      <span class="eval-score">{{ ev.overall }}<small>/10</small></span>
+      <span class="eval-l">Note globale</span>
+    </div>
+    <p class="summary">{{ ev.summary }}</p>
+    <table class="eval-table" *ngIf="ev.topics?.length">
+      <thead><tr><th>Sujet</th><th class="num">Note</th><th>Commentaire</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let t of ev.topics">
+          <td>{{ t.topic }}</td>
+          <td class="num"><span class="badge" [class.b-good]="(t.score ?? 0) >= 7" [class.b-mid]="(t.score ?? 0) >= 4 && (t.score ?? 0) < 7" [class.b-bad]="(t.score ?? 0) < 4">{{ t.score ?? '—' }}/10</span></td>
+          <td class="muted">{{ t.comment }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Note recruteur -->
+  <section class="panel">
+    <h2 class="panel-t"><svg lucideStar [size]="16"></svg> Note recruteur</h2>
+    <ng-container *ngIf="!reviewEditing(); else editReview">
+      <div class="review-line" *ngIf="session()!.review?.score != null || session()!.review?.comment; else noReview">
+        <span class="eval-score sm" *ngIf="session()!.review?.score != null">{{ session()!.review!.score }}<small>/10</small></span>
+        <p class="summary" *ngIf="session()!.review?.comment">{{ session()!.review!.comment }}</p>
       </div>
+      <ng-template #noReview><p class="muted">Aucune note manuelle.</p></ng-template>
+      <button type="button" class="btn ghost sm" (click)="startReview()">
+        <svg lucideStar [size]="14"></svg> {{ session()!.review?.score != null ? 'Modifier' : 'Noter' }}
+      </button>
+    </ng-container>
+    <ng-template #editReview>
+      <div class="review-form">
+        <input type="number" class="fl" min="0" max="10" step="0.5" placeholder="Note /10"
+          [value]="reviewScore() ?? ''"
+          (input)="reviewScore.set($any($event.target).value === '' ? null : +$any($event.target).value)" />
+        <input type="text" class="fl" placeholder="Commentaire"
+          [value]="reviewComment()"
+          (input)="reviewComment.set($any($event.target).value)" />
+        <button type="button" class="btn sm" (click)="saveReview()" [disabled]="reviewSaving()">
+          <svg lucideCheckCircle2 [size]="14"></svg> Enregistrer
+        </button>
+        <button type="button" class="btn ghost sm" (click)="reviewEditing.set(false)">Annuler</button>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- Récap automatique de clôture -->
+  <section class="panel" *ngIf="session()!.recruiterSummary">
+    <h2 class="panel-t">Récap automatique</h2>
+    <pre class="summary pre">{{ session()!.recruiterSummary }}</pre>
+  </section>
+
+  <!-- Transcript -->
+  <section class="panel">
+    <h2 class="panel-t"><svg lucideBot [size]="16"></svg> Transcript complet</h2>
+    <div class="transcript">
+      <div *ngFor="let m of visibleMessages" class="msg" [class.user]="m.role === 'user'">
+        <span class="who">{{ m.role === 'user' ? 'Candidat' : 'IA' }}</span>
+        <p>{{ m.content }}</p>
+      </div>
+      <p class="muted" *ngIf="!visibleMessages.length">Pas encore d'échange.</p>
     </div>
-  </div>
+  </section>
 </div>
 
 <ng-template #stateTpl>
-  <div class="container py-5">
-    <div *ngIf="loading" class="text-secondary">Loading…</div>
-    <div *ngIf="!loading && error" class="alert alert-warning">{{ error }}</div>
-    <a routerLink="/recruitment/interview/sessions" class="btn btn-outline-primary">
-      Back to list
+  <div class="detail center">
+    <p *ngIf="loading()" class="muted"><svg lucideLoader2 [size]="24" class="spin"></svg> Chargement…</p>
+    <div *ngIf="!loading() && error()" class="alert">{{ error() }}</div>
+    <a routerLink="/recruitment/interview" class="btn ghost">
+      <svg lucideArrowLeft [size]="15"></svg> Retour
     </a>
   </div>
 </ng-template>
