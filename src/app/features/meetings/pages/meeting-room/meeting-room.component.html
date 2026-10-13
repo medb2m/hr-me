@@ -23,11 +23,18 @@
             class="tile-grid"
             [class.solo]="!remoteTiles().length"
             [class.presenting]="presenting()">
+            <!-- Tuile de présentation : écran partagé (75% à gauche) -->
+            @if (presenterUid()) {
+              <div class="tile tile--present">
+                <video #pv class="tile-video tile-video--screen" autoplay playsinline></video>
+                <span class="tile-tag">{{ presenterName() }} — écran</span>
+              </div>
+            }
+
             <!-- Tuiles distantes -->
             @for (t of remoteTiles(); track t.userId) {
               <div
                 class="tile"
-                [class.tile--present]="presenterUid() === t.userId"
                 [class.speaking]="t.speaking">
                 <video
                   #rv
@@ -53,16 +60,12 @@
                     <i class="wave"><b></b><b></b><b></b></i>
                   }
                 </span>
-                @if (presenterUid() === t.userId) {
-                  <span class="tile-share-tag">Présente</span>
-                }
               </div>
             }
 
-            <!-- Tuile locale -->
+            <!-- Tuile locale : caméra (l'écran partagé a sa propre tuile) -->
             <div
               class="tile tile--local"
-              [class.tile--present]="presenterUid() === 'me'"
               [class.speaking]="selfSpeaking()">
               <video #localV class="tile-video" autoplay playsinline muted [class.off]="!camOn()"></video>
               @if (!camOn()) {
@@ -82,9 +85,6 @@
                   <i class="wave"><b></b><b></b><b></b></i>
                 }
               </span>
-              @if (screenSharing()) {
-                <span class="tile-share-tag">Votre écran</span>
-              }
             </div>
           </div>
 

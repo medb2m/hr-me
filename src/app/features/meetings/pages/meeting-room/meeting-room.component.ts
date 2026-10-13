@@ -50,8 +50,13 @@ interface PeerState {
   userId: string;
   pc: RTCPeerConnection;
   videoSender: RTCRtpSender | null;
+  /** Sender de la piste écran (partage simultané cam+écran). */
+  screenSender: RTCRtpSender | null;
   stream: MediaStream | null;
+  /** Flux d'écran reçu de ce pair (2ᵉ flux vidéo). */
+  screenRemote: MediaStream | null;
   analyser: AnalyserNode | null;
+  offeredOnce: boolean;
 }
 
 /** État affiché d'une tuile distante. */
@@ -148,6 +153,7 @@ const TILE_COLORS = [
 export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
   @ViewChild('localV') localV!: ElementRef<HTMLVideoElement>;
   @ViewChildren('rv') remoteVs!: QueryList<ElementRef<HTMLVideoElement>>;
+  @ViewChild('pv') presentV?: ElementRef<HTMLVideoElement>;
   @ViewChild('roomShell') roomShell?: ElementRef<HTMLElement>;
 
   private readonly route = inject(ActivatedRoute);
@@ -532,10 +538,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       await this.stopScreenShare();
       return;
     }
-    if (!this.peers.size) {
-      this.status.set('Partage possible une fois un participant connecté.');
-      return;
-    }
+    // Partage autorisé même seul : aperçu local + envoyé aux pairs qui rejoindront
     try {
       const display = await navigator.mediaDevices.getDisplayMedia({
         video: { frameRate: { ideal: 15, max: 30 } },
@@ -546,15 +549,17 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       vt.onended = () => {
         void this.stopScreenShare();
       };
-      // Diffuser l'écran à TOUS les pairs (mesh)
+      // Écran envoyé EN PLUS de la caméra : piste séparée vers chaque pair (mesh)
       for (const st of this.peers.values()) {
-        if (st.videoSender) {
-          await st.videoSender.replaceTrack(vt);
+        try {
+          st.screenSender = st.pc.addTrack(vt, display);
+        } catch {
+          /* */
         }
       }
       this.screenSharing.set(true);
-      this.camOn.set(vt.enabled);
-      this.syncLocalVideo();
+      this.cdr.detectChanges();
+      this.attachPresentVideo();
       this.emitMediaState();
     } catch {
       this.status.set('Partage d’écran annulé ou refusé.');
@@ -740,12 +745,22 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       return;
     }
     el.muted = true;
-    if (this.screenSharing() && this.screenStream) {
-      el.srcObject = this.screenStream;
-      return;
-    }
     if (this.localStream) {
       el.srcObject = this.localStream;
+    }
+  }
+
+  /** Attache le flux d'écran à la tuile de présentation (local ou distant). */
+  private attachPresentVideo(): void {
+    const el = this.presentV?.nativeElement;
+    if (!el) {
+      return;
+    }
+    const uid = this.presenterUid();
+    const stream =
+      uid === 'me' ? this.screenStream : this.peers.get(uid)?.screenRemote || null;
+    if (stream && el.srcObject !== stream) {
+      el.srcObject = stream;
     }
   }
 
@@ -866,6 +881,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
           await pc.setRemoteDescription({ type: 'offer', sdp: msg.sdp });
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
+          st.offeredOnce = true;
           s.emit('meeting:signal', { roomId: this.roomId, to: msg.from, type: 'answer', sdp: answer.sdp });
           this.status.set('En appel');
           this.cdr.markForCheck();
@@ -999,7 +1015,16 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
     });
-    const st: PeerState = { userId: uid, pc, videoSender: null, stream: null, analyser: null };
+    const st: PeerState = {
+      userId: uid,
+      pc,
+      videoSender: null,
+      screenSender: null,
+      stream: null,
+      screenRemote: null,
+      analyser: null,
+      offeredOnce: false,
+    };
     this.peers.set(uid, st);
     const s = this.socketSvc.getSocket();
     pc.onicecandidate = (ev) => {
@@ -1012,9 +1037,41 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
         });
       }
     };
+    // Renégociation automatique (ajout/retrait de la piste d'écran)
+    pc.onnegotiationneeded = async () => {
+      if (!st.offeredOnce || pc.signalingState !== 'stable' || !s) {
+        return;
+      }
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        s.emit('meeting:signal', {
+          roomId: this.roomId,
+          to: uid,
+          type: 'offer',
+          sdp: offer.sdp,
+        });
+      } catch {
+        /* */
+      }
+    };
     pc.ontrack = (ev) => {
       const [stream] = ev.streams;
       if (!stream) {
+        return;
+      }
+      // 2ᵉ flux vidéo = partage d'écran du pair (la caméra continue en parallèle)
+      if (ev.track.kind === 'video' && st.stream && stream.id !== st.stream.id) {
+        st.screenRemote = stream;
+        this.patchTile(uid, { sharing: true });
+        ev.track.onended = () => {
+          st.screenRemote = null;
+          this.patchTile(uid, { sharing: false });
+          this.cdr.markForCheck();
+        };
+        this.cdr.detectChanges();
+        this.attachPresentVideo();
+        this.cdr.markForCheck();
         return;
       }
       st.stream = stream;
@@ -1042,11 +1099,11 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
       params.encodings = [{ maxBitrate: 2_500_000, scaleResolutionDownBy: 1 }];
       void st.videoSender.setParameters(params).catch(() => {});
     }
-    // Si un partage d'écran est déjà actif, ce pair reçoit directement l'écran
-    if (this.screenSharing() && this.screenStream && st.videoSender) {
+    // Si on partage déjà l'écran, ce pair reçoit la piste écran EN PLUS de la caméra
+    if (this.screenSharing() && this.screenStream) {
       const vt = this.screenStream.getVideoTracks()[0];
       if (vt) {
-        void st.videoSender.replaceTrack(vt).catch(() => {});
+        st.screenSender = pc.addTrack(vt, this.screenStream);
       }
     }
     if (!this.cameraVideoTrack) {
@@ -1063,6 +1120,7 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     }
     const offer = await st.pc.createOffer();
     await st.pc.setLocalDescription(offer);
+    st.offeredOnce = true;
     s.emit('meeting:signal', { roomId: this.roomId, to: uid, type: 'offer', sdp: offer.sdp });
   }
 
@@ -1073,17 +1131,16 @@ export class MeetingRoomComponent implements OnDestroy, AfterViewInit {
     this.screenStream?.getTracks().forEach((t) => t.stop());
     this.screenStream = null;
     for (const st of this.peers.values()) {
-      if (st.videoSender && this.cameraVideoTrack) {
+      if (st.screenSender) {
         try {
-          await st.videoSender.replaceTrack(this.cameraVideoTrack);
+          st.pc.removeTrack(st.screenSender);
         } catch {
           /* */
         }
+        st.screenSender = null;
       }
     }
     this.screenSharing.set(false);
-    this.camOn.set(this.cameraVideoTrack?.enabled ?? true);
-    queueMicrotask(() => this.syncLocalVideo());
     this.emitMediaState();
   }
 

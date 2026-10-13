@@ -287,21 +287,28 @@ $border: #272b36;
 
 /* ── Mode présentation : partage 75% + colonne participants 25% ── */
 .tile-grid.presenting {
-  grid-template-columns: minmax(0, 3fr) minmax(180px, 1fr);
-  grid-template-rows: 1fr;
-  grid-auto-rows: max-content;
+  grid-template-columns: minmax(0, 3fr) minmax(200px, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-auto-rows: min-content;
   align-content: stretch;
 }
 .tile-grid.presenting .tile--present {
   grid-column: 1;
-  grid-row: 1 / -1;
-  aspect-ratio: auto;
+  grid-row: 1 / span 99;
+  aspect-ratio: unset;
+  min-height: 0;
   height: 100%;
   align-self: stretch;
 }
 .tile-grid.presenting .tile:not(.tile--present) {
   grid-column: 2;
   align-self: start;
+}
+
+/* Flux d'écran : lisibilité prioritaire (contain, pas de recadrage) */
+.tile-video--screen {
+  object-fit: contain;
+  background: #050608;
 }
 
 /* Point de présence dans la liste */
@@ -1056,15 +1063,17 @@ $border: #272b36;
 
   .tile-grid.presenting {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 55%) max-content;
+    grid-auto-rows: max-content;
   }
   .tile-grid.presenting .tile--present {
     grid-column: 1;
     grid-row: 1;
+    height: 100%;
   }
   .tile-grid.presenting .tile:not(.tile--present) {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: auto;
   }
 
   .room-toolbar {
