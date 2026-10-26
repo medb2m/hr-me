@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import QRCode from 'qrcode';
 import {
   LucideBuilding2,
   LucideCalendarDays,
@@ -16,9 +17,18 @@ import {
   LucideTrash2,
   LucideUpload,
   LucideX,
+  LucideShieldCheck,
+  LucideClock,
+  LucideCopy,
 } from '@lucide/angular';
 import { BackButtonComponent } from '../../../../shared/components/back-button/back-button.component';
 import { DocThumbComponent } from '../../components/doc-thumb/doc-thumb.component';
+import { SelectComponent, SelectOption } from '../../../../shared/components/select/select.component';
+import { FileViewerService } from '../../../../core/services/file-viewer.service';
+import {
+  VerificationsApiService,
+  VerificationRequest,
+} from '../../../../core/services/verifications-api.service';
 import {
   ClientDocKind,
   ClientDocumentDto,
@@ -65,12 +75,18 @@ const MAX_BYTES = 10 * 1024 * 1024;
     LucideTrash2,
     LucideUpload,
     LucideX,
+    LucideShieldCheck,
+    LucideClock,
+    LucideCopy,
+    SelectComponent,
   ],
   templateUrl: './client-library-page.component.html',
   styleUrl: './client-library-page.component.css',
 })
 export class ClientLibraryPageComponent implements OnInit, OnDestroy {
   private readonly api = inject(ClientDocumentsApiService);
+  private readonly vapi = inject(VerificationsApiService);
+  private readonly viewer = inject(FileViewerService);
 
   readonly accept = ACCEPT;
   readonly kindLabels = KIND_LABELS;
@@ -86,6 +102,17 @@ export class ClientLibraryPageComponent implements OnInit, OnDestroy {
 
   // Upload
   pickKind: ClientDocKind = 'other'; // 'other' → l'IA suggère le bon type
+  readonly pickKindOptions: SelectOption[] = [
+    { value: 'other', label: 'Type automatique (IA)' },
+    { value: 'diploma', label: 'Diplôme' },
+    { value: 'certificate', label: 'Certification' },
+    { value: 'other', label: 'Autre' },
+  ];
+  readonly kindOptions: SelectOption[] = [
+    { value: 'diploma', label: 'Diplôme' },
+    { value: 'certificate', label: 'Certification' },
+    { value: 'other', label: 'Autre' },
+  ];
   pickFile: File | null = null;
   dragOver = false;
   uploading = false;
@@ -94,7 +121,6 @@ export class ClientLibraryPageComponent implements OnInit, OnDestroy {
   deletingId = '';
 
   // Modals
-  previewDoc: ClientDocumentDto | null = null;
   editDoc: ClientDocumentDto | null = null;
   editName = '';
   editKind: ClientDocKind = 'other';
@@ -107,6 +133,57 @@ export class ClientLibraryPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
+    this.loadVerifs();
+  }
+
+  // ------------------------------------------------ Talent ID Passport
+  verifs = new Map<string, VerificationRequest>();
+  qrCache = new Map<string, string>();
+  requestingId = '';
+
+  loadVerifs(): void {
+    this.vapi.mine().subscribe({
+      next: ({ requests }) => {
+        requests.forEach((r) => this.verifs.set(r.documentId, r));
+        requests
+          .filter((r) => r.status === 'approved' && r.token && !this.qrCache.has(r.id))
+          .forEach((r) => {
+            QRCode.toDataURL(this.verifyUrl(r), { width: 320, margin: 1 })
+              .then((url) => this.qrCache.set(r.id, url));
+          });
+      },
+    });
+  }
+
+  verifFor(d: { id: string }): VerificationRequest | undefined {
+    return this.verifs.get(d.id);
+  }
+
+  requestVerif(d: { id: string }): void {
+    if (this.requestingId) return;
+    this.requestingId = d.id;
+    this.vapi.request(d.id).subscribe({
+      next: ({ request }) => {
+        this.verifs.set(d.id, request);
+        this.requestingId = '';
+      },
+      error: (e) => {
+        this.requestingId = '';
+        alert(e?.error?.message || 'Demande impossible.');
+      },
+    });
+  }
+
+  verifyUrl(r: VerificationRequest): string {
+    return `${location.origin}/verify/${r.token}`;
+  }
+
+  copyVerifyUrl(r: VerificationRequest): void {
+    void navigator.clipboard?.writeText(this.verifyUrl(r));
+  }
+
+  qrFor(r: VerificationRequest): string {
+    return this.qrCache.get(r.id) || '';
   }
 
   ngOnDestroy(): void {
@@ -260,12 +337,9 @@ export class ClientLibraryPageComponent implements OnInit, OnDestroy {
 
   // ================= Modals =================
 
+  /** Aperçu plein écran via la visionneuse partagée. */
   openPreview(d: ClientDocumentDto): void {
-    this.previewDoc = d;
-  }
-
-  closePreview(): void {
-    this.previewDoc = null;
+    this.viewer.open({ name: this.displayName(d), mime: d.mime, url: d.path });
   }
 
   openEdit(d: ClientDocumentDto): void {

@@ -11,7 +11,10 @@ export const postTtsSpeak = async (req, res) => {
         message: 'Neural TTS is disabled (set TTS_EDGE_DISABLE off).',
       });
     }
-    const buffer = await synthesizeInterviewSpeechMp3(req.body?.text);
+    const buffer = await synthesizeInterviewSpeechMp3(
+      req.body?.text,
+      req.body?.lang
+    );
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).send(buffer);

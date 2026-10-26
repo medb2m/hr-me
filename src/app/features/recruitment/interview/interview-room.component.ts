@@ -135,11 +135,8 @@ export class InterviewRoomComponent implements OnInit, AfterViewInit, OnDestroy 
       this.preferredVoice = null;
       return;
     }
-    const docLang = (document.documentElement.lang || 'en-US').replace(
-      /_/g,
-      '-'
-    );
-    const short = docLang.split('-')[0]?.toLowerCase() || 'en';
+    const docLang = 'en-US';
+    const short = 'en';
 
     const score = (v: SpeechSynthesisVoice): number => {
       let s = 0;
@@ -155,7 +152,11 @@ export class InterviewRoomComponent implements OnInit, AfterViewInit, OnDestroy 
       ) {
         s += 100;
       }
-      if (/zira|aria|jenny|guy|davis|sonia|libby|ryan|christopher/i.test(n)) {
+      if (
+        /zira|aria|jenny|guy|davis|sonia|libby|ryan|christopher|emma|andrew|ava|brian/i.test(
+          n
+        )
+      ) {
         s += 25;
       }
       if (v.default) {
@@ -400,7 +401,7 @@ export class InterviewRoomComponent implements OnInit, AfterViewInit, OnDestroy 
       return;
     }
     const r = new SR();
-    r.lang = document.documentElement.lang || 'en-US';
+    r.lang = 'en-US';
     r.continuous = true;
     r.interimResults = true;
 
@@ -681,7 +682,7 @@ export class InterviewRoomComponent implements OnInit, AfterViewInit, OnDestroy 
       const res = await fetch(`${environment.apiUrl}/tts/speak`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, lang: 'en-US' }),
       });
       if (!res.ok) {
         return false;
@@ -750,8 +751,8 @@ export class InterviewRoomComponent implements OnInit, AfterViewInit, OnDestroy 
       if (this.preferredVoice.lang) {
         u.lang = this.preferredVoice.lang;
       }
-    } else if (document.documentElement.lang) {
-      u.lang = document.documentElement.lang.replace(/_/g, '-');
+    } else {
+      u.lang = 'en-US';
     }
     u.rate = 0.92;
     u.pitch = 1;
